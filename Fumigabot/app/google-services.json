@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "765144580837",
+    "project_id": "fumigabot",
+    "storage_bucket": "fumigabot.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:765144580837:android:ee07edc41bf0de94b04a0c",
+        "android_client_info": {
+          "package_name": "com.example.fumigabot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "765144580837-77neqoaons0jb5go8guhppg0efavr6vh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4htkSXzpZ815U9NBiV-JcxdSc3PTYZ0o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "765144580837-77neqoaons0jb5go8guhppg0efavr6vh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
