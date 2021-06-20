@@ -7,15 +7,15 @@ import java.util.Map;
 
 public class Robot {
     private int robotId;
-    private boolean fumigar;
+    private boolean fumigando;
 
     public Robot(){
         // Default constructor required for calls to DataSnapshot.getValue(Robot.class)
     }
 
-    public Robot(int robotId, boolean fumigar){
+    public Robot(int robotId, boolean fumigando){
         this.robotId = robotId;
-        this.fumigar = fumigar;
+        this.fumigando = fumigando;
     }
 
     public int getRobotId() {
@@ -26,19 +26,18 @@ public class Robot {
         this.robotId = robotId;
     }
 
-    public boolean getFumigar() {
-        return fumigar;
+    public boolean isFumigando() {
+        return fumigando;
     }
 
-    public void setFumigar(boolean fumigar) {
-        this.fumigar = fumigar;
+    public void setFumigando(boolean fumigando) {
+        this.fumigando = fumigando;
     }
 
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("fumigar", fumigar);
-
+        hashMap.put("fumigando", fumigando);
         return hashMap;
     }
 }

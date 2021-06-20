@@ -1,7 +1,9 @@
 package com.example.fumigabot;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView textActividadRobot;
     private Button btnIniciarFumigacion;
     private Robot robot;
+    private AlertDialog.Builder builder;
+    private AlertDialog alertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,17 +52,51 @@ public class MainActivity extends AppCompatActivity {
 
     private View.OnClickListener btnIniciarFumigacionListener = new View.OnClickListener() {
         public void onClick(View v) {
-
-            if(robot.getFumigar()){
-               updateRobot(robot.getRobotId(), false);
-               textActividadRobot.setText("ESPERANDO ÓRDENES...");
-            }
-            else {
-                updateRobot(robot.getRobotId(), true);
-                textActividadRobot.setText("FUMIGANDO...");
-            }
+            inicializarAlertDialog();
         }
     };
+
+    public void inicializarAlertDialog(){
+        builder = new AlertDialog.Builder(this);
+
+        String titleAlertDialog;
+        if(!robot.isFumigando())
+            titleAlertDialog = "iniciar una ";
+        else
+            titleAlertDialog = "finalizar la ";
+        builder.setMessage("¿Seguro querés " + titleAlertDialog + "fumigación?");
+
+        builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                if(!robot.isFumigando())
+                    updateRobot(robot.getRobotId(), true);
+                else
+                    updateRobot(robot.getRobotId(), false);
+
+                determinarEstadoRobot(robot.isFumigando());
+            }
+        });
+
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+            }
+        });
+
+        alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    public void determinarEstadoRobot(boolean fumigando){
+        if(fumigando){
+            textActividadRobot.setText("FUMIGANDO...");
+            btnIniciarFumigacion.setText("DETENER FUMIGACIÓN");
+        }
+        else {
+            textActividadRobot.setText("ESPERANDO ÓRDENES...");
+            btnIniciarFumigacion.setText("FUMIGAR");
+        }
+    }
 
     private ValueEventListener robotValueEventListener = new ValueEventListener() {
         @Override
@@ -66,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
             // This method is called once with the initial value and again
             // whenever data at this location is updated.
             robot = dataSnapshot.child("0").getValue(Robot.class);
+            determinarEstadoRobot(robot.isFumigando());
         }
 
         @Override
@@ -75,8 +114,8 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    public void updateRobot(int robotId, boolean fumigar) {
-        Robot robot = new Robot(robotId, fumigar);
+    public void updateRobot(int robotId, boolean fumigando) {
+        Robot robot = new Robot(robotId, fumigando);
         Map<String, Object> robotValues = robot.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();
