@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference reference;
     private TextView textActividadRobot;
+    private TextView textBateria;
     private Button btnIniciarFumigacion;
     private Robot robot;
     private AlertDialog.Builder builder;
@@ -42,10 +44,25 @@ public class MainActivity extends AppCompatActivity {
         //Instancia y referencia de la BD en Firebase
         firebaseDatabase = MyFirebase.getInstance();
         reference = firebaseDatabase.getReference("robots");
+        //Para que se mantenga sincronizado offline
+        reference.keepSynced(true);
         reference.addValueEventListener(robotValueEventListener);
 
-        textActividadRobot = findViewById(R.id.textActividadRobot);
+        robot = (Robot)getIntent().getSerializableExtra("RobotVinculado");
+        int idRobot = getIntent().getIntExtra("PinRobot", -1);
 
+        if(robot == null && idRobot == -1) {
+            Toast.makeText(getApplicationContext(), "No se encontró el robot vinculado", Toast.LENGTH_LONG).show();
+        }
+        else if(idRobot != -1)
+        {
+            //Vino de vincular recien
+            robot = new Robot();
+            robot.setRobotId(idRobot);
+        }
+
+        textActividadRobot = findViewById(R.id.textActividadRobot);
+        textBateria = findViewById(R.id.textBateria);
         btnIniciarFumigacion = findViewById(R.id.btnIniciarFumigacion);
         btnIniciarFumigacion.setOnClickListener(btnIniciarFumigacionListener);
     }
@@ -57,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     public void inicializarAlertDialog(){
-        builder = new AlertDialog.Builder(this);
+        builder = new AlertDialog.Builder(this, R.style.alertDialogStyle);
 
         String titleAlertDialog;
         if(!robot.isFumigando())
@@ -68,12 +85,21 @@ public class MainActivity extends AppCompatActivity {
 
         builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                if(!robot.isFumigando())
-                    updateRobot(robot.getRobotId(), true);
-                else
-                    updateRobot(robot.getRobotId(), false);
+                if(!robot.isEncendido())
+                {
+                    builder.setMessage("El dispositivo se encuentra apagado");
+                    return;
+                }
+                else {
+                    if (!robot.isFumigando()) {
+                        robot.setFumigando(true);
+                        //updateRobot(robot.getRobotId(), true);
+                    } else
+                        robot.setFumigando(false);
 
-                determinarEstadoRobot(robot.isFumigando());
+                    updateRobot(robot);
+                }
+                determinarEstadoRobot(robot);
             }
         });
 
@@ -87,15 +113,35 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    public void determinarEstadoRobot(boolean fumigando){
-        if(fumigando){
-            textActividadRobot.setText("FUMIGANDO...");
-            btnIniciarFumigacion.setText("DETENER FUMIGACIÓN");
+    public void determinarEstadoRobot(Robot robot){
+        String estado;
+        String bateria;
+        boolean habilitado = robot.isEncendido();
+
+
+        if(robot.isEncendido()){
+            bateria = "Batería: " + robot.getBateria() + "%\n\n\nENCENDIDO\n\n";
+            if(robot.isFumigando())
+            {
+                estado = "FUMIGANDO...";
+                btnIniciarFumigacion.setText("DETENER FUMIGACIÓN");
+            }
+            else
+            {
+                estado = "ESPERANDO ÓRDENES...";
+                btnIniciarFumigacion.setText("FUMIGAR");
+            }
         }
-        else {
-            textActividadRobot.setText("ESPERANDO ÓRDENES...");
+        else
+        {
+            bateria = "APAGADO\n\n\n";
+            estado = "Encender el dispositivo para comenzar";
             btnIniciarFumigacion.setText("FUMIGAR");
         }
+
+        textBateria.setText(bateria);
+        textActividadRobot.setText(estado);
+        btnIniciarFumigacion.setEnabled(habilitado);
     }
 
     private ValueEventListener robotValueEventListener = new ValueEventListener() {
@@ -103,8 +149,10 @@ public class MainActivity extends AppCompatActivity {
         public void onDataChange(DataSnapshot dataSnapshot) {
             // This method is called once with the initial value and again
             // whenever data at this location is updated.
-            robot = dataSnapshot.child("0").getValue(Robot.class);
-            determinarEstadoRobot(robot.isFumigando());
+
+            robot = dataSnapshot.child(robot.getRobotId()+"").getValue(Robot.class);
+            determinarEstadoRobot(robot);
+            return;
         }
 
         @Override
@@ -114,12 +162,11 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    public void updateRobot(int robotId, boolean fumigando) {
-        Robot robot = new Robot(robotId, fumigando);
+    public void updateRobot(Robot robot) {
         Map<String, Object> robotValues = robot.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put(robotId + "/", robotValues);
+        childUpdates.put(robot.getRobotId() + "/", robotValues);
 
         reference.updateChildren(childUpdates);
     }

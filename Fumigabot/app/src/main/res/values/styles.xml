@@ -1,10 +1,42 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="FumigabotTheme" parent="Theme.AppCompat.Light"> <!-- .DarkActionBar"-->
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <item name="android:windowBackground">@color/activityBackground</item>
+        <item name="buttonStyle">@style/botonStyle</item>
+        <item name="android:textViewStyle">@style/labelsStyle</item>
+        <item name="editTextStyle">@style/editTextStyle</item>
+
+    </style>
+
+
+    <!-- Estilos de cada componente  -->
+
+    <style name="botonStyle" parent="Widget.AppCompat.Button">
+        <item name="colorButtonNormal">@color/colorPrimaryDark</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+    </style>
+
+
+    <style name="labelsStyle"> # parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/colorPrimaryDark</item>
+    </style>
+
+
+    <style name="editTextStyle" parent="Widget.AppCompat.EditText">
+        <item name="android:textColor">@color/colorPrimaryDark</item>
+        #colorActivatedHighlight
+        <item name="android:textColorHighlight">@color/colorAccentTransparency</item>
+    </style>
+
+
+    <style name="alertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:textColorPrimary">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
