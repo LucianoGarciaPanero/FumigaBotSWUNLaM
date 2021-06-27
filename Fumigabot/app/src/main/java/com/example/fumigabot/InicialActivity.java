@@ -67,7 +67,8 @@ public class InicialActivity extends AppCompatActivity {
         reference = firebaseDatabase.getReference("robots");
         reference.addValueEventListener(robotValueEventListener);
 
-        //obtenerRobot();
+        if(IDRobot.isEmpty())
+            obtenerRobot();
     }
 
     private String getIdRobotSP()

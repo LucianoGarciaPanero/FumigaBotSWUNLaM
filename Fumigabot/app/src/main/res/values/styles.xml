@@ -18,7 +18,7 @@
     <!-- Estilos de cada componente  -->
 
     <style name="botonStyle" parent="Widget.AppCompat.Button">
-        <item name="colorButtonNormal">@color/colorPrimaryDark</item>
+        <item name="android:background">@color/colorPrimaryDark</item>
         <item name="android:textColor">@color/colorPrimary</item>
     </style>
 
