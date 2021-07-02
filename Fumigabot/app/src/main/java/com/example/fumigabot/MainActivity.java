@@ -29,10 +29,12 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseReference reference;
     private TextView textActividadRobot;
     private TextView textBateria;
+    private TextView infoBateria;
     private Button btnIniciarFumigacion;
     private Robot robot;
     private AlertDialog.Builder builder;
     private AlertDialog alertDialog;
+    private String mensajeInfoBateria;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,20 +51,14 @@ public class MainActivity extends AppCompatActivity {
         reference.addValueEventListener(robotValueEventListener);
 
         robot = (Robot)getIntent().getSerializableExtra("RobotVinculado");
-        int idRobot = getIntent().getIntExtra("PinRobot", -1);
 
-        if(robot == null && idRobot == -1) {
+        if(robot == null) {
             Toast.makeText(getApplicationContext(), "No se encontró el robot vinculado", Toast.LENGTH_LONG).show();
-        }
-        else if(idRobot != -1)
-        {
-            //Vino de vincular recien
-            robot = new Robot();
-            robot.setRobotId(idRobot);
         }
 
         textActividadRobot = findViewById(R.id.textActividadRobot);
         textBateria = findViewById(R.id.textBateria);
+        infoBateria = findViewById(R.id.infoBateria);
         btnIniciarFumigacion = findViewById(R.id.btnIniciarFumigacion);
         btnIniciarFumigacion.setOnClickListener(btnIniciarFumigacionListener);
     }
@@ -115,12 +111,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void determinarEstadoRobot(Robot robot){
         String estado;
-        String bateria;
-        boolean habilitado = robot.isEncendido();
+        String porcentajeBateria;
+        boolean status = false;
 
 
         if(robot.isEncendido()){
-            bateria = "Batería: " + robot.getBateria() + "%\n\n\nENCENDIDO\n\n";
+            status = verificarBateria(robot.getBateria());
+            porcentajeBateria = "Batería: " + robot.getBateria() + "%"; //\n\n\nENCENDIDO\n\n";
             if(robot.isFumigando())
             {
                 estado = "FUMIGANDO...";
@@ -134,14 +131,44 @@ public class MainActivity extends AppCompatActivity {
         }
         else
         {
-            bateria = "APAGADO\n\n\n";
+            porcentajeBateria = "APAGADO\n\n\n";
+            mensajeInfoBateria = "";
+            infoBateria.setBackgroundResource(R.color.activityBackground);
             estado = "Encender el dispositivo para comenzar";
             btnIniciarFumigacion.setText("FUMIGAR");
         }
 
-        textBateria.setText(bateria);
+        infoBateria.setText(mensajeInfoBateria);
+        textBateria.setText(porcentajeBateria);
         textActividadRobot.setText(estado);
-        btnIniciarFumigacion.setEnabled(habilitado);
+        btnIniciarFumigacion.setEnabled(status);
+    }
+
+    private boolean verificarBateria(int bateria)
+    {
+        if(bateria >= 40) {
+            mensajeInfoBateria = "";
+            infoBateria.setBackgroundResource(R.color.activityBackground);
+            return true;
+        }
+        else if(bateria <40 && bateria >=15) {
+            //Sugerencia
+            mensajeInfoBateria = "Batería moderada: será necesario recargar pronto.";
+            infoBateria.setBackgroundResource(R.drawable.recuadro_sugerencia);
+            return true;
+        }
+        else if(bateria <15 && bateria >=5) {
+            //Advertencia
+            mensajeInfoBateria = "Batería baja: se recomienda recargar la batería.";
+            infoBateria.setBackgroundResource(R.drawable.recuadro_advertencia);
+            return true;
+        }
+        else{// if(bateria <5) {
+            //Alerta
+            mensajeInfoBateria = "Batería muy baja: el dispositivo se apagará pronto.";
+            infoBateria.setBackgroundResource(R.drawable.recuadro_alerta);
+            return false;
+        }
     }
 
     private ValueEventListener robotValueEventListener = new ValueEventListener() {

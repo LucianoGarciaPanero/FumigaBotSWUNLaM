@@ -6,4 +6,12 @@
     <color name="colorAccentTransparency">#9ED81B60</color>
 
     <color name="activityBackground">@color/colorPrimary</color>
+    <color name="disabledControl">#9B9997</color>
+
+    <color name="fondoSugerencia">#66BB6A</color>
+    <color name="fondoAdvertencia">#FFB74D</color>
+    //#EF5350
+    <color name="fondoAlerta">#EF5350</color>
+    <color name="bordeRecuadro">@color/colorPrimary</color>
+
 </resources>
