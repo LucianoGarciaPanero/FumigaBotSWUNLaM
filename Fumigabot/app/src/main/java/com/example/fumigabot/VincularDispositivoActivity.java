@@ -92,8 +92,7 @@ public class VincularDispositivoActivity extends AppCompatActivity {
         });
     }
 
-    private void guardarPinSP(String pin)
-    {
+    private void guardarPinSP(String pin) {
         //Guardamos en SharedPreferences el PIN
         SharedPreferences sp = getApplicationContext().getSharedPreferences("Fumigabot_Pin_Dev", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();

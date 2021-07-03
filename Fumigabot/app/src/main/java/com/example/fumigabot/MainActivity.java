@@ -35,6 +35,9 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog.Builder builder;
     private AlertDialog alertDialog;
     private String mensajeInfoBateria;
+    private final int BATERIA_NIVEL_ALTO = 40;
+    private final int BATERIA_NIVEL_MODERADO = 15;
+    private final int BATERIA_NIVEL_BAJO = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,8 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
         builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                if(!robot.isEncendido())
-                {
+                if(!robot.isEncendido()) {
                     builder.setMessage("El dispositivo se encuentra apagado");
                     return;
                 }
@@ -118,19 +120,16 @@ public class MainActivity extends AppCompatActivity {
         if(robot.isEncendido()){
             status = verificarBateria(robot.getBateria());
             porcentajeBateria = "Batería: " + robot.getBateria() + "%"; //\n\n\nENCENDIDO\n\n";
-            if(robot.isFumigando())
-            {
+            if(robot.isFumigando()) {
                 estado = "FUMIGANDO...";
                 btnIniciarFumigacion.setText("DETENER FUMIGACIÓN");
             }
-            else
-            {
+            else {
                 estado = "ESPERANDO ÓRDENES...";
                 btnIniciarFumigacion.setText("FUMIGAR");
             }
         }
-        else
-        {
+        else {
             porcentajeBateria = "APAGADO\n\n\n";
             mensajeInfoBateria = "";
             infoBateria.setBackgroundResource(R.color.activityBackground);
@@ -144,26 +143,25 @@ public class MainActivity extends AppCompatActivity {
         btnIniciarFumigacion.setEnabled(status);
     }
 
-    private boolean verificarBateria(int bateria)
-    {
-        if(bateria >= 40) {
+    private boolean verificarBateria(int bateria) {
+        if(bateria >= BATERIA_NIVEL_ALTO) {
             mensajeInfoBateria = "";
             infoBateria.setBackgroundResource(R.color.activityBackground);
             return true;
         }
-        else if(bateria <40 && bateria >=15) {
+        else if(bateria >= BATERIA_NIVEL_MODERADO) {
             //Sugerencia
             mensajeInfoBateria = "Batería moderada: será necesario recargar pronto.";
             infoBateria.setBackgroundResource(R.drawable.recuadro_sugerencia);
             return true;
         }
-        else if(bateria <15 && bateria >=5) {
+        else if(bateria >= BATERIA_NIVEL_BAJO) {
             //Advertencia
             mensajeInfoBateria = "Batería baja: se recomienda recargar la batería.";
             infoBateria.setBackgroundResource(R.drawable.recuadro_advertencia);
             return true;
         }
-        else{// if(bateria <5) {
+        else {// if(bateria <5) {
             //Alerta
             mensajeInfoBateria = "Batería muy baja: el dispositivo se apagará pronto.";
             infoBateria.setBackgroundResource(R.drawable.recuadro_alerta);
@@ -196,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
         childUpdates.put(robot.getRobotId() + "/", robotValues);
 
         reference.updateChildren(childUpdates);*/
-
 
         //Desde la app solamente deberíamos poder modificar si está fumigando o no
         //El día de mañana podemos mandarle la orden de apagar si queremos

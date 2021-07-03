@@ -3,13 +3,13 @@ package com.example.fumigabot;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
-
+import android.graphics.drawable.AnimatedVectorDrawable;
+import android.graphics.drawable.Drawable;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.graphics.drawable.AnimatedVectorDrawable;
-import android.graphics.drawable.Drawable;
+
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -32,7 +32,6 @@ public class InicialActivity extends AppCompatActivity {
     private String IDRobot = "";
 
     private ImageView anim_robot;
-
     //private AnimatedVectorDrawableCompat avd;
     //private AnimatedVectorDrawable avd2;
 
@@ -46,7 +45,6 @@ public class InicialActivity extends AppCompatActivity {
         setContentView(R.layout.activity_inicial);
 
         anim_robot = findViewById(R.id.imageRobot);
-
         /*Drawable draw = anim_robot.getDrawable();
         if (draw instanceof AnimatedVectorDrawableCompat) {
             avd = (AnimatedVectorDrawableCompat) draw;
@@ -55,8 +53,6 @@ public class InicialActivity extends AppCompatActivity {
             avd2 = (AnimatedVectorDrawable) draw;
             avd2.start();
         }*/
-
-
 
         //Vemos si tiene vinculado algo
         IDRobot = getIdRobotSP();
@@ -71,8 +67,7 @@ public class InicialActivity extends AppCompatActivity {
             obtenerRobot();
     }
 
-    private String getIdRobotSP()
-    {
+    private String getIdRobotSP() {
         //Leemos de Shared Preferences
         SharedPreferences preferences = this.getSharedPreferences("Fumigabot_Pin_Dev", Context.MODE_PRIVATE);
         String res = preferences.getString("IDRobot", "");
@@ -80,16 +75,14 @@ public class InicialActivity extends AppCompatActivity {
         return res;
     }
 
-    private void obtenerRobot()
-    {
+    private void obtenerRobot() {
         if(IDRobot != "") { //quiere decir que tiene algo, puedo ir a buscar a la base de datos
             //Pasamos al Home y vemos toda la data del robot vinculado
             Intent i = new Intent(getApplicationContext(), MainActivity.class);
             i.putExtra("RobotVinculado",robot);
             startActivity(i);
         }
-        else
-        {
+        else {
             //Quiere decir que tiene que vincular un nuevo dispositivo
             startActivity(new Intent(getApplicationContext(), VincularDispositivoActivity.class));
         }
