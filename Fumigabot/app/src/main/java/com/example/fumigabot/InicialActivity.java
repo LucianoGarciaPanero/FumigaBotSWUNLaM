@@ -29,7 +29,7 @@ public class InicialActivity extends AppCompatActivity {
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference reference;
     private Robot robot;
-    private String IDRobot = "";
+    private String robotId = "";
 
     private ImageView anim_robot;
     //private AnimatedVectorDrawableCompat avd;
@@ -55,7 +55,7 @@ public class InicialActivity extends AppCompatActivity {
         }*/
 
         //Vemos si tiene vinculado algo
-        IDRobot = getIdRobotSP();
+        robotId = getIdRobotSP();
 
 
         //Instancia y referencia de la BD en Firebase
@@ -63,20 +63,20 @@ public class InicialActivity extends AppCompatActivity {
         reference = firebaseDatabase.getReference("robots");
         reference.addValueEventListener(robotValueEventListener);
 
-        if(IDRobot.isEmpty())
+        if(robotId.isEmpty())
             obtenerRobot();
     }
 
     private String getIdRobotSP() {
         //Leemos de Shared Preferences
         SharedPreferences preferences = this.getSharedPreferences("Fumigabot_Pin_Dev", Context.MODE_PRIVATE);
-        String res = preferences.getString("IDRobot", "");
+        String res = preferences.getString("robotId", "");
 
         return res;
     }
 
     private void obtenerRobot() {
-        if(IDRobot != "") { //quiere decir que tiene algo, puedo ir a buscar a la base de datos
+        if(robotId != "") { //quiere decir que tiene algo, puedo ir a buscar a la base de datos
             //Pasamos al Home y vemos toda la data del robot vinculado
             Intent i = new Intent(getApplicationContext(), MainActivity.class);
             i.putExtra("RobotVinculado",robot);
@@ -93,11 +93,11 @@ public class InicialActivity extends AppCompatActivity {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
             //Si detecta algo, lo trae
-            if(IDRobot.isEmpty())
+            if(robotId.isEmpty())
                 return;
-            robot = dataSnapshot.child(IDRobot).getValue(Robot.class);
+            robot = dataSnapshot.child(robotId).getValue(Robot.class);
             obtenerRobot();
-            IDRobot = "";
+            robotId = "";
             return;
         }
 

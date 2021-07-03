@@ -59,7 +59,7 @@ public class VincularDispositivoActivity extends AppCompatActivity {
                 pin = txtPin.getText().toString();
                 String mensajeVinculacion = "No se encontró el PIN ingresado";
 
-                if(pin != "") {
+                if(!pin.equals("")) {
 
                     Task<DataSnapshot> task = reference.get();
 
@@ -77,7 +77,6 @@ public class VincularDispositivoActivity extends AppCompatActivity {
 
                                 startActivity(i);
                                 finish();
-
                             } else {
                                 robot = null;
                             }
@@ -96,7 +95,7 @@ public class VincularDispositivoActivity extends AppCompatActivity {
         //Guardamos en SharedPreferences el PIN
         SharedPreferences sp = getApplicationContext().getSharedPreferences("Fumigabot_Pin_Dev", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
-        editor.putString("IDRobot", pin);
+        editor.putString("robotId", pin);
         editor.apply();
     }
 
