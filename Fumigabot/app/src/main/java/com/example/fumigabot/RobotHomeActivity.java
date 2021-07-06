@@ -23,7 +23,7 @@ import com.google.firebase.database.DatabaseError;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class RobotHomeActivity extends AppCompatActivity {
 
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference reference;
@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getSupportActionBar().hide();
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_robot_home);
 
         //Instancia y referencia de la BD en Firebase
         firebaseDatabase = MyFirebase.getInstance();

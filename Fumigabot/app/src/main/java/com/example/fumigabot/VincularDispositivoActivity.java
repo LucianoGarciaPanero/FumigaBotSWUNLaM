@@ -74,7 +74,7 @@ public class VincularDispositivoActivity extends AppCompatActivity {
                                 mensajeVinculacion = "¡Fumigabot vinculado!";
 
                                 //Vamos al Home
-                                Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                                Intent i = new Intent(getApplicationContext(), RobotHomeActivity.class);
                                 i.putExtra("RobotVinculado", robot);
                                 startActivity(i);
                                 finish();

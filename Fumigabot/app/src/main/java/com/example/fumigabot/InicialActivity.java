@@ -78,7 +78,7 @@ public class InicialActivity extends AppCompatActivity {
     private void obtenerRobot() {
         if(robotId != "") { //quiere decir que tiene algo, puedo ir a buscar a la base de datos
             //Pasamos al Home y vemos toda la data del robot vinculado
-            Intent i = new Intent(getApplicationContext(), MainActivity.class);
+            Intent i = new Intent(getApplicationContext(), RobotHomeActivity.class);
             i.putExtra("RobotVinculado", robot);
             startActivity(i);
         }

@@ -10,17 +10,14 @@
         android:supportsRtl="true"
         android:theme="@style/FumigabotTheme">
         <activity android:name=".InicialActivity">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
-        <activity android:name=".VincularDispositivoActivity">
-        </activity>
-        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".VincularDispositivoActivity"></activity>
+        <!--<activity android:name=".RobotHistorialActivity"></activity>-->
+        <activity android:name=".RobotHomeActivity"></activity>
     </application>
 
 </manifest>
