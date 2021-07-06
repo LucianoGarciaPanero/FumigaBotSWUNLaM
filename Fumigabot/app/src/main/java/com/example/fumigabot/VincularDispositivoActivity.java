@@ -57,36 +57,37 @@ public class VincularDispositivoActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 pin = txtPin.getText().toString();
-                String mensajeVinculacion = "No se encontró el PIN ingresado";
 
                 if(!pin.equals("")) {
 
                     Task<DataSnapshot> task = reference.get();
 
                     task.addOnCompleteListener(task1 -> {
+                        String mensajeVinculacion;
+
                         if (task1.isSuccessful()) {
                             DataSnapshot snapshot = task1.getResult();
+
                             if (snapshot.hasChild(pin)) {
                                 robot = snapshot.child(pin).getValue(Robot.class);
-
                                 guardarPinSP(pin);
+                                mensajeVinculacion = "¡Fumigabot vinculado!";
 
                                 //Vamos al Home
                                 Intent i = new Intent(getApplicationContext(), MainActivity.class);
                                 i.putExtra("RobotVinculado", robot);
-
                                 startActivity(i);
                                 finish();
-                            } else {
-                                robot = null;
                             }
+                            else
+                                mensajeVinculacion = "No se encontró el PIN ingresado";
+
+                            runOnUiThread(Toast.makeText(getApplicationContext(), mensajeVinculacion, Toast.LENGTH_SHORT)::show);
                         }
                     });
                 }
                 else
-                    mensajeVinculacion = "Se debe ingresar un PIN";
-
-                Toast.makeText(getApplicationContext(), mensajeVinculacion, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Se debe ingresar un PIN", Toast.LENGTH_SHORT).show();
             }
         });
     }

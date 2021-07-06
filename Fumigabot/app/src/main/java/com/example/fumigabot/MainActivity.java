@@ -55,10 +55,6 @@ public class MainActivity extends AppCompatActivity {
 
         robot = (Robot)getIntent().getSerializableExtra("RobotVinculado");
 
-        if(robot == null) {
-            Toast.makeText(getApplicationContext(), "No se encontró el robot vinculado", Toast.LENGTH_LONG).show();
-        }
-
         textActividadRobot = findViewById(R.id.textActividadRobot);
         textBateria = findViewById(R.id.textBateria);
         infoBateria = findViewById(R.id.infoBateria);
