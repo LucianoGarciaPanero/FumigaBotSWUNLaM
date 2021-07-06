@@ -16,7 +16,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".VincularDispositivoActivity"></activity>
-        <!--<activity android:name=".RobotHistorialActivity"></activity>-->
+        <activity android:name=".RobotHistorialActivity"></activity>
         <activity android:name=".RobotHomeActivity"></activity>
     </application>
 
