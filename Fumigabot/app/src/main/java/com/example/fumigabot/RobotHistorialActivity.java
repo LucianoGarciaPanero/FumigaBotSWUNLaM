@@ -41,10 +41,10 @@ public class RobotHistorialActivity extends AppCompatActivity {
         getSupportActionBar().hide();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_robot_historial);
-
+/*
         //Instancia y referencia de la BD en Firebase
         firebaseDatabase = MyFirebase.getInstance();
-        reference = firebaseDatabase.getReference("robots");
+        reference = firebaseDatabase.getReference("fumigaciones");
         //Para que se mantenga sincronizado offline
         reference.keepSynced(true);
         reference.addValueEventListener(robotValueEventListener);
@@ -55,7 +55,7 @@ public class RobotHistorialActivity extends AppCompatActivity {
         textBateria = findViewById(R.id.textBateria);
         infoBateria = findViewById(R.id.infoBateria);
         btnIniciarFumigacion = findViewById(R.id.btnIniciarFumigacion);
-        btnIniciarFumigacion.setOnClickListener(btnIniciarFumigacionListener);
+        btnIniciarFumigacion.setOnClickListener(btnIniciarFumigacionListener);*/
     }
 
     private View.OnClickListener btnIniciarFumigacionListener = new View.OnClickListener() {

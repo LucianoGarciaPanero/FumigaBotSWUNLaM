@@ -4,6 +4,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,6 +32,7 @@ public class RobotHomeActivity extends AppCompatActivity {
     private TextView textBateria;
     private TextView infoBateria;
     private Button btnIniciarFumigacion;
+    private Button btnVerHistorialFumigaciones;
     private Robot robot;
     private AlertDialog.Builder builder;
     private AlertDialog alertDialog;
@@ -60,12 +62,15 @@ public class RobotHomeActivity extends AppCompatActivity {
         infoBateria = findViewById(R.id.infoBateria);
         btnIniciarFumigacion = findViewById(R.id.btnIniciarFumigacion);
         btnIniciarFumigacion.setOnClickListener(btnIniciarFumigacionListener);
+        btnVerHistorialFumigaciones = findViewById(R.id.btnVerHistorialFumigaciones);
+        btnVerHistorialFumigaciones.setOnClickListener(btnVerHistorialFumigacionesListener);
     }
 
-    private View.OnClickListener btnIniciarFumigacionListener = new View.OnClickListener() {
-        public void onClick(View v) {
-            inicializarAlertDialog();
-        }
+    private View.OnClickListener btnIniciarFumigacionListener = v -> inicializarAlertDialog();
+
+    private View.OnClickListener btnVerHistorialFumigacionesListener = v -> {
+        Intent i = new Intent(getApplicationContext(), RobotHistorialActivity.class);
+        startActivity(i);
     };
 
     public void inicializarAlertDialog(){

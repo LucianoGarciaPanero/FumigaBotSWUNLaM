@@ -21,14 +21,27 @@
 
     <Button
         android:id="@+id/btnIniciarFumigacion"
-        android:layout_width="151dp"
-        android:layout_height="59dp"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="211dp"
+        android:layout_height="53dp"
         android:text="fumigar"
         android:theme="@style/botonStyle"
-        style="@style/Widget.AppCompat.Button.Colored"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.541" />
+
+    <Button
+        android:id="@+id/btnVerHistorialFumigaciones"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="211dp"
+        android:layout_height="53dp"
+        android:background="@color/colorPrimaryDark"
+        android:text="Historial de Fumigaciones"
+        android:theme="@style/botonStyle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.696" />
