@@ -1,16 +1,21 @@
 package com.example.fumigabot;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
 import com.google.firebase.database.DataSnapshot;
@@ -19,21 +24,18 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RobotHistorialActivity extends AppCompatActivity {
 
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference reference;
-    private TextView textActividadRobot;
-    private TextView textBateria;
-    private TextView infoBateria;
-    private Button btnIniciarFumigacion;
     private Robot robot;
-    private AlertDialog.Builder builder;
-    private AlertDialog alertDialog;
-    private String mensajeInfoBateria;
-    private final int BATERIA_NIVEL_ALTO = 40;
-    private final int BATERIA_NIVEL_MODERADO = 15;
-    private final int BATERIA_NIVEL_BAJO = 5;
+    private int robotId;
+    private ArrayList<Fumigacion> listaFumigaciones = new ArrayList<>();
+    private Fumigacion fumigacion;
+    private TableLayout tablaHistorial;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,135 +43,33 @@ public class RobotHistorialActivity extends AppCompatActivity {
         getSupportActionBar().hide();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_robot_historial);
-/*
+
+        robotId = getIntent().getExtras().getInt("robotId");
+
         //Instancia y referencia de la BD en Firebase
         firebaseDatabase = MyFirebase.getInstance();
-        reference = firebaseDatabase.getReference("fumigaciones");
+        reference = firebaseDatabase.getReference("fumigaciones/" + robotId);
         //Para que se mantenga sincronizado offline
         reference.keepSynced(true);
-        reference.addValueEventListener(robotValueEventListener);
+        reference.addValueEventListener(robotFumigacionesEventListener);
 
-        robot = (Robot)getIntent().getSerializableExtra("RobotVinculado");
-
-        textActividadRobot = findViewById(R.id.textActividadRobot);
-        textBateria = findViewById(R.id.textBateria);
-        infoBateria = findViewById(R.id.infoBateria);
-        btnIniciarFumigacion = findViewById(R.id.btnIniciarFumigacion);
-        btnIniciarFumigacion.setOnClickListener(btnIniciarFumigacionListener);*/
+        tablaHistorial = findViewById(R.id.tablaHistorial);
     }
 
-    private View.OnClickListener btnIniciarFumigacionListener = new View.OnClickListener() {
-        public void onClick(View v) {
-            inicializarAlertDialog();
-        }
-    };
-
-    public void inicializarAlertDialog(){
-        builder = new AlertDialog.Builder(this, R.style.alertDialogStyle);
-
-        String titleAlertDialog;
-        if(!robot.isFumigando())
-            titleAlertDialog = "iniciar una ";
-        else
-            titleAlertDialog = "finalizar la ";
-        builder.setMessage("¿Seguro querés " + titleAlertDialog + "fumigación?");
-
-        builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                if(!robot.isEncendido()) {
-                    builder.setMessage("El dispositivo se encuentra apagado");
-                    return;
-                }
-                else {
-                    if (!robot.isFumigando()) {
-                        robot.setFumigando(true);
-                        //updateRobot(robot.getRobotId(), true);
-                    } else
-                        robot.setFumigando(false);
-
-                    updateRobot(robot);
-                }
-                determinarEstadoRobot(robot);
-            }
-        });
-
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User cancelled the dialog
-            }
-        });
-
-        alertDialog = builder.create();
-        alertDialog.show();
-    }
-
-    public void determinarEstadoRobot(Robot robot){
-        String estado;
-        String porcentajeBateria;
-        boolean status = false;
-
-
-        if(robot.isEncendido()){
-            status = verificarBateria(robot.getBateria());
-            porcentajeBateria = "Batería: " + robot.getBateria() + "%"; //\n\n\nENCENDIDO\n\n";
-            if(robot.isFumigando()) {
-                estado = "FUMIGANDO...";
-                btnIniciarFumigacion.setText("DETENER FUMIGACIÓN");
-            }
-            else {
-                estado = "ESPERANDO ÓRDENES...";
-                btnIniciarFumigacion.setText("FUMIGAR");
-            }
-        }
-        else {
-            porcentajeBateria = "APAGADO\n\n\n";
-            mensajeInfoBateria = "";
-            infoBateria.setBackgroundResource(R.color.activityBackground);
-            estado = "Encender el dispositivo para comenzar";
-            btnIniciarFumigacion.setText("FUMIGAR");
-        }
-
-        infoBateria.setText(mensajeInfoBateria);
-        textBateria.setText(porcentajeBateria);
-        textActividadRobot.setText(estado);
-        btnIniciarFumigacion.setEnabled(status);
-    }
-
-    private boolean verificarBateria(int bateria) {
-        if(bateria >= BATERIA_NIVEL_ALTO) {
-            mensajeInfoBateria = "";
-            infoBateria.setBackgroundResource(R.color.activityBackground);
-            return true;
-        }
-        else if(bateria >= BATERIA_NIVEL_MODERADO) {
-            //Sugerencia
-            mensajeInfoBateria = "Batería moderada: será necesario recargar pronto.";
-            infoBateria.setBackgroundResource(R.drawable.recuadro_sugerencia);
-            return true;
-        }
-        else if(bateria >= BATERIA_NIVEL_BAJO) {
-            //Advertencia
-            mensajeInfoBateria = "Batería baja: se recomienda recargar la batería.";
-            infoBateria.setBackgroundResource(R.drawable.recuadro_advertencia);
-            return true;
-        }
-        else {// if(bateria <5) {
-            //Alerta
-            mensajeInfoBateria = "Batería muy baja: el dispositivo se apagará pronto.";
-            infoBateria.setBackgroundResource(R.drawable.recuadro_alerta);
-            return false;
-        }
-    }
-
-    private ValueEventListener robotValueEventListener = new ValueEventListener() {
+    private ValueEventListener robotFumigacionesEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
             // This method is called once with the initial value and again
             // whenever data at this location is updated.
 
-            robot = dataSnapshot.child(robot.getRobotId()+"").getValue(Robot.class);
-            determinarEstadoRobot(robot);
-            return;
+            //Buscamos las fumigaciones en Firebase
+            listaFumigaciones.clear(); //Limpiamos todas las anteriores
+            for(DataSnapshot item : dataSnapshot.getChildren()) {
+                fumigacion = item.getValue(Fumigacion.class);
+                listaFumigaciones.add(fumigacion);
+            }
+            agregarFilas(listaFumigaciones);
+
         }
 
         @Override
@@ -179,16 +79,43 @@ public class RobotHistorialActivity extends AppCompatActivity {
         }
     };
 
-    public void updateRobot(Robot robot) {
-        /*Map<String, Object> robotValues = robot.toMap();
+    public void agregarFilas(ArrayList<Fumigacion> listaFumigaciones){
+        tablaHistorial.removeAllViews(); //Limpiamos todas las filas anteriores
 
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put(robot.getRobotId() + "/", robotValues);
+        for(Fumigacion fumigacion : listaFumigaciones) {
+            agregarUnaFila(fumigacion, listaFumigaciones.indexOf(fumigacion));
+        }
+    }
 
-        reference.updateChildren(childUpdates);*/
+    public void agregarUnaFila(Fumigacion fumigacion, int idFumigacion){
 
-        //Desde la app solamente deberíamos poder modificar si está fumigando o no
-        //El día de mañana podemos mandarle la orden de apagar si queremos
-        reference.child(robot.getRobotId()+"").child("fumigando").setValue(robot.isFumigando());
+        //Crea nueva fila
+        TableRow nuevaFila = new TableRow(this);
+        nuevaFila.setId(idFumigacion); //Inchequeable esto del id
+        nuevaFila.setBackgroundColor(Color.GRAY);
+        nuevaFila.setLayoutParams(new TableRow.LayoutParams(
+                TableRow.LayoutParams.MATCH_PARENT,
+                TableRow.LayoutParams.WRAP_CONTENT));
+
+        //Columna 1
+        TextView labelTimestampInicio = new TextView(this);
+        labelTimestampInicio.setId(idFumigacion + 1); //Inchequeable esto del id
+        labelTimestampInicio.setText(Long.toString(fumigacion.getTimestampInicio()));
+        labelTimestampInicio.setTextColor(Color.WHITE);
+        labelTimestampInicio.setPadding(5, 5, 5, 5);
+        nuevaFila.addView(labelTimestampInicio);
+
+        //Columna 2
+        TextView labelTimestampFin = new TextView(this);
+        labelTimestampFin.setId(idFumigacion + 2); //Inchequeable esto del id
+        labelTimestampFin.setText(Long.toString(fumigacion.getTimestampFin()));
+        labelTimestampFin.setTextColor(Color.WHITE);
+        labelTimestampFin.setPadding(5, 5, 5, 5);
+        nuevaFila.addView(labelTimestampFin);
+
+        //Agrega fila
+        tablaHistorial.addView(nuevaFila, new TableLayout.LayoutParams(
+                TableLayout.LayoutParams.MATCH_PARENT,
+                TableLayout.LayoutParams.WRAP_CONTENT));
     }
 }

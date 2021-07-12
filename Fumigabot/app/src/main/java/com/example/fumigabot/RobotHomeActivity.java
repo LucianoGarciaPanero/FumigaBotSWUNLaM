@@ -70,6 +70,7 @@ public class RobotHomeActivity extends AppCompatActivity {
 
     private View.OnClickListener btnVerHistorialFumigacionesListener = v -> {
         Intent i = new Intent(getApplicationContext(), RobotHistorialActivity.class);
+        i.putExtra("robotId", robot.getRobotId());
         startActivity(i);
     };
 
@@ -176,7 +177,7 @@ public class RobotHomeActivity extends AppCompatActivity {
             // This method is called once with the initial value and again
             // whenever data at this location is updated.
 
-            robot = dataSnapshot.child(robot.getRobotId()+"").getValue(Robot.class);
+            robot = dataSnapshot.child(robot.getRobotId() + "").getValue(Robot.class);
             determinarEstadoRobot(robot);
             return;
         }
@@ -198,6 +199,6 @@ public class RobotHomeActivity extends AppCompatActivity {
 
         //Desde la app solamente deberíamos poder modificar si está fumigando o no
         //El día de mañana podemos mandarle la orden de apagar si queremos
-        reference.child(robot.getRobotId()+"").child("fumigando").setValue(robot.isFumigando());
+        reference.child(robot.getRobotId() + "").child("fumigando").setValue(robot.isFumigando());
     }
 }
