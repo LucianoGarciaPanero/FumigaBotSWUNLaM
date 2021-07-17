@@ -1,37 +1,32 @@
 package com.example.fumigabot;
 
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
-import com.example.fumigabot.firebase.Robot;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.Date;
 
 public class RobotHistorialActivity extends AppCompatActivity {
 
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference reference;
-    private Robot robot;
     private int robotId;
     private ArrayList<Fumigacion> listaFumigaciones = new ArrayList<>();
     private Fumigacion fumigacion;
@@ -44,6 +39,7 @@ public class RobotHistorialActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_robot_historial);
 
+        //Obtiene el ID del robot, único dato necesario para conocer sus historiales
         robotId = getIntent().getExtras().getInt("robotId");
 
         //Instancia y referencia de la BD en Firebase
@@ -51,25 +47,31 @@ public class RobotHistorialActivity extends AppCompatActivity {
         reference = firebaseDatabase.getReference("fumigaciones/" + robotId);
         //Para que se mantenga sincronizado offline
         reference.keepSynced(true);
-        reference.addValueEventListener(robotFumigacionesEventListener);
+        reference.addValueEventListener(fumigacionesEventListener);
 
         tablaHistorial = findViewById(R.id.tablaHistorial);
     }
 
-    private ValueEventListener robotFumigacionesEventListener = new ValueEventListener() {
+    private ValueEventListener fumigacionesEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
             // This method is called once with the initial value and again
             // whenever data at this location is updated.
 
-            //Buscamos las fumigaciones en Firebase
-            listaFumigaciones.clear(); //Limpiamos todas las anteriores
+            // Limpiamos todas las fumigaciones anteriores
+            // ya que si se agrega o modifica una, va a cargar repetidas
+            listaFumigaciones.clear();
+
+            // Buscamos las fumigaciones en Firebase
             for(DataSnapshot item : dataSnapshot.getChildren()) {
                 fumigacion = item.getValue(Fumigacion.class);
+                fumigacion.setFumigacionId(item.getKey());
                 listaFumigaciones.add(fumigacion);
             }
-            agregarFilas(listaFumigaciones);
 
+            // Ordena la lista ascendentemente según timestampInicio
+            Collections.sort(listaFumigaciones);
+            generarTablaFumigaciones(listaFumigaciones);
         }
 
         @Override
@@ -79,38 +81,63 @@ public class RobotHistorialActivity extends AppCompatActivity {
         }
     };
 
-    public void agregarFilas(ArrayList<Fumigacion> listaFumigaciones){
-        tablaHistorial.removeAllViews(); //Limpiamos todas las filas anteriores
+    public void generarTablaFumigaciones(ArrayList<Fumigacion> listaFumigaciones){
+        // Limpiamos todas las filas views anteriores
+        // ya que si no, se van a agregar repetidas
+        tablaHistorial.removeAllViews();
 
-        for(Fumigacion fumigacion : listaFumigaciones) {
-            agregarUnaFila(fumigacion, listaFumigaciones.indexOf(fumigacion));
-        }
+        agregarHeader();
+        for(Fumigacion fumigacion : listaFumigaciones)
+            agregarFila(fumigacion);
     }
 
-    public void agregarUnaFila(Fumigacion fumigacion, int idFumigacion){
+    public void agregarHeader(){
+        //Crea nueva fila
+        TableRow filaTitulo = new TableRow(this);
+        filaTitulo.setBackgroundColor(Color.BLACK);
+        filaTitulo.setLayoutParams(new TableRow.LayoutParams(
+                TableRow.LayoutParams.MATCH_PARENT,
+                TableRow.LayoutParams.WRAP_CONTENT));
+
+        TextView labelHeader = new TextView(this);
+        labelHeader.setText("HISTORIAL DE FUMIGACIONES");
+        labelHeader.setTextColor(Color.WHITE);
+        labelHeader.setPadding(1, 1, 1, 1);
+        filaTitulo.addView(labelHeader);
+
+        tablaHistorial.addView(filaTitulo, new TableLayout.LayoutParams(
+                TableLayout.LayoutParams.MATCH_PARENT,
+                TableLayout.LayoutParams.WRAP_CONTENT));
+    }
+
+    public void agregarFila(Fumigacion fumigacion){
 
         //Crea nueva fila
         TableRow nuevaFila = new TableRow(this);
-        nuevaFila.setId(idFumigacion); //Inchequeable esto del id
         nuevaFila.setBackgroundColor(Color.GRAY);
         nuevaFila.setLayoutParams(new TableRow.LayoutParams(
                 TableRow.LayoutParams.MATCH_PARENT,
                 TableRow.LayoutParams.WRAP_CONTENT));
 
+        // Formatea los timestamps a mostrar
+        SimpleDateFormat formateador = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        Date fechaHoraInicio = new Date(Long.parseLong(fumigacion.getTimestampInicio()));
+        Date fechaHoraFin = new Date(Long.parseLong(fumigacion.getTimestampFin()));
+        String fechaHoraInicioFormateada = formateador.format(fechaHoraInicio);
+        String fechaHoraFinFormateada = formateador.format(fechaHoraFin);
+
         //Columna 1
         TextView labelTimestampInicio = new TextView(this);
-        labelTimestampInicio.setId(idFumigacion + 1); //Inchequeable esto del id
-        labelTimestampInicio.setText(Long.toString(fumigacion.getTimestampInicio()));
+        labelTimestampInicio.setText(fechaHoraInicioFormateada);
         labelTimestampInicio.setTextColor(Color.WHITE);
-        labelTimestampInicio.setPadding(5, 5, 5, 5);
+        labelTimestampInicio.setPadding(1, 1, 1, 1);
         nuevaFila.addView(labelTimestampInicio);
 
         //Columna 2
         TextView labelTimestampFin = new TextView(this);
-        labelTimestampFin.setId(idFumigacion + 2); //Inchequeable esto del id
-        labelTimestampFin.setText(Long.toString(fumigacion.getTimestampFin()));
+        labelTimestampFin.setText(fechaHoraFinFormateada);
         labelTimestampFin.setTextColor(Color.WHITE);
-        labelTimestampFin.setPadding(5, 5, 5, 5);
+        labelTimestampFin.setPadding(1, 1, 1, 1);
         nuevaFila.addView(labelTimestampFin);
 
         //Agrega fila
