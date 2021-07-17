@@ -69,7 +69,7 @@ public class RobotHistorialActivity extends AppCompatActivity {
                 listaFumigaciones.add(fumigacion);
             }
 
-            // Ordena la lista ascendentemente según timestampInicio
+            // Ordena la lista descendentemente según timestampInicio
             Collections.sort(listaFumigaciones);
             generarTablaFumigaciones(listaFumigaciones);
         }

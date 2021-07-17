@@ -30,10 +30,10 @@ public class Fumigacion implements Comparable {
 
     public void setTimestampFin (String timestampFin) { this.timestampFin = timestampFin; }
 
-    // Ordena ascendentementte según timestampInicio
+    // Ordena descendentemente según timestampInicio
     @Override
     public int compareTo(Object o) {
         String timestampInicioCmp = ((Fumigacion) o).getTimestampInicio();
-        return this.timestampInicio.compareTo(timestampInicioCmp);
+        return timestampInicioCmp.compareTo(this.timestampInicio);
     }
 }
