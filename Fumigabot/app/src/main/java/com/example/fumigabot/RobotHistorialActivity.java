@@ -82,63 +82,61 @@ public class RobotHistorialActivity extends AppCompatActivity {
     };
 
     public void generarTablaFumigaciones(ArrayList<Fumigacion> listaFumigaciones){
-        // Limpiamos todas las filas views anteriores
+        // Limpiamos todas las filas de fumigaciones anteriores
         // ya que si no, se van a agregar repetidas
-        tablaHistorial.removeAllViews();
+        // si hay más de dos childs es porque hay fumigaciones cargadas
+        if(tablaHistorial.getChildCount() > 2)
+            tablaHistorial.removeViews(2, listaFumigaciones.size());
 
-        agregarHeader();
         for(Fumigacion fumigacion : listaFumigaciones)
             agregarFila(fumigacion);
-    }
-
-    public void agregarHeader(){
-        //Crea nueva fila
-        TableRow filaTitulo = new TableRow(this);
-        filaTitulo.setBackgroundColor(Color.BLACK);
-        filaTitulo.setLayoutParams(new TableRow.LayoutParams(
-                TableRow.LayoutParams.MATCH_PARENT,
-                TableRow.LayoutParams.WRAP_CONTENT));
-
-        TextView labelHeader = new TextView(this);
-        labelHeader.setText("HISTORIAL DE FUMIGACIONES");
-        labelHeader.setTextColor(Color.WHITE);
-        labelHeader.setPadding(1, 1, 1, 1);
-        filaTitulo.addView(labelHeader);
-
-        tablaHistorial.addView(filaTitulo, new TableLayout.LayoutParams(
-                TableLayout.LayoutParams.MATCH_PARENT,
-                TableLayout.LayoutParams.WRAP_CONTENT));
     }
 
     public void agregarFila(Fumigacion fumigacion){
 
         //Crea nueva fila
         TableRow nuevaFila = new TableRow(this);
-        nuevaFila.setBackgroundColor(Color.GRAY);
+        nuevaFila.setBackgroundColor(Color.parseColor("#2F3C7E"));
         nuevaFila.setLayoutParams(new TableRow.LayoutParams(
                 TableRow.LayoutParams.MATCH_PARENT,
                 TableRow.LayoutParams.WRAP_CONTENT));
 
+        // Columna Id
+        TextView labelFumigacionId = new TextView(this);
+        labelFumigacionId.setText("#" + fumigacion.getFumigacionId().charAt(1));
+        labelFumigacionId.setTextColor(Color.parseColor("#FBEAEB"));
+        nuevaFila.addView(labelFumigacionId);
+
         // Formatea los timestamps a mostrar
-        SimpleDateFormat formateador = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        SimpleDateFormat formateador = new SimpleDateFormat("dd-MM-yyyy HH:mm");
         Date fechaHoraInicio = new Date(Long.parseLong(fumigacion.getTimestampInicio()));
         Date fechaHoraFin = new Date(Long.parseLong(fumigacion.getTimestampFin()));
         String fechaHoraInicioFormateada = formateador.format(fechaHoraInicio);
         String fechaHoraFinFormateada = formateador.format(fechaHoraFin);
 
-        //Columna 1
+        // Columna fechaHoraInicio
         TextView labelTimestampInicio = new TextView(this);
         labelTimestampInicio.setText(fechaHoraInicioFormateada);
-        labelTimestampInicio.setTextColor(Color.WHITE);
-        labelTimestampInicio.setPadding(1, 1, 1, 1);
+        labelTimestampInicio.setTextColor(Color.parseColor("#FBEAEB"));
         nuevaFila.addView(labelTimestampInicio);
 
-        //Columna 2
+        // Columna fechaHoraFin
         TextView labelTimestampFin = new TextView(this);
         labelTimestampFin.setText(fechaHoraFinFormateada);
-        labelTimestampFin.setTextColor(Color.WHITE);
-        labelTimestampFin.setPadding(1, 1, 1, 1);
+        labelTimestampFin.setTextColor(Color.parseColor("#FBEAEB"));
         nuevaFila.addView(labelTimestampFin);
+
+        // Calcula duración de la fumigación en minutos y segundos
+        long diferenciaTiempos = fechaHoraFin.getTime() - fechaHoraInicio.getTime();
+        int segundos = (int) diferenciaTiempos / 1000;
+        int minutos = (segundos % 3600) / 60;
+        segundos = (segundos % 3600) % 60;
+
+        // Columna Duración
+        TextView labelDuracion = new TextView(this);
+        labelDuracion.setText(minutos + "m " + segundos + "s");
+        labelDuracion.setTextColor(Color.parseColor("#FBEAEB"));
+        nuevaFila.addView(labelDuracion);
 
         //Agrega fila
         tablaHistorial.addView(nuevaFila, new TableLayout.LayoutParams(

@@ -9,9 +9,49 @@
 
     <TableLayout
         android:id="@+id/tablaHistorial"
-        android:layout_width="409dp"
-        android:layout_height="729dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="1dp">
+        tools:layout_editor_absoluteY="1dp"
+        android:shrinkColumns="*"
+        android:stretchColumns="*">
+
+        <TableRow android:id="@+id/tablaHistorialTitulo">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="3dip"
+                android:layout_span="4"
+                android:text="HISTORIAL DE FUMIGACIONES"
+                android:gravity="center_horizontal"
+                android:textColor="@color/colorPrimaryDark"
+                android:background="@color/colorPrimary"/>
+        </TableRow>
+        <TableRow android:id="@+id/tablaHistorialColumnas">
+            <TextView
+                android:layout_column="0"
+                android:padding="3dip"
+                android:text="ID"
+                android:textColor="@color/colorPrimaryDark"
+                android:background="@color/colorPrimary" />
+            <TextView
+                android:layout_column="1"
+                android:padding="3dip"
+                android:text="Inicio"
+                android:textColor="@color/colorPrimaryDark"
+                android:background="@color/colorPrimary" />
+            <TextView
+                android:layout_column="2"
+                android:padding="3dip"
+                android:text="Fin"
+                android:textColor="@color/colorPrimaryDark"
+                android:background="@color/colorPrimary" />
+            <TextView
+                android:layout_column="3"
+                android:padding="3dip"
+                android:text="Duración"
+                android:textColor="@color/colorPrimaryDark"
+                android:background="@color/colorPrimary" />
+        </TableRow>
     </TableLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
