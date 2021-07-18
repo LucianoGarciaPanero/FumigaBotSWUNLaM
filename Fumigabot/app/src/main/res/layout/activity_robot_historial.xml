@@ -14,13 +14,18 @@
         tools:layout_editor_absoluteX="1dp"
         tools:layout_editor_absoluteY="1dp"
         android:shrinkColumns="*"
-        android:stretchColumns="*">
+        android:stretchColumns="*"
+
+        android:orientation="horizontal"
+        android:paddingBottom="10dp"
+
+        >
 
         <TableRow android:id="@+id/tablaHistorialTitulo">
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="3dip"
+                android:padding="30dp"
                 android:layout_span="4"
                 android:text="HISTORIAL DE FUMIGACIONES"
                 android:gravity="center_horizontal"
@@ -32,24 +37,28 @@
                 android:layout_column="0"
                 android:padding="3dip"
                 android:text="ID"
+                android:textAlignment="center"
                 android:textColor="@color/colorPrimaryDark"
                 android:background="@color/colorPrimary" />
             <TextView
                 android:layout_column="1"
                 android:padding="3dip"
                 android:text="Inicio"
+                android:textAlignment="center"
                 android:textColor="@color/colorPrimaryDark"
                 android:background="@color/colorPrimary" />
             <TextView
                 android:layout_column="2"
                 android:padding="3dip"
                 android:text="Fin"
+                android:textAlignment="center"
                 android:textColor="@color/colorPrimaryDark"
                 android:background="@color/colorPrimary" />
             <TextView
                 android:layout_column="3"
                 android:padding="3dip"
                 android:text="Duración"
+                android:textAlignment="center"
                 android:textColor="@color/colorPrimaryDark"
                 android:background="@color/colorPrimary" />
         </TableRow>

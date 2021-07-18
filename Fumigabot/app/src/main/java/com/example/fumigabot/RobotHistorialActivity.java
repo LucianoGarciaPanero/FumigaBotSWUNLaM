@@ -1,9 +1,11 @@
 package com.example.fumigabot;
 
 import android.content.pm.ActivityInfo;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -96,7 +98,7 @@ public class RobotHistorialActivity extends AppCompatActivity {
 
         //Crea nueva fila
         TableRow nuevaFila = new TableRow(this);
-        nuevaFila.setBackgroundColor(Color.parseColor("#2F3C7E"));
+        nuevaFila.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));//(Color.parseColor("#2F3C7E"));
         nuevaFila.setLayoutParams(new TableRow.LayoutParams(
                 TableRow.LayoutParams.MATCH_PARENT,
                 TableRow.LayoutParams.WRAP_CONTENT));
@@ -104,7 +106,9 @@ public class RobotHistorialActivity extends AppCompatActivity {
         // Columna Id
         TextView labelFumigacionId = new TextView(this);
         labelFumigacionId.setText("#" + fumigacion.getFumigacionId().charAt(1));
-        labelFumigacionId.setTextColor(Color.parseColor("#FBEAEB"));
+        labelFumigacionId.setTextColor(getResources().getColor(R.color.colorPrimary));//(Color.parseColor("#FBEAEB"));
+        labelFumigacionId.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+
         nuevaFila.addView(labelFumigacionId);
 
         // Formatea los timestamps a mostrar
@@ -117,30 +121,74 @@ public class RobotHistorialActivity extends AppCompatActivity {
         // Columna fechaHoraInicio
         TextView labelTimestampInicio = new TextView(this);
         labelTimestampInicio.setText(fechaHoraInicioFormateada);
-        labelTimestampInicio.setTextColor(Color.parseColor("#FBEAEB"));
+        labelTimestampInicio.setTextColor(getResources().getColor(R.color.colorPrimary));//(Color.parseColor("#FBEAEB"));
+        labelTimestampInicio.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+
         nuevaFila.addView(labelTimestampInicio);
 
         // Columna fechaHoraFin
         TextView labelTimestampFin = new TextView(this);
         labelTimestampFin.setText(fechaHoraFinFormateada);
-        labelTimestampFin.setTextColor(Color.parseColor("#FBEAEB"));
+        labelTimestampFin.setTextColor(getResources().getColor(R.color.colorPrimary));//(Color.parseColor("#FBEAEB"));
+        labelTimestampFin.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+
         nuevaFila.addView(labelTimestampFin);
 
         // Calcula duración de la fumigación en minutos y segundos
-        long diferenciaTiempos = fechaHoraFin.getTime() - fechaHoraInicio.getTime();
+        /*long diferenciaTiempos = fechaHoraFin.getTime() - fechaHoraInicio.getTime();
         int segundos = (int) diferenciaTiempos / 1000;
         int minutos = (segundos % 3600) / 60;
-        segundos = (segundos % 3600) % 60;
+        segundos = (segundos % 3600) % 60;*/
 
         // Columna Duración
         TextView labelDuracion = new TextView(this);
-        labelDuracion.setText(minutos + "m " + segundos + "s");
-        labelDuracion.setTextColor(Color.parseColor("#FBEAEB"));
+        //labelDuracion.setText(minutos + "m " + segundos + "s");
+        labelDuracion.setText(calcularDuracion(fechaHoraFin.getTime() - fechaHoraInicio.getTime()));
+        labelDuracion.setTextColor(getResources().getColor(R.color.colorPrimary));//(Color.parseColor("#FBEAEB"));
+        labelDuracion.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+
         nuevaFila.addView(labelDuracion);
+
+
+        //nuevaFila.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
         //Agrega fila
         tablaHistorial.addView(nuevaFila, new TableLayout.LayoutParams(
                 TableLayout.LayoutParams.MATCH_PARENT,
                 TableLayout.LayoutParams.WRAP_CONTENT));
+    }
+
+    public String calcularDuracion(long diferencia) {
+        long segundosMilis = 1000; //1000 ms = 1seg
+        long minutosMilis = segundosMilis * 60; //1m = 60seg
+        long horasMilis = minutosMilis * 60; //1h = 60m
+        //no creo que vaya a durar días, pero para probar:
+        long diasMilis = horasMilis * 24; //1d = 24h
+
+        //Ahora, calculamos el paso del tiempo real
+        long dias = diferencia / diasMilis;
+        diferencia %= diasMilis;
+
+        long horas = diferencia / horasMilis;
+        diferencia %= horasMilis;
+
+        long minutos = diferencia / minutosMilis;
+        diferencia &= minutosMilis;
+
+        long segundos = diferencia / segundosMilis;
+
+
+        String resultado = "";
+
+        if(dias >= 1){
+            resultado = dias + "d ";
+        }
+        else if(horas >= 1){
+            resultado += horas + "h ";
+        }
+
+        resultado += minutos + "m " + segundos + "s";
+
+        return resultado;
     }
 }

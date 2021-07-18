@@ -4,6 +4,7 @@
     <color name="colorPrimaryDark">#2F3C7E</color>
     <color name="colorAccent">#D81B60</color>
     <color name="colorAccentTransparency">#9ED81B60</color>
+    <color name="colorAccentFilas">#E6D0D1</color>
 
     <color name="activityBackground">@color/colorPrimary</color>
     <color name="disabledControl">#9B9997</color>
