@@ -7,36 +7,41 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.DatabaseError;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class RobotHomeActivity extends AppCompatActivity {
 
     private FirebaseDatabase firebaseDatabase;
-    private DatabaseReference reference;
+    private DatabaseReference referenceRobot;
+    private DatabaseReference referenceFumigacion;
     private TextView textActividadRobot;
     private TextView textBateria;
     private TextView infoBateria;
     private Button btnIniciarFumigacion;
     private Button btnVerHistorialFumigaciones;
     private Robot robot;
+    private Fumigacion fumigacion;
     private AlertDialog.Builder builder;
     private AlertDialog alertDialog;
     private String mensajeInfoBateria;
+    private Chronometer cronometro;
+
     private final int BATERIA_NIVEL_ALTO = 40;
     private final int BATERIA_NIVEL_MODERADO = 15;
     private final int BATERIA_NIVEL_BAJO = 5;
@@ -50,12 +55,17 @@ public class RobotHomeActivity extends AppCompatActivity {
 
         //Instancia y referencia de la BD en Firebase
         firebaseDatabase = MyFirebase.getInstance();
-        reference = firebaseDatabase.getReference("robots");
+        referenceRobot = firebaseDatabase.getReference("robots");
         //Para que se mantenga sincronizado offline
-        reference.keepSynced(true);
-        reference.addValueEventListener(robotValueEventListener);
+        referenceRobot.keepSynced(true);
+        referenceRobot.addValueEventListener(robotValueEventListener);
 
         robot = (Robot)getIntent().getSerializableExtra("RobotVinculado");
+
+        //referencia de las fumigaciones para empezar a guardarlas
+        referenceFumigacion = firebaseDatabase.getReference("fumigaciones/" + robot.getRobotId());
+        //Para que se mantenga sincronizado offline
+        referenceFumigacion.keepSynced(true);
 
         textActividadRobot = findViewById(R.id.textActividadRobot);
         textBateria = findViewById(R.id.textBateria);
@@ -64,6 +74,7 @@ public class RobotHomeActivity extends AppCompatActivity {
         btnIniciarFumigacion.setOnClickListener(btnIniciarFumigacionListener);
         btnVerHistorialFumigaciones = findViewById(R.id.btnVerHistorialFumigaciones);
         btnVerHistorialFumigaciones.setOnClickListener(btnVerHistorialFumigacionesListener);
+        cronometro = findViewById(R.id.Cronometro);
     }
 
     private View.OnClickListener btnIniciarFumigacionListener = v -> inicializarAlertDialog();
@@ -93,9 +104,11 @@ public class RobotHomeActivity extends AppCompatActivity {
                 else {
                     if (!robot.isFumigando()) {
                         robot.setFumigando(true);
-                        //updateRobot(robot.getRobotId(), true);
-                    } else
+                        iniciarFumigacion();
+                    } else {
                         robot.setFumigando(false);
+                        detenerFumigacion();
+                    }
 
                     updateRobot(robot);
                 }
@@ -117,7 +130,7 @@ public class RobotHomeActivity extends AppCompatActivity {
         String estado;
         String porcentajeBateria;
         boolean status = false;
-
+        int fumigando = View.INVISIBLE;
 
         if(robot.isEncendido()){
             status = verificarBateria(robot.getBateria());
@@ -125,10 +138,12 @@ public class RobotHomeActivity extends AppCompatActivity {
             if(robot.isFumigando()) {
                 estado = "FUMIGANDO...";
                 btnIniciarFumigacion.setText("DETENER FUMIGACIÓN");
+                fumigando = View.VISIBLE;
             }
             else {
                 estado = "ESPERANDO ÓRDENES...";
                 btnIniciarFumigacion.setText("FUMIGAR");
+                fumigando = View.INVISIBLE;
             }
         }
         else {
@@ -143,6 +158,7 @@ public class RobotHomeActivity extends AppCompatActivity {
         textBateria.setText(porcentajeBateria);
         textActividadRobot.setText(estado);
         btnIniciarFumigacion.setEnabled(status);
+        cronometro.setVisibility(fumigando);
     }
 
     private boolean verificarBateria(int bateria) {
@@ -174,9 +190,6 @@ public class RobotHomeActivity extends AppCompatActivity {
     private ValueEventListener robotValueEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
-            // This method is called once with the initial value and again
-            // whenever data at this location is updated.
-
             robot = dataSnapshot.child(robot.getRobotId() + "").getValue(Robot.class);
             determinarEstadoRobot(robot);
             return;
@@ -189,6 +202,22 @@ public class RobotHomeActivity extends AppCompatActivity {
         }
     };
 
+    public void iniciarFumigacion(){
+        fumigacion = new Fumigacion();
+        cronometro.setBase(SystemClock.elapsedRealtime());
+        //cronometro.setBase(System.currentTimeMillis());//Clock.elapsedRealtime());
+        fumigacion.setTimestampInicio(Long.toString(System.currentTimeMillis())); //Long.toString(cronometro.getBase()));
+        cronometro.start();
+    }
+
+    public void detenerFumigacion(){
+        cronometro.stop();
+        //long tiempoTranscurrido = SystemClock.elapsedRealtime() - cronometro.getBase();
+        fumigacion.setTimestampFin(Long.toString(System.currentTimeMillis()));//(Long.toString(tiempoTranscurrido));
+
+        updateFumigacion(fumigacion);
+    }
+
     public void updateRobot(Robot robot) {
         /*Map<String, Object> robotValues = robot.toMap();
 
@@ -199,6 +228,23 @@ public class RobotHomeActivity extends AppCompatActivity {
 
         //Desde la app solamente deberíamos poder modificar si está fumigando o no
         //El día de mañana podemos mandarle la orden de apagar si queremos
-        reference.child(robot.getRobotId() + "").child("fumigando").setValue(robot.isFumigando());
+        referenceRobot.child(robot.getRobotId() + "").child("fumigando").setValue(robot.isFumigando());
+    }
+
+    public void updateFumigacion(Fumigacion fumigacion){
+        //Necesita hacer una task porque primero consulta la cantidad y necesita esperar a que termine
+        Task<DataSnapshot> task = referenceFumigacion.get();
+
+        task.addOnCompleteListener(task1 -> {
+            int cant;
+
+            if (task1.isSuccessful()) {
+                DataSnapshot snapshot = task1.getResult();
+                cant = (int) snapshot.getChildrenCount();
+
+                fumigacion.setFumigacionId("f" + (cant + 1));
+                referenceFumigacion.child(fumigacion.getFumigacionId()).setValue(fumigacion.toMap());
+            }
+        });
     }
 }

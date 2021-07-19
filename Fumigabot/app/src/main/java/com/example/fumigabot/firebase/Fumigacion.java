@@ -1,6 +1,8 @@
 package com.example.fumigabot.firebase;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Fumigacion implements Comparable {
 
@@ -35,5 +37,12 @@ public class Fumigacion implements Comparable {
     public int compareTo(Object o) {
         String timestampInicioCmp = ((Fumigacion) o).getTimestampInicio();
         return timestampInicioCmp.compareTo(this.timestampInicio);
+    }
+
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("timestampFin", timestampFin);
+        hashMap.put("timestampInicio", timestampInicio);
+        return hashMap;
     }
 }
