@@ -191,8 +191,7 @@ public class RobotHomeActivity extends AppCompatActivity {
             infoBateria.setBackgroundResource(R.drawable.recuadro_problemas);
             return true;
         }
-        else
-        {
+        else {
             //Alerta
             mensajeInfoBateria = "Batería muy baja: el dispositivo se apagará pronto.";
             infoBateria.setBackgroundResource(R.drawable.recuadro_alerta);

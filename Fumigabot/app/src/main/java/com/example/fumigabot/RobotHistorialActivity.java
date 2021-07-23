@@ -96,7 +96,7 @@ public class RobotHistorialActivity extends AppCompatActivity {
         // ya que si no, se van a agregar repetidas
         // si hay más de dos childs es porque hay fumigaciones cargadas
         if (tablaHistorial.getChildCount() > 2)
-            tablaHistorial.removeAllViews(); //tablaHistorial.removeViews(2, listaFumigaciones.size());
+            tablaHistorial.removeViews(2, listaFumigaciones.size());
 
         for(Fumigacion fumigacion : listaFumigaciones)
             agregarFila(fumigacion);
@@ -195,5 +195,11 @@ public class RobotHistorialActivity extends AppCompatActivity {
         resultado += minutos + "m " + segundos + "s";
 
         return resultado;
+    }
+
+    @Override
+    protected void onDestroy() {
+        reference.removeEventListener(fumigacionesEventListener);
+        super.onDestroy();
     }
 }
