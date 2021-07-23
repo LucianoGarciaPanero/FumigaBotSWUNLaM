@@ -45,6 +45,7 @@ public class RobotHomeActivity extends AppCompatActivity {
     private final int BATERIA_NIVEL_ALTO = 40;
     private final int BATERIA_NIVEL_MODERADO = 15;
     private final int BATERIA_NIVEL_BAJO = 5;
+    private final int BATERIA_PROBLEMATICA = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,10 +132,16 @@ public class RobotHomeActivity extends AppCompatActivity {
         String porcentajeBateria;
         boolean status = false;
         int fumigando = View.INVISIBLE;
+        int bateria = robot.getBateria();
 
         if(robot.isEncendido()){
-            status = verificarBateria(robot.getBateria());
-            porcentajeBateria = "Batería: " + robot.getBateria() + "%"; //\n\n\nENCENDIDO\n\n";
+            status = verificarBateria(bateria);
+
+            if(bateria == -1)
+                porcentajeBateria = "Batería: con problemas"; //\n\n\nENCENDIDO\n\n";
+            else
+                porcentajeBateria = "Batería: " + bateria + "%"; //\n\n\nENCENDIDO\n\n";
+
             if(robot.isFumigando()) {
                 estado = "FUMIGANDO...";
                 btnIniciarFumigacion.setText("DETENER FUMIGACIÓN");
@@ -179,7 +186,13 @@ public class RobotHomeActivity extends AppCompatActivity {
             infoBateria.setBackgroundResource(R.drawable.recuadro_advertencia);
             return true;
         }
-        else {// if(bateria <5) {
+        else if(bateria == BATERIA_PROBLEMATICA) {
+            mensajeInfoBateria = "Advertencia: se recomienda reemplazar la batería.";
+            infoBateria.setBackgroundResource(R.drawable.recuadro_problemas);
+            return true;
+        }
+        else
+        {
             //Alerta
             mensajeInfoBateria = "Batería muy baja: el dispositivo se apagará pronto.";
             infoBateria.setBackgroundResource(R.drawable.recuadro_alerta);

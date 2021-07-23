@@ -13,6 +13,7 @@
     <color name="fondoAdvertencia">#FFB74D</color>
     //#EF5350
     <color name="fondoAlerta">#EF5350</color>
+    <color name="fondoAvisoBateria">#9575CD</color>
     <color name="bordeRecuadro">@color/colorPrimary</color>
 
 </resources>
