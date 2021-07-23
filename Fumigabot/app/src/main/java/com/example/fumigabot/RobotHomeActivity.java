@@ -219,16 +219,9 @@ public class RobotHomeActivity extends AppCompatActivity {
     }
 
     public void updateRobot(Robot robot) {
-        /*Map<String, Object> robotValues = robot.toMap();
-
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put(robot.getRobotId() + "/", robotValues);
-
-        reference.updateChildren(childUpdates);*/
-
-        //Desde la app solamente deberíamos poder modificar si está fumigando o no
-        //El día de mañana podemos mandarle la orden de apagar si queremos
-        referenceRobot.child(robot.getRobotId() + "").child("fumigando").setValue(robot.isFumigando());
+        referenceRobot.child(Integer.toString(robot.getRobotId()))
+                .child("fumigando")
+                .setValue(robot.isFumigando());
     }
 
     public void updateFumigacion(Fumigacion fumigacion){

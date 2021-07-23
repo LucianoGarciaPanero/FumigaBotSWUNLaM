@@ -31,6 +31,7 @@ public class RobotHistorialActivity extends AppCompatActivity {
     private ArrayList<Fumigacion> listaFumigaciones = new ArrayList<>();
     private Fumigacion fumigacion;
     private TableLayout tablaHistorial;
+    private TextView textSinFumigaciones;
 
     private final int SEGUNDOS_MILIS = 1000;
     private final int MINUTOS_MILIS = SEGUNDOS_MILIS * 60;
@@ -55,6 +56,7 @@ public class RobotHistorialActivity extends AppCompatActivity {
         reference.addValueEventListener(fumigacionesEventListener);
 
         tablaHistorial = findViewById(R.id.tablaHistorial);
+        textSinFumigaciones = findViewById(R.id.textSinFumigaciones); // View.INVISIBLE x default
     }
 
     private ValueEventListener fumigacionesEventListener = new ValueEventListener() {
@@ -71,9 +73,15 @@ public class RobotHistorialActivity extends AppCompatActivity {
                 listaFumigaciones.add(fumigacion);
             }
 
-            // Ordena la lista descendentemente según timestampInicio
-            Collections.sort(listaFumigaciones);
-            generarTablaFumigaciones(listaFumigaciones);
+            if(listaFumigaciones.size() > 0){
+                // Ordena la lista descendentemente según timestampInicio
+                Collections.sort(listaFumigaciones);
+                generarTablaFumigaciones(listaFumigaciones);
+            }
+            else {
+                tablaHistorial.getChildAt(1).setVisibility(View.INVISIBLE);
+                textSinFumigaciones.setVisibility(View.VISIBLE);
+            }
         }
 
         @Override
@@ -83,12 +91,12 @@ public class RobotHistorialActivity extends AppCompatActivity {
         }
     };
 
-    public void generarTablaFumigaciones(ArrayList<Fumigacion> listaFumigaciones){
+    public void generarTablaFumigaciones(ArrayList<Fumigacion> listaFumigaciones) {
         // Limpiamos todas las filas de fumigaciones anteriores
         // ya que si no, se van a agregar repetidas
         // si hay más de dos childs es porque hay fumigaciones cargadas
-        if(tablaHistorial.getChildCount() > 2)
-            tablaHistorial.removeAllViews();//removeViews(2, listaFumigaciones.size());
+        if (tablaHistorial.getChildCount() > 2)
+            tablaHistorial.removeAllViews(); //tablaHistorial.removeViews(2, listaFumigaciones.size());
 
         for(Fumigacion fumigacion : listaFumigaciones)
             agregarFila(fumigacion);

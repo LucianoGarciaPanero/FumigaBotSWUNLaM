@@ -11,6 +11,7 @@ public class Robot implements Serializable {
     private boolean fumigando;
     private boolean encendido;
     private int bateria;
+    private int nivelQuimico;
 
     public Robot(){
         // Default constructor required for calls to DataSnapshot.getValue(Robot.class)
@@ -44,7 +45,7 @@ public class Robot implements Serializable {
     }
 
     public void setEncendido(boolean encendido) {
-        this.encendido= encendido;
+        this.encendido = encendido;
     }
 
     public int getBateria() {
@@ -52,15 +53,21 @@ public class Robot implements Serializable {
     }
 
     public void setBateria(int bateria) {
-        this.bateria= bateria;
+        this.bateria = bateria;
+    }
+
+    public int getNivelQuimico() {
+        return nivelQuimico;
+    }
+
+    public void setNivelQuimico(int nivelQuimico) {
+        this.nivelQuimico = nivelQuimico;
     }
 
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("fumigando", fumigando);
-        hashMap.put("encendido", encendido);
-        hashMap.put("bateria", bateria);
         return hashMap;
     }
 }
