@@ -113,7 +113,7 @@ public class RobotHistorialActivity extends AppCompatActivity {
 
         // Columna Id
         TextView labelFumigacionId = new TextView(this);
-        labelFumigacionId.setText("#" + fumigacion.getFumigacionId().charAt(1));
+        labelFumigacionId.setText("#" + fumigacion.getFumigacionId().substring(1));
         labelFumigacionId.setTextColor(getResources().getColor(R.color.colorPrimary));
         labelFumigacionId.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
