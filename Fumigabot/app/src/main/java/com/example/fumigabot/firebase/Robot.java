@@ -17,11 +17,12 @@ public class Robot implements Serializable {
         // Default constructor required for calls to DataSnapshot.getValue(Robot.class)
     }
 
-    public Robot(int robotId, boolean fumigando, boolean encendido, int bateria){
+    public Robot(int robotId, boolean fumigando, boolean encendido, int bateria, int nivelQuimico) {
         this.robotId = robotId;
         this.fumigando = fumigando;
         this.encendido = encendido;
         this.bateria = bateria;
+        this.nivelQuimico = nivelQuimico;
     }
 
     public int getRobotId() {

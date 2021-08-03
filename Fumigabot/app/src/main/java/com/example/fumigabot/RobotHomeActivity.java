@@ -33,19 +33,24 @@ public class RobotHomeActivity extends AppCompatActivity {
     private TextView textActividadRobot;
     private TextView textBateria;
     private TextView infoBateria;
+    private TextView textNivelQuimico;
+    private TextView infoNivelQuimico;
+    private String mensajeInfoBateria;
+    private String mensajeInfoNivelQuimico;
     private Button btnIniciarFumigacion;
     private Button btnVerHistorialFumigaciones;
-    private Robot robot;
-    private Fumigacion fumigacion;
+    private Chronometer cronometro;
     private AlertDialog.Builder builder;
     private AlertDialog alertDialog;
-    private String mensajeInfoBateria;
-    private Chronometer cronometro;
-
+    private Robot robot;
+    private Fumigacion fumigacion;
     private final int BATERIA_NIVEL_ALTO = 40;
     private final int BATERIA_NIVEL_MODERADO = 15;
     private final int BATERIA_NIVEL_BAJO = 5;
     private final int BATERIA_PROBLEMATICA = -1;
+    private final int QUIMICO_NIVEL_ALTO = 40;
+    private final int QUIMICO_NIVEL_MODERADO = 20;
+    private final int QUIMICO_PROBLEMATICO = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,10 +76,14 @@ public class RobotHomeActivity extends AppCompatActivity {
         textActividadRobot = findViewById(R.id.textActividadRobot);
         textBateria = findViewById(R.id.textBateria);
         infoBateria = findViewById(R.id.infoBateria);
+        textNivelQuimico = findViewById(R.id.textNivelQuimico);
+        infoNivelQuimico = findViewById(R.id.infoNivelQuimico);
+
         btnIniciarFumigacion = findViewById(R.id.btnIniciarFumigacion);
         btnIniciarFumigacion.setOnClickListener(btnIniciarFumigacionListener);
         btnVerHistorialFumigaciones = findViewById(R.id.btnVerHistorialFumigaciones);
         btnVerHistorialFumigaciones.setOnClickListener(btnVerHistorialFumigacionesListener);
+
         cronometro = findViewById(R.id.Cronometro);
     }
 
@@ -86,7 +95,7 @@ public class RobotHomeActivity extends AppCompatActivity {
         startActivity(i);
     };
 
-    public void inicializarAlertDialog(){
+    public void inicializarAlertDialog() {
         builder = new AlertDialog.Builder(this, R.style.alertDialogStyle);
 
         String titleAlertDialog;
@@ -130,17 +139,26 @@ public class RobotHomeActivity extends AppCompatActivity {
     public void determinarEstadoRobot(Robot robot){
         String estado;
         String porcentajeBateria;
-        boolean status = false;
+        String porcentajeNivelQuimico = "";
+        boolean statusBateria = false;
+        boolean statusNivelQuimico = false;
         int fumigando = View.INVISIBLE;
         int bateria = robot.getBateria();
+        int nivelQuimico = robot.getNivelQuimico();
 
-        if(robot.isEncendido()){
-            status = verificarBateria(bateria);
+        if(robot.isEncendido()) {
+            statusBateria = verificarBateria(bateria);
+            statusNivelQuimico = verificarNivelQuimico(nivelQuimico);
 
             if(bateria == -1)
                 porcentajeBateria = "Batería: con problemas"; //\n\n\nENCENDIDO\n\n";
             else
                 porcentajeBateria = "Batería: " + bateria + "%"; //\n\n\nENCENDIDO\n\n";
+
+            if(nivelQuimico == -1)
+                porcentajeNivelQuimico = "Depósito de químico con problemas";
+            else
+                porcentajeNivelQuimico = "Nivel químico: " + nivelQuimico + "%";
 
             if(robot.isFumigando()) {
                 estado = "FUMIGANDO...";
@@ -156,15 +174,24 @@ public class RobotHomeActivity extends AppCompatActivity {
         else {
             porcentajeBateria = "APAGADO\n\n\n";
             mensajeInfoBateria = "";
+            mensajeInfoNivelQuimico = "";
             infoBateria.setBackgroundResource(R.color.activityBackground);
+            infoNivelQuimico.setBackgroundResource(R.color.activityBackground);
             estado = "Encender el dispositivo para comenzar";
             btnIniciarFumigacion.setText("FUMIGAR");
         }
 
         infoBateria.setText(mensajeInfoBateria);
         textBateria.setText(porcentajeBateria);
+        infoNivelQuimico.setText(mensajeInfoNivelQuimico);
+        textNivelQuimico.setText(porcentajeNivelQuimico);
         textActividadRobot.setText(estado);
-        btnIniciarFumigacion.setEnabled(status);
+
+        if(statusBateria && statusNivelQuimico)
+            btnIniciarFumigacion.setEnabled(true);
+        else
+            btnIniciarFumigacion.setEnabled(false);
+
         cronometro.setVisibility(fumigando);
     }
 
@@ -174,35 +201,56 @@ public class RobotHomeActivity extends AppCompatActivity {
             infoBateria.setBackgroundResource(R.color.activityBackground);
             return true;
         }
-        else if(bateria >= BATERIA_NIVEL_MODERADO) {
+        if(bateria >= BATERIA_NIVEL_MODERADO) {
             //Sugerencia
             mensajeInfoBateria = "Batería moderada: será necesario recargar pronto.";
             infoBateria.setBackgroundResource(R.drawable.recuadro_sugerencia);
             return true;
         }
-        else if(bateria >= BATERIA_NIVEL_BAJO) {
+        if(bateria >= BATERIA_NIVEL_BAJO) {
             //Advertencia
             mensajeInfoBateria = "Batería baja: se recomienda recargar la batería.";
             infoBateria.setBackgroundResource(R.drawable.recuadro_advertencia);
             return true;
         }
-        else if(bateria == BATERIA_PROBLEMATICA) {
-            mensajeInfoBateria = "Advertencia: se recomienda reemplazar la batería.";
+        if(bateria == BATERIA_PROBLEMATICA) {
+            mensajeInfoBateria = "Se recomienda reemplazar la batería.";
             infoBateria.setBackgroundResource(R.drawable.recuadro_problemas);
             return true;
         }
-        else {
-            //Alerta
-            mensajeInfoBateria = "Batería muy baja: el dispositivo se apagará pronto.";
-            infoBateria.setBackgroundResource(R.drawable.recuadro_alerta);
-            return false;
+        //Alerta
+        mensajeInfoBateria = "Batería muy baja: el dispositivo se apagará pronto.";
+        infoBateria.setBackgroundResource(R.drawable.recuadro_alerta);
+        return false;
+    }
+
+    private boolean verificarNivelQuimico(int nivelQuimico) {
+        if(nivelQuimico >= QUIMICO_NIVEL_ALTO) {
+            mensajeInfoNivelQuimico = "";
+            infoNivelQuimico.setBackgroundResource(R.color.activityBackground);
+            return true;
         }
+        if(nivelQuimico >= QUIMICO_NIVEL_MODERADO) {
+            //Sugerencia
+            mensajeInfoNivelQuimico = "Nivel de químico moderado: será necesario recargar pronto.";
+            infoNivelQuimico.setBackgroundResource(R.drawable.recuadro_advertencia);
+            return true;
+        }
+        if(nivelQuimico == QUIMICO_PROBLEMATICO) {
+            mensajeInfoNivelQuimico = "Se recomienda verificar el depósito del químico.";
+            infoNivelQuimico.setBackgroundResource(R.drawable.recuadro_problemas);
+            return true;
+        }
+        // Nivel de químico bajo
+        mensajeInfoNivelQuimico = "Nivel de químico bajo: es necesario recargar.";
+        infoNivelQuimico.setBackgroundResource(R.drawable.recuadro_alerta);
+        return false;
     }
 
     private ValueEventListener robotValueEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
-            robot = dataSnapshot.child(robot.getRobotId() + "").getValue(Robot.class);
+            robot = dataSnapshot.child(Integer.toString(robot.getRobotId())).getValue(Robot.class);
             determinarEstadoRobot(robot);
             return;
         }
@@ -232,8 +280,8 @@ public class RobotHomeActivity extends AppCompatActivity {
 
     public void updateRobot(Robot robot) {
         referenceRobot.child(Integer.toString(robot.getRobotId()))
-                .child("fumigando")
-                .setValue(robot.isFumigando());
+            .child("fumigando")
+            .setValue(robot.isFumigando());
     }
 
     public void updateFumigacion(Fumigacion fumigacion){
