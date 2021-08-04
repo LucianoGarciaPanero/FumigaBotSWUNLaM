@@ -20,6 +20,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.082" />
 
+
     <Button
         android:id="@+id/btnIniciarFumigacion"
         style="@style/Widget.AppCompat.Button.Colored"
@@ -31,7 +32,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.541" />
+        app:layout_constraintVertical_bias="0.604" />
 
     <Button
         android:id="@+id/btnVerHistorialFumigaciones"
@@ -45,8 +46,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.696" />
-
+        app:layout_constraintVertical_bias="0.731" />
 
     <TextView
         android:id="@+id/textActividadRobot"
@@ -89,6 +89,7 @@
         app:layout_constraintVertical_bias="0.136" />
 
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="391dp"
         android:layout_height="38dp"
         android:background="@drawable/recuadro"
@@ -140,5 +141,18 @@
             android:textAlignment="center" />
     </LinearLayout>
 
+    <Button
+        android:id="@+id/btnMisQuimicos"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="211dp"
+        android:layout_height="53dp"
+        android:background="@color/colorPrimaryDark"
+        android:text="Mis Químicos"
+        android:theme="@style/botonStyle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.858" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

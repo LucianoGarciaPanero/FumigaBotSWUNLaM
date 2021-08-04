@@ -39,6 +39,7 @@ public class RobotHomeActivity extends AppCompatActivity {
     private String mensajeInfoNivelQuimico;
     private Button btnIniciarFumigacion;
     private Button btnVerHistorialFumigaciones;
+    private Button btnMisQuimicos;
     private Chronometer cronometro;
     private AlertDialog.Builder builder;
     private AlertDialog alertDialog;
@@ -83,6 +84,8 @@ public class RobotHomeActivity extends AppCompatActivity {
         btnIniciarFumigacion.setOnClickListener(btnIniciarFumigacionListener);
         btnVerHistorialFumigaciones = findViewById(R.id.btnVerHistorialFumigaciones);
         btnVerHistorialFumigaciones.setOnClickListener(btnVerHistorialFumigacionesListener);
+        btnMisQuimicos = findViewById(R.id.btnMisQuimicos);
+        btnMisQuimicos.setOnClickListener(btnMisQuimicosListener);
 
         cronometro = findViewById(R.id.Cronometro);
     }
@@ -92,6 +95,11 @@ public class RobotHomeActivity extends AppCompatActivity {
     private View.OnClickListener btnVerHistorialFumigacionesListener = v -> {
         Intent i = new Intent(getApplicationContext(), RobotHistorialActivity.class);
         i.putExtra("robotId", robot.getRobotId());
+        startActivity(i);
+    };
+
+    private View.OnClickListener btnMisQuimicosListener = v -> {
+        Intent i = new Intent(getApplicationContext(), MisQuimicosActivity.class);
         startActivity(i);
     };
 
