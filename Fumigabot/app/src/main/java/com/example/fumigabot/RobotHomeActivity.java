@@ -10,8 +10,10 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.fumigabot.firebase.Fumigacion;
@@ -30,11 +32,13 @@ public class RobotHomeActivity extends AppCompatActivity {
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference referenceRobot;
     private DatabaseReference referenceFumigacion;
+    private DatabaseReference referenceQuimicosDisponibles;
     private TextView textActividadRobot;
     private TextView textBateria;
     private TextView infoBateria;
     private TextView textNivelQuimico;
     private TextView infoNivelQuimico;
+    private TextView textQuimicosDisponibles;
     private String mensajeInfoBateria;
     private String mensajeInfoNivelQuimico;
     private Button btnIniciarFumigacion;
@@ -45,6 +49,8 @@ public class RobotHomeActivity extends AppCompatActivity {
     private AlertDialog alertDialog;
     private Robot robot;
     private Fumigacion fumigacion;
+    private Spinner listaQuimicos;
+    private ArrayAdapter<String> adapterListaQuimicos;
     private final int BATERIA_NIVEL_ALTO = 40;
     private final int BATERIA_NIVEL_MODERADO = 15;
     private final int BATERIA_NIVEL_BAJO = 5;
@@ -79,6 +85,10 @@ public class RobotHomeActivity extends AppCompatActivity {
         infoBateria = findViewById(R.id.infoBateria);
         textNivelQuimico = findViewById(R.id.textNivelQuimico);
         infoNivelQuimico = findViewById(R.id.infoNivelQuimico);
+
+        textQuimicosDisponibles = findViewById(R.id.textQuimicosDisponibles);
+        listaQuimicos = findViewById(R.id.listaQuimicos);
+        configurarAdapterListaQuimicos();
 
         btnIniciarFumigacion = findViewById(R.id.btnIniciarFumigacion);
         btnIniciarFumigacion.setOnClickListener(btnIniciarFumigacionListener);
@@ -168,6 +178,9 @@ public class RobotHomeActivity extends AppCompatActivity {
             else
                 porcentajeNivelQuimico = "Nivel químico: " + nivelQuimico + "%";
 
+            textQuimicosDisponibles.setVisibility(View.VISIBLE);
+            listaQuimicos.setVisibility(View.VISIBLE);
+
             if(robot.isFumigando()) {
                 estado = "FUMIGANDO...";
                 btnIniciarFumigacion.setText("DETENER FUMIGACIÓN");
@@ -185,6 +198,9 @@ public class RobotHomeActivity extends AppCompatActivity {
             mensajeInfoNivelQuimico = "";
             infoBateria.setBackgroundResource(R.color.activityBackground);
             infoNivelQuimico.setBackgroundResource(R.color.activityBackground);
+            textQuimicosDisponibles.setVisibility(View.INVISIBLE);
+            listaQuimicos.setVisibility(View.INVISIBLE);
+
             estado = "Encender el dispositivo para comenzar";
             btnIniciarFumigacion.setText("FUMIGAR");
         }
@@ -253,6 +269,14 @@ public class RobotHomeActivity extends AppCompatActivity {
         mensajeInfoNivelQuimico = "Nivel de químico bajo: es necesario recargar.";
         infoNivelQuimico.setBackgroundResource(R.drawable.recuadro_alerta);
         return false;
+    }
+
+    public void configurarAdapterListaQuimicos(){
+        adapterListaQuimicos = new ArrayAdapter<>(this,
+            android.R.layout.simple_spinner_item,
+            robot.getQuimicosDisponibles());
+        adapterListaQuimicos.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        listaQuimicos.setAdapter(adapterListaQuimicos);
     }
 
     private ValueEventListener robotValueEventListener = new ValueEventListener() {

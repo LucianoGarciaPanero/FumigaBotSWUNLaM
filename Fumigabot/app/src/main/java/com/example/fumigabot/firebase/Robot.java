@@ -1,8 +1,11 @@
 package com.example.fumigabot.firebase;
 
+import android.widget.ArrayAdapter;
+
 import com.google.firebase.database.Exclude;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,17 +15,10 @@ public class Robot implements Serializable {
     private boolean encendido;
     private int bateria;
     private int nivelQuimico;
+    private ArrayList<String> quimicosDisponibles = new ArrayList<>();
 
     public Robot(){
         // Default constructor required for calls to DataSnapshot.getValue(Robot.class)
-    }
-
-    public Robot(int robotId, boolean fumigando, boolean encendido, int bateria, int nivelQuimico) {
-        this.robotId = robotId;
-        this.fumigando = fumigando;
-        this.encendido = encendido;
-        this.bateria = bateria;
-        this.nivelQuimico = nivelQuimico;
     }
 
     public int getRobotId() {
@@ -63,6 +59,14 @@ public class Robot implements Serializable {
 
     public void setNivelQuimico(int nivelQuimico) {
         this.nivelQuimico = nivelQuimico;
+    }
+
+    public ArrayList<String> getQuimicosDisponibles() {
+        return quimicosDisponibles;
+    }
+
+    public void setQuimicosDisponibles(ArrayList<String> quimicosDisponibles) {
+        this.quimicosDisponibles = quimicosDisponibles;
     }
 
     @Exclude
