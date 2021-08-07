@@ -298,15 +298,18 @@ public class RobotHomeActivity extends AppCompatActivity {
         fumigacion = new Fumigacion();
         cronometro.setBase(SystemClock.elapsedRealtime());
         //cronometro.setBase(System.currentTimeMillis());//Clock.elapsedRealtime());
+        listaQuimicos.setEnabled(false);
         fumigacion.setTimestampInicio(Long.toString(System.currentTimeMillis())); //Long.toString(cronometro.getBase()));
         cronometro.start();
     }
 
     public void detenerFumigacion(){
         cronometro.stop();
+        listaQuimicos.setEnabled(true);
+
         //long tiempoTranscurrido = SystemClock.elapsedRealtime() - cronometro.getBase();
         fumigacion.setTimestampFin(Long.toString(System.currentTimeMillis()));//(Long.toString(tiempoTranscurrido));
-
+        fumigacion.setQuimicoUtilizado(listaQuimicos.getSelectedItem().toString());
         updateFumigacion(fumigacion);
     }
 
