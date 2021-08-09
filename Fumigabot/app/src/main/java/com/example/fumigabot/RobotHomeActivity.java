@@ -58,6 +58,8 @@ public class RobotHomeActivity extends AppCompatActivity {
     private final int QUIMICO_NIVEL_ALTO = 40;
     private final int QUIMICO_NIVEL_MODERADO = 20;
     private final int QUIMICO_PROBLEMATICO = -1;
+    private boolean isFumigandoAnterior;
+    private int cantQuimicosAnterior;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,14 +68,17 @@ public class RobotHomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_robot_home);
 
-        //Instancia y referencia de la BD en Firebase
+        //Instancia de la BD en Firebase
         firebaseDatabase = MyFirebase.getInstance();
+        //referencia de los robots
         referenceRobot = firebaseDatabase.getReference("robots");
         //Para que se mantenga sincronizado offline
         referenceRobot.keepSynced(true);
-        referenceRobot.addValueEventListener(robotValueEventListener);
 
         robot = (Robot)getIntent().getSerializableExtra("RobotVinculado");
+        isFumigandoAnterior = robot.isFumigando(); // cuestionable
+        cantQuimicosAnterior = robot.getQuimicosDisponibles().size(); // cuestionable
+        referenceRobot.addValueEventListener(robotValueEventListener);
 
         //referencia de las fumigaciones para empezar a guardarlas
         referenceFumigacion = firebaseDatabase.getReference("fumigaciones/" + robot.getRobotId());
@@ -110,6 +115,7 @@ public class RobotHomeActivity extends AppCompatActivity {
 
     private View.OnClickListener btnMisQuimicosListener = v -> {
         Intent i = new Intent(getApplicationContext(), MisQuimicosActivity.class);
+        i.putExtra("robot", robot);
         startActivity(i);
     };
 
@@ -130,10 +136,14 @@ public class RobotHomeActivity extends AppCompatActivity {
                     return;
                 }
                 else {
+                    isFumigandoAnterior = robot.isFumigando(); // cuestionable
+                    cantQuimicosAnterior = robot.getQuimicosDisponibles().size(); // cuestionable
+
                     if (!robot.isFumigando()) {
                         robot.setFumigando(true);
                         iniciarFumigacion();
-                    } else {
+                    }
+                    else {
                         robot.setFumigando(false);
                         detenerFumigacion();
                     }
@@ -284,6 +294,12 @@ public class RobotHomeActivity extends AppCompatActivity {
         public void onDataChange(DataSnapshot dataSnapshot) {
             robot = dataSnapshot.child(Integer.toString(robot.getRobotId())).getValue(Robot.class);
             determinarEstadoRobot(robot);
+
+            // if cuestionable
+            if(isFumigandoAnterior == robot.isFumigando()
+                && cantQuimicosAnterior != robot.getQuimicosDisponibles().size())
+                configurarAdapterListaQuimicos();
+
             return;
         }
 
@@ -311,6 +327,8 @@ public class RobotHomeActivity extends AppCompatActivity {
         fumigacion.setTimestampFin(Long.toString(System.currentTimeMillis()));//(Long.toString(tiempoTranscurrido));
         fumigacion.setQuimicoUtilizado(listaQuimicos.getSelectedItem().toString());
         updateFumigacion(fumigacion);
+
+        configurarAdapterListaQuimicos(); //actualiza por si hubo un cambio en la lista de químicos
     }
 
     public void updateRobot(Robot robot) {
