@@ -10,6 +10,7 @@ public class Fumigacion implements Comparable {
     private String timestampInicio;
     private String timestampFin;
     private String quimicoUtilizado;
+    private String cantidadQuimicoPorArea;
 
     public Fumigacion(){
         // Default constructor required for calls to DataSnapshot.getValue(Fumigacion.class)
@@ -31,6 +32,12 @@ public class Fumigacion implements Comparable {
 
     public void setQuimicoUtilizado(String quimicoUtilizado) { this.quimicoUtilizado = quimicoUtilizado; }
 
+    public String getCantidadQuimicoPorArea() { return cantidadQuimicoPorArea; }
+
+    public void setCantidadQuimicoPorArea(String cantidadQuimicoPorArea) {
+        this.cantidadQuimicoPorArea = cantidadQuimicoPorArea;
+    }
+
     // Ordena descendentemente según timestampInicio
     @Override
     public int compareTo(Object o) {
@@ -43,6 +50,7 @@ public class Fumigacion implements Comparable {
         hashMap.put("timestampFin", timestampFin);
         hashMap.put("timestampInicio", timestampInicio);
         hashMap.put("quimicoUtilizado", quimicoUtilizado);
+        hashMap.put("cantidadQuimicoPorArea", cantidadQuimicoPorArea);
         return hashMap;
     }
 }

@@ -1,7 +1,5 @@
 package com.example.fumigabot.firebase;
 
-import android.widget.ArrayAdapter;
-
 import com.google.firebase.database.Exclude;
 
 import java.io.Serializable;
@@ -16,6 +14,7 @@ public class Robot implements Serializable {
     private int bateria;
     private int nivelQuimico;
     private ArrayList<String> quimicosDisponibles = new ArrayList<>();
+    private int cantidadQuimicoPorArea;
 
     public Robot(){
         // Default constructor required for calls to DataSnapshot.getValue(Robot.class)
@@ -67,6 +66,23 @@ public class Robot implements Serializable {
 
     public void setQuimicosDisponibles(ArrayList<String> quimicosDisponibles) {
         this.quimicosDisponibles = quimicosDisponibles;
+    }
+
+    public int getCantidadQuimicoPorArea() {
+        return cantidadQuimicoPorArea;
+    }
+
+    public void setCantidadQuimicoPorArea(int cantidadQuimicoPorArea) {
+        this.cantidadQuimicoPorArea = cantidadQuimicoPorArea;
+    }
+
+    public void convertirCantidadQuimicoPorArea(String cantidadQuimicoPorArea){
+        if(cantidadQuimicoPorArea.startsWith("Baja"))
+            setCantidadQuimicoPorArea(1);
+        else if(cantidadQuimicoPorArea.startsWith("Media"))
+            setCantidadQuimicoPorArea(2);
+        else if(cantidadQuimicoPorArea.startsWith("Alta"))
+            setCantidadQuimicoPorArea(3);
     }
 
     @Exclude
