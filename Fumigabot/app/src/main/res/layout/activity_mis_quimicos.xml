@@ -31,8 +31,8 @@
                 android:background="@color/colorPrimary"
                 android:gravity="center_horizontal"
                 android:padding="30dp"
-                android:text="MIS QUÍMICOS"
-                android:textColor="@color/colorPrimaryDark" />
+                android:text="MIS QUÍMICOS" />
+                <!--android:textColor="@color/colorPrimaryDark" /-->
         </TableRow>
 <!--
         <TableRow android:id="@+id/tablaQuimicosFilaNueva">
@@ -53,11 +53,12 @@
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="211dp"
         android:layout_height="53dp"
-        android:background="@color/colorPrimaryDark"
         android:text="Agregar químico"
         android:theme="@style/botonStyle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tablaQuimicos" />
+
+    <!--android:background="@color/colorPrimaryDark"-->
 </androidx.constraintlayout.widget.ConstraintLayout>

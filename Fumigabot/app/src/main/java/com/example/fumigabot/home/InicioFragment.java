@@ -1,38 +1,41 @@
-package com.example.fumigabot;
+package com.example.fumigabot.home;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+
+import com.example.fumigabot.R;
 import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.DatabaseReference;
+import com.google.android.material.transition.MaterialFadeThrough;
 import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.DatabaseError;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 
-public class RobotHomeActivity extends AppCompatActivity {
+/**
+ * A simple {@link Fragment} subclass.
+ */
+public class InicioFragment extends Fragment {
 
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference referenceRobot;
@@ -44,12 +47,9 @@ public class RobotHomeActivity extends AppCompatActivity {
     private TextView textNivelQuimico;
     private TextView infoNivelQuimico;
     private TextView textQuimicosDisponibles;
-    private TextView textCantidadQuimicoPorArea;
     private String mensajeInfoBateria;
     private String mensajeInfoNivelQuimico;
     private Button btnIniciarFumigacion;
-    private Button btnVerHistorialFumigaciones;
-    private Button btnMisQuimicos;
     private Chronometer cronometro;
     private AlertDialog.Builder builder;
     private AlertDialog alertDialog;
@@ -57,8 +57,6 @@ public class RobotHomeActivity extends AppCompatActivity {
     private Fumigacion fumigacion;
     private Spinner listaQuimicos;
     private ArrayAdapter<String> adapterListaQuimicos;
-    private Spinner listaQuimicoPorArea;
-    private ArrayAdapter<String> adapterListaQuimicoPorArea;
     private final int BATERIA_NIVEL_ALTO = 40;
     private final int BATERIA_NIVEL_MODERADO = 15;
     private final int BATERIA_NIVEL_BAJO = 5;
@@ -69,12 +67,36 @@ public class RobotHomeActivity extends AppCompatActivity {
     private boolean isFumigandoAnterior;
     private int cantQuimicosAnterior;
 
+
+    public InicioFragment() {
+        // Required empty public constructor
+        super(R.layout.fragment_inicio);
+    }
+
+    /*public static InicioFragment newInstance(Robot robot) {
+        InicioFragment inicioFragment = new InicioFragment();
+        Bundle argumentos = new Bundle();
+        argumentos.putSerializable("robot", robot);
+        inicioFragment.setArguments(argumentos);
+        return inicioFragment;
+    }*/
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        getSupportActionBar().hide();
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_robot_home);
+        Log.i("FILTRO", "INICIO FRAGMENT: onCreate " + SystemClock.elapsedRealtime());
+
+        //TransitionInflater inflater = TransitionInflater.from(requireContext());
+
+        setEnterTransition(new MaterialFadeThrough());
+        setReturnTransition(new MaterialFadeThrough());
+
+
+        //-------------- LO QUE ESTABA EN LA ACTIVITY ORIGINAL ---------------
+
+        //Recibimos los datos pasados en el bundle
+        robot = (Robot)getArguments().getSerializable("RobotVinculado");
+
 
         //Instancia de la BD en Firebase
         firebaseDatabase = MyFirebase.getInstance();
@@ -83,56 +105,60 @@ public class RobotHomeActivity extends AppCompatActivity {
         //Para que se mantenga sincronizado offline
         referenceRobot.keepSynced(true);
 
-        robot = (Robot)getIntent().getSerializableExtra("RobotVinculado");
+        referenceRobot.addValueEventListener(robotValueEventListener);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_inicio, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        textActividadRobot = getView().findViewById(R.id.textActividadRobot);
+        textBateria = getView().findViewById(R.id.textBateria);
+        infoBateria = getView().findViewById(R.id.infoBateria);
+        textNivelQuimico = getView().findViewById(R.id.textNivelQuimico);
+        infoNivelQuimico = getView().findViewById(R.id.infoNivelQuimico);
+
+        textQuimicosDisponibles = getView().findViewById(R.id.textQuimicosDisponibles);
+        listaQuimicos = getView().findViewById(R.id.listaQuimicos);
+
+
+        btnIniciarFumigacion = getView().findViewById(R.id.btnIniciarFumigacion);
+        btnIniciarFumigacion.setOnClickListener(btnIniciarFumigacionListener);
+
+        cronometro = getView().findViewById(R.id.Cronometro);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+
+
+        //robot = (Robot)getIntent().getSerializableExtra("RobotVinculado");
         isFumigandoAnterior = robot.isFumigando(); // cuestionable
         cantQuimicosAnterior = robot.getQuimicosDisponibles().size(); // cuestionable
-        referenceRobot.addValueEventListener(robotValueEventListener);
 
         //referencia de las fumigaciones para empezar a guardarlas
         referenceFumigacion = firebaseDatabase.getReference("fumigaciones/" + robot.getRobotId());
         //Para que se mantenga sincronizado offline
         referenceFumigacion.keepSynced(true);
 
-        textActividadRobot = findViewById(R.id.textActividadRobot);
-        textBateria = findViewById(R.id.textBateria);
-        infoBateria = findViewById(R.id.infoBateria);
-        textNivelQuimico = findViewById(R.id.textNivelQuimico);
-        infoNivelQuimico = findViewById(R.id.infoNivelQuimico);
-
-        textQuimicosDisponibles = findViewById(R.id.textQuimicosDisponibles);
-        listaQuimicos = findViewById(R.id.listaQuimicos);
         configurarAdapterListaQuimicos();
 
-        textCantidadQuimicoPorArea = findViewById(R.id.textCantidadQuimicoPorArea);
-        listaQuimicoPorArea = findViewById(R.id.listaQuimicoPorArea);
-        configurarAdapterListaQuimicoPorArea();
-
-        btnIniciarFumigacion = findViewById(R.id.btnIniciarFumigacion);
-        btnIniciarFumigacion.setOnClickListener(btnIniciarFumigacionListener);
-        btnVerHistorialFumigaciones = findViewById(R.id.btnVerHistorialFumigaciones);
-        btnVerHistorialFumigaciones.setOnClickListener(btnVerHistorialFumigacionesListener);
-        btnMisQuimicos = findViewById(R.id.btnMisQuimicos);
-        btnMisQuimicos.setOnClickListener(btnMisQuimicosListener);
-
-        cronometro = findViewById(R.id.Cronometro);
     }
 
-    private View.OnClickListener btnIniciarFumigacionListener = v -> inicializarAlertDialog();
+     private View.OnClickListener btnIniciarFumigacionListener = v -> inicializarAlertDialog();
 
-    private View.OnClickListener btnVerHistorialFumigacionesListener = v -> {
-        Intent i = new Intent(getApplicationContext(), RobotHistorialActivity.class);
-        i.putExtra("robotId", robot.getRobotId());
-        startActivity(i);
-    };
-
-    private View.OnClickListener btnMisQuimicosListener = v -> {
-        Intent i = new Intent(getApplicationContext(), MisQuimicosActivity.class);
-        i.putExtra("robot", robot);
-        startActivity(i);
-    };
 
     public void inicializarAlertDialog() {
-        builder = new AlertDialog.Builder(this, R.style.alertDialogStyle);
+        builder = new AlertDialog.Builder(getContext(), R.style.alertDialogStyle);
 
         String titleAlertDialog;
         if(!robot.isFumigando())
@@ -153,8 +179,6 @@ public class RobotHomeActivity extends AppCompatActivity {
 
                     if (!robot.isFumigando()) {
                         robot.setFumigando(true);
-                        robot.convertirCantidadQuimicoPorArea(
-                            listaQuimicoPorArea.getSelectedItem().toString());
                         iniciarFumigacion();
                     }
                     else {
@@ -204,8 +228,6 @@ public class RobotHomeActivity extends AppCompatActivity {
 
             textQuimicosDisponibles.setVisibility(View.VISIBLE);
             listaQuimicos.setVisibility(View.VISIBLE);
-            textCantidadQuimicoPorArea.setVisibility(View.VISIBLE);
-            listaQuimicoPorArea.setVisibility(View.VISIBLE);
 
             if(robot.isFumigando()) {
                 estado = "FUMIGANDO...";
@@ -226,8 +248,6 @@ public class RobotHomeActivity extends AppCompatActivity {
             infoNivelQuimico.setBackgroundResource(R.color.colorBackground);
             textQuimicosDisponibles.setVisibility(View.INVISIBLE);
             listaQuimicos.setVisibility(View.INVISIBLE);
-            textCantidadQuimicoPorArea.setVisibility(View.INVISIBLE);
-            listaQuimicoPorArea.setVisibility(View.INVISIBLE);
 
             estado = "Encender el dispositivo para comenzar";
             btnIniciarFumigacion.setText("FUMIGAR");
@@ -300,23 +320,11 @@ public class RobotHomeActivity extends AppCompatActivity {
     }
 
     public void configurarAdapterListaQuimicos(){
-        adapterListaQuimicos = new ArrayAdapter<>(this,
-            android.R.layout.simple_spinner_item,
-            robot.getQuimicosDisponibles());
+        adapterListaQuimicos = new ArrayAdapter<>(getContext(),
+                android.R.layout.simple_spinner_item,
+                robot.getQuimicosDisponibles());
         adapterListaQuimicos.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         listaQuimicos.setAdapter(adapterListaQuimicos);
-    }
-
-    public void configurarAdapterListaQuimicoPorArea(){
-        ArrayList<String> opcionesQuimicoPorArea = new ArrayList<>(Arrays.asList(
-                "Baja - ráfaga de 0.5 seg", "Media - ráfaga de 1 seg", "Alta - ráfaga de 2 seg"));
-
-        adapterListaQuimicoPorArea = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item,
-                opcionesQuimicoPorArea);
-
-        adapterListaQuimicoPorArea.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        listaQuimicoPorArea.setAdapter(adapterListaQuimicoPorArea);
     }
 
     private ValueEventListener robotValueEventListener = new ValueEventListener() {
@@ -326,12 +334,10 @@ public class RobotHomeActivity extends AppCompatActivity {
             determinarEstadoRobot(robot);
 
             // if cuestionable
-            /*if(isFumigandoAnterior == robot.isFumigando()
-                && cantQuimicosAnterior != robot.getQuimicosDisponibles().size())
-                configurarAdapterListaQuimicos();*/
-            if(cantQuimicosAnterior != robot.getQuimicosDisponibles().size()
-                && (isFumigandoAnterior == robot.isFumigando() || robot.isFumigando() == false))
+            if(isFumigandoAnterior == robot.isFumigando()
+                    && cantQuimicosAnterior != robot.getQuimicosDisponibles().size())
                 configurarAdapterListaQuimicos();
+
             return;
         }
 
@@ -347,7 +353,6 @@ public class RobotHomeActivity extends AppCompatActivity {
         cronometro.setBase(SystemClock.elapsedRealtime());
         //cronometro.setBase(System.currentTimeMillis());//Clock.elapsedRealtime());
         listaQuimicos.setEnabled(false);
-        listaQuimicoPorArea.setEnabled(false);
         fumigacion.setTimestampInicio(Long.toString(System.currentTimeMillis())); //Long.toString(cronometro.getBase()));
         cronometro.start();
     }
@@ -355,21 +360,19 @@ public class RobotHomeActivity extends AppCompatActivity {
     public void detenerFumigacion(){
         cronometro.stop();
         listaQuimicos.setEnabled(true);
-        listaQuimicoPorArea.setEnabled(true);
+
         //long tiempoTranscurrido = SystemClock.elapsedRealtime() - cronometro.getBase();
         fumigacion.setTimestampFin(Long.toString(System.currentTimeMillis()));//(Long.toString(tiempoTranscurrido));
         fumigacion.setQuimicoUtilizado(listaQuimicos.getSelectedItem().toString());
-        fumigacion.setCantidadQuimicoPorArea(listaQuimicoPorArea.getSelectedItem().toString());
         updateFumigacion(fumigacion);
 
         configurarAdapterListaQuimicos(); //actualiza por si hubo un cambio en la lista de químicos
     }
 
     public void updateRobot(Robot robot) {
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("fumigando", robot.isFumigando());
-        childUpdates.put("cantidadQuimicoPorArea", robot.getCantidadQuimicoPorArea());
-        referenceRobot.child(Integer.toString(robot.getRobotId())).updateChildren(childUpdates);
+        referenceRobot.child(Integer.toString(robot.getRobotId()))
+                .child("fumigando")
+                .setValue(robot.isFumigando());
     }
 
     public void updateFumigacion(Fumigacion fumigacion){
@@ -388,4 +391,5 @@ public class RobotHomeActivity extends AppCompatActivity {
             }
         });
     }
+
 }

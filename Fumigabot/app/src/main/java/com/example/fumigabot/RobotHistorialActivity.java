@@ -106,7 +106,7 @@ public class RobotHistorialActivity extends AppCompatActivity {
 
         //Crea nueva fila
         TableRow nuevaFila = new TableRow(this);
-        nuevaFila.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+        nuevaFila.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
         nuevaFila.setLayoutParams(new TableRow.LayoutParams(
                 TableRow.LayoutParams.MATCH_PARENT,
                 TableRow.LayoutParams.WRAP_CONTENT));
@@ -114,7 +114,7 @@ public class RobotHistorialActivity extends AppCompatActivity {
         // Columna Id
         TextView labelFumigacionId = new TextView(this);
         labelFumigacionId.setText("#" + fumigacion.getFumigacionId().substring(1));
-        labelFumigacionId.setTextColor(getResources().getColor(R.color.colorPrimary));
+        labelFumigacionId.setTextColor(getResources().getColor(R.color.colorOnPrimary));
         labelFumigacionId.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
         nuevaFila.addView(labelFumigacionId);
@@ -130,7 +130,7 @@ public class RobotHistorialActivity extends AppCompatActivity {
         // Columna fechaHoraInicio
         TextView labelTimestampInicio = new TextView(this);
         labelTimestampInicio.setText(fechaHoraInicioFormateada);
-        labelTimestampInicio.setTextColor(getResources().getColor(R.color.colorPrimary));
+        labelTimestampInicio.setTextColor(getResources().getColor(R.color.colorOnPrimary));
         labelTimestampInicio.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
         nuevaFila.addView(labelTimestampInicio);
@@ -139,7 +139,7 @@ public class RobotHistorialActivity extends AppCompatActivity {
         // Columna fechaHoraFin
         TextView labelTimestampFin = new TextView(this);
         labelTimestampFin.setText(fechaHoraFinFormateada);
-        labelTimestampFin.setTextColor(getResources().getColor(R.color.colorPrimary));
+        labelTimestampFin.setTextColor(getResources().getColor(R.color.colorOnPrimary));
         labelTimestampFin.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
         nuevaFila.addView(labelTimestampFin);
@@ -156,7 +156,7 @@ public class RobotHistorialActivity extends AppCompatActivity {
         TextView labelDuracion = new TextView(this);
         //labelDuracion.setText(minutos + "m " + segundos + "s");
         labelDuracion.setText(calcularDuracion(fechaHoraFin.getTime() - fechaHoraInicio.getTime()));
-        labelDuracion.setTextColor(getResources().getColor(R.color.colorPrimary));
+        labelDuracion.setTextColor(getResources().getColor(R.color.colorOnPrimary));
         labelDuracion.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
         nuevaFila.addView(labelDuracion);

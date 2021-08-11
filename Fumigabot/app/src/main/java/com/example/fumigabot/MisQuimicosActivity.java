@@ -96,13 +96,13 @@ public class MisQuimicosActivity extends AppCompatActivity {
         nuevaFila.setLayoutParams(new TableRow.LayoutParams(
             TableRow.LayoutParams.MATCH_PARENT,
             TableRow.LayoutParams.WRAP_CONTENT));
-        nuevaFila.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+        nuevaFila.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
 
         // View del químico
         TextView textQuimico = new TextView(this);
         textQuimico.setText(quimico);
         textQuimico.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        textQuimico.setTextColor(getResources().getColor(R.color.colorPrimary));
+        textQuimico.setTextColor(getResources().getColor(R.color.colorOnPrimary));
         int value = (int) TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP, 15, getResources().getDisplayMetrics());
         textQuimico.setPadding(value, value, value, value);
@@ -126,7 +126,7 @@ public class MisQuimicosActivity extends AppCompatActivity {
         txtNuevoQuimico.setHint("ingresá un nuevo químico");
         txtNuevoQuimico.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         txtNuevoQuimico.setTextSize(14);
-        txtNuevoQuimico.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+        txtNuevoQuimico.setTextColor(getResources().getColor(R.color.colorPrimary));
         int value = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 15, getResources().getDisplayMetrics());
         txtNuevoQuimico.setPadding(value, value, value, value);

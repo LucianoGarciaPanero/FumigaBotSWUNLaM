@@ -1,54 +1,88 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="FumigabotTheme" parent="Theme.AppCompat.Light"> <!-- .DarkActionBar"-->
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+    <style name="Theme.Fumigabot" parent="Base.Theme.Fumigabot" />
 
-        <item name="android:windowBackground">@color/activityBackground</item>
+    <!-- Este es el tema que va a servir para light y dark theme -->
+    <style name="Base.Theme.Fumigabot" parent="Theme.MaterialComponents">
+        <!-- Colores para light theme -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <!--item name="colorPrimaryVariant">@color/colorPrimaryVariant</item-->
+        <item name="colorSecondary">@color/colorSecondary</item>
+        <item name="colorSecondaryVariant">@color/colorSecondaryVariant</item>
+
+        <!-- colorBackground está atrás del scrolleable y es usado por la ventana x def -->
+        <!-- colorSurface se corresponde a componentes que se superponen, tales como cards, -->
+        <!-- sheets y menu. colorError se usa para indicar un estado de error para -->
+        <!-- componentes como text fields -->
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="colorSurface">@color/colorSurface</item>
+        <!--item name="colorError">@color/colorError</item-->
+
+        <!-- Los "on" colors definen cómo el texto, íconos, etc toman color en relación -->
+        <!-- al componente en "surface" sobre el que aparecen -->
+        <item name="colorOnPrimary">@color/colorOnPrimary</item>
+        <item name="colorOnSecondary">@color/colorOnSecondary</item>
+        <item name="colorOnBackground">@color/colorOnBackground</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
+        <!--item name="colorOnError">@color/colorOnError</item-->
+
+
+        <!-- Asignamos los estilos de cada componente  -->
+        <!-- item name="android:windowBackground">@color/activityBackground</item -->
         <item name="buttonStyle">@style/botonStyle</item>
         <item name="android:textViewStyle">@style/labelsStyle</item>
         <item name="editTextStyle">@style/editTextStyle</item>
+        <item name="bottomNavigationStyle">@style/bottomNavBar</item>
 
     </style>
 
 
     <!-- Estilos de cada componente  -->
 
-    <style name="botonStyle" parent="ThemeOverlay.AppCompat.Dark">
-        <item name="android:theme">@style/Widget.AppCompat.Button.Colored</item>
-        <item name="android:textColor">@color/colorPrimary</item>
+    <style name="botonStyle" parent="Widget.MaterialComponents.Button">
+        <!--<item name="android:theme">@style/Widget.AppCompat.Button.Colored</item-->
+        <!--item name="android:background">@color/colorPrimaryDark</item-->
         <item name="colorButtonNormal">@color/disabledControl</item>
-        <item name="colorAccent">@color/colorPrimaryDark</item>
+        <!--item name="rippleColor">@color/disabledControl</item-->
+        <!--item name="colorOnPrimary">@color/colorPrimaryDark</item-->
+
     </style>
 
 
-    <style name="labelsStyle"> # parent="TextAppearance.AppCompat">
-        <item name="android:textColor">@color/colorPrimaryDark</item>
+    <style name="labelsStyle">
+        <item name="android:textColor">@color/colorPrimary</item>
     </style>
 
-    <style name="labelAdvertenciaStyle"> # parent="TextAppearance.AppCompat">
-        <item name="android:textColor">@color/colorPrimaryDark</item>
+    <style name="labelAdvertenciaStyle">
+        <item name="android:textColor">@color/colorPrimary</item>
         <item name="android:background">@color/fondoAdvertencia</item>
     </style>
 
-    <style name="labelAlertaStyle"> # parent="TextAppearance.AppCompat">
-        <item name="android:textColor">@color/colorPrimaryDark</item>
+    <style name="labelAlertaStyle">
+        <item name="android:textColor">@color/colorPrimary</item>
         <item name="android:background">@color/fondoAlerta</item>
     </style>
 
     <style name="editTextStyle" parent="Widget.AppCompat.EditText">
-        <item name="android:textColor">@color/colorPrimaryDark</item>
-        #colorActivatedHighlight
-        <item name="android:textColorHighlight">@color/colorAccentTransparency</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColorHighlight">@color/colorSecondaryVariant</item>
     </style>
 
 
     <style name="alertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="android:textColorPrimary">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColorPrimary">@color/colorPrimary</item>
+        <item name="colorAccent">@color/colorSecondary</item>
     </style>
+
+
+    <style name="bottomNavBar" parent="Widget.MaterialComponents.BottomNavigationView.Colored">
+        <!--item name="itemTextColor">@color/colorPrimary</item>
+        <item name="itemBackground">@color/colorPrimaryDark</item>
+        <item name="itemIconTint">@color/colorPrimary</item-->
+        <!--item name="itemRippleColor">@color/colorPrimaryVariant</item-->
+
+    </style>
+
 
 </resources>

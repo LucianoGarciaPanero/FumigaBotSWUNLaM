@@ -1,12 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#FBEAEB</color>
-    <color name="colorPrimaryDark">#2F3C7E</color>
-    <color name="colorAccent">#D81B60</color>
-    <color name="colorAccentTransparency">#9ED81B60</color>
+    <!--Definimos primero los colores: -->
+    <color name="azul_principal">#2F3C7E</color>
+    <color name="azul_secundario">#293674</color>
+    <color name="claro_principal">#FBEAEB</color>
+    <color name="rosa_fuerte">#D81B60</color>
+    <color name="rosa_fuerte_transp">#9ED81B60</color>
+
+
+    <color name="colorPrimary">@color/azul_principal</color>
+    <color name="colorPrimaryVariant">@color/azul_secundario</color>
+    <color name="colorSecondary">@color/rosa_fuerte</color>
+    <color name="colorSecondaryVariant">@color/rosa_fuerte_transp</color>
+    <color name="colorBackground">@color/claro_principal</color>
+    <color name="colorSurface">@color/claro_principal</color>
+
+    <color name="colorOnPrimary">@color/claro_principal</color>
+    <color name="colorOnSecondary">#E17C23</color>
+    <color name="colorOnBackground">#000000</color>
+    <color name="colorOnSurface">#000000</color>
+    <!--color name="colorOnSurface">#23AE18</color-->
+
+
+
+    <color name="colorPrimaryVariantaversisirve">#99FBEAEB</color>
+
+
+    <!--color name="colorAccent">#D81B60</color>
+    <color name="colorAccentTransparency">#9ED81B60</color-->
     <color name="colorAccentFilas">#E6D0D1</color>
 
-    <color name="activityBackground">@color/colorPrimary</color>
+
+    <!--color name="colorError">#F06292</color-->
+
+    <!--color name="colorOnPrimary">@color/colorPrimary</color>
+    <color name="colorOnSecondary">#EDF1E2E3</color>
+    <color name="colorOnSurface">@color/colorPrimaryVariant</color>
+    <color name="colorOnError">#E45A5A</color-->
+
+
+    <!--color name="activityBackground">@color/colorPrimary</color-->
+
+    <color name="colorDivider">#1F000000</color>
+
+
     <color name="disabledControl">#9B9997</color>
 
     <color name="fondoSugerencia">#66BB6A</color>
@@ -14,6 +51,6 @@
     //#EF5350
     <color name="fondoAlerta">#EF5350</color>
     <color name="fondoAvisoBateria">#9575CD</color>
-    <color name="bordeRecuadro">@color/colorPrimary</color>
+    <color name="bordeRecuadro">@color/colorBackground</color>
 
 </resources>

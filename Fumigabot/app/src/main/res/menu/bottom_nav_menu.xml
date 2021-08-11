@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/pageInicio"
+        android:enabled="true"
+        android:icon="@drawable/ic_home_24"
+        android:title="Inicio"/>
+    <item
+        android:id="@+id/pageHistorial"
+        android:enabled="true"
+        android:icon="@drawable/ic_history_24"
+        android:title="Historial"/>
+    <item
+        android:id="@+id/pageQuimicos"
+        android:enabled="true"
+        android:icon="@drawable/ic_science_24"
+        android:title="Mis químicos"/>
+    <item
+        android:id="@+id/pageConfig"
+        android:enabled="true"
+        android:icon="@drawable/ic_settings_24"
+        android:title="Configuración"/>
+
+</menu>

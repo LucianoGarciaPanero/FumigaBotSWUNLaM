@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RobotHomeActivity">
-    <!--
-    android:background="@color/colorPrimary" -->
+    android:id="@+id/pageInicio"
+    tools:context=".home.InicioFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
 
+    <!-- TODO: Update blank fragment layout -->
     <TextView
         android:id="@+id/textEstadoRobot"
         android:layout_width="wrap_content"
@@ -16,86 +20,54 @@
         android:text="Estado del robot"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.058" />
-    <!--
+        app:layout_constraintVertical_bias="0.082" />
+        <!--
         android:textColor="@color/colorPrimaryDark" -->
 
-    <TextView
-        android:id="@+id/textNivelQuimico"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Nivel químico:"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.21" />
 
-    <Button
-        android:id="@+id/btnIniciarFumigacion"
-        style="@style/Widget.AppCompat.Button.Colored"
-        android:layout_width="211dp"
-        android:layout_height="53dp"
-        android:text="fumigar"
-        android:theme="@style/botonStyle"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.69" />
+        <Button
+            android:id="@+id/btnIniciarFumigacion"
+            android:layout_width="211dp"
+            android:layout_height="53dp"
+            android:enabled="false"
+            android:text="fumigar"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.625" />
 
-    <Button
-        android:id="@+id/btnMisQuimicos"
-        style="@style/Widget.AppCompat.Button.Colored"
-        android:layout_width="211dp"
-        android:layout_height="53dp"
-        android:background="@color/colorPrimary"
-        android:text="Mis Químicos"
-        android:theme="@style/botonStyle"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.943" />
-
-    <Button
-        android:id="@+id/btnVerHistorialFumigaciones"
-        style="@style/Widget.AppCompat.Button.Colored"
-        android:layout_width="211dp"
-        android:layout_height="53dp"
-        android:background="@color/colorPrimary"
-        android:text="Historial de Fumigaciones"
-        android:theme="@style/botonStyle"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.811" />
 
     <TextView
         android:id="@+id/textActividadRobot"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="ESPERANDO ÓRDENES..."
-        android:textColor="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.547" />
+        app:layout_constraintVertical_bias="0.47" />
+        <!--
+        android:textColor="@color/colorPrimaryDark" -->
+
 
     <Chronometer
         android:id="@+id/Cronometro"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:textColor="@color/colorPrimary"
+        style="@style/labelsStyle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textActividadRobot" />
+        <!--
+        android:textColor="@color/colorPrimaryDark" -->
+
 
     <TextView
         android:id="@+id/textBateria"
@@ -108,10 +80,11 @@
         android:text="Batería:"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.461"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.114" />
+        app:layout_constraintVertical_bias="0.136" />
+
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -125,6 +98,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textBateria">
 
+
         <TextView
             android:id="@+id/infoBateria"
             android:layout_width="match_parent"
@@ -133,6 +107,19 @@
             android:gravity="center"
             android:textAlignment="center" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/textNivelQuimico"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nivel químico:"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.233" />
+
 
     <LinearLayout
         android:id="@+id/linearLayout2"
@@ -145,6 +132,7 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textNivelQuimico">
+
 
         <TextView
             android:id="@+id/infoNivelQuimico"
@@ -160,44 +148,26 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Químico a utilizar"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.317" />
 
-    <TextView
-        android:id="@+id/textCantidadQuimicoPorArea"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Cantidad de químico por área"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.422" />
+        app:layout_constraintVertical_bias="0.337" />
 
-    <Spinner
-        android:id="@+id/listaQuimicoPorArea"
-        android:layout_width="391dp"
-        android:layout_height="38dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.55"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.473" />
 
     <Spinner
         android:id="@+id/listaQuimicos"
         android:layout_width="391dp"
         android:layout_height="38dp"
+
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.55"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.363" />
+        app:layout_constraintVertical_bias="0.383" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>
