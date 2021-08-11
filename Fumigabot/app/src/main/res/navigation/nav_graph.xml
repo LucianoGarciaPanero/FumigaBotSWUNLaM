@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_inicioFragment_to_historialFragment"
             app:destination="@id/historialFragment" />
+        <action
+            android:id="@+id/action_inicioFragment_to_quimicosFragment"
+            app:destination="@id/quimicosFragment" />
     </fragment>
     <fragment
         android:id="@+id/historialFragment"
@@ -22,5 +25,20 @@
         <action
             android:id="@+id/action_historialFragment_to_inicioFragment"
             app:destination="@id/inicioFragment" />
+        <action
+            android:id="@+id/action_historialFragment_to_quimicosFragment"
+            app:destination="@id/quimicosFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/quimicosFragment"
+        android:name="com.example.fumigabot.home.QuimicosFragment"
+        android:label="fragment_quimicos"
+        tools:layout="@layout/fragment_quimicos" >
+        <action
+            android:id="@+id/action_quimicosFragment_to_inicioFragment"
+            app:destination="@id/inicioFragment" />
+        <action
+            android:id="@+id/action_quimicosFragment_to_historialFragment"
+            app:destination="@id/historialFragment" />
     </fragment>
 </navigation>
