@@ -4,6 +4,7 @@
     <color name="azul_principal">#2F3C7E</color>
     <color name="azul_secundario">#293674</color>
     <color name="claro_principal">#FBEAEB</color>
+    <color name="blanco">#FFFFFF</color>
     <color name="rosa_fuerte">#D81B60</color>
     <color name="rosa_fuerte_transp">#9ED81B60</color>
 

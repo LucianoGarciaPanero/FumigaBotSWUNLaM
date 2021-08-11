@@ -24,6 +24,7 @@ import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.transition.MaterialFadeThrough;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -51,7 +52,7 @@ public class InicioFragment extends Fragment {
     private String mensajeInfoNivelQuimico;
     private Button btnIniciarFumigacion;
     private Chronometer cronometro;
-    private AlertDialog.Builder builder;
+    private MaterialAlertDialogBuilder builder;
     private AlertDialog alertDialog;
     private Robot robot;
     private Fumigacion fumigacion;
@@ -158,16 +159,23 @@ public class InicioFragment extends Fragment {
 
 
     public void inicializarAlertDialog() {
-        builder = new AlertDialog.Builder(getContext(), R.style.alertDialogStyle);
+        builder = new MaterialAlertDialogBuilder(getContext());
 
         String titleAlertDialog;
-        if(!robot.isFumigando())
+        String accion;
+
+        if(!robot.isFumigando()) {
             titleAlertDialog = "iniciar una ";
-        else
-            titleAlertDialog = "finalizar la ";
+            accion = "iniciar";
+        }
+        else {
+            titleAlertDialog = "detener la ";
+            accion = "detener";
+        }
+
         builder.setMessage("¿Seguro querés " + titleAlertDialog + "fumigación?");
 
-        builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(accion, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 if(!robot.isEncendido()) {
                     builder.setMessage("El dispositivo se encuentra apagado");
@@ -192,7 +200,7 @@ public class InicioFragment extends Fragment {
             }
         });
 
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("cancelar", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // User cancelled the dialog
             }

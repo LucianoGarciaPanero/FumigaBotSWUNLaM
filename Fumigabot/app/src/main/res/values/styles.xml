@@ -11,16 +11,16 @@
         <item name="colorSecondary">@color/colorSecondary</item>
         <item name="colorSecondaryVariant">@color/colorSecondaryVariant</item>
 
-        <!-- colorBackground está atrás del scrolleable y es usado por la ventana x def -->
-        <!-- colorSurface se corresponde a componentes que se superponen, tales como cards, -->
-        <!-- sheets y menu. colorError se usa para indicar un estado de error para -->
-        <!-- componentes como text fields -->
+        <!-- colorBackground está atrás del scrolleable y es usado por la ventana x def
+        colorSurface se corresponde a componentes que se superponen, tales como cards,
+        sheets y menu. colorError se usa para indicar un estado de error para
+        componentes como text fields -->
         <item name="android:colorBackground">@color/colorBackground</item>
         <item name="colorSurface">@color/colorSurface</item>
         <!--item name="colorError">@color/colorError</item-->
 
-        <!-- Los "on" colors definen cómo el texto, íconos, etc toman color en relación -->
-        <!-- al componente en "surface" sobre el que aparecen -->
+        <!-- Los "on" colors definen cómo el texto, íconos, etc toman color en relación
+        al componente en "surface" sobre el que aparecen -->
         <item name="colorOnPrimary">@color/colorOnPrimary</item>
         <item name="colorOnSecondary">@color/colorOnSecondary</item>
         <item name="colorOnBackground">@color/colorOnBackground</item>
@@ -29,11 +29,11 @@
 
 
         <!-- Asignamos los estilos de cada componente  -->
-        <!-- item name="android:windowBackground">@color/activityBackground</item -->
         <item name="buttonStyle">@style/botonStyle</item>
         <item name="android:textViewStyle">@style/labelsStyle</item>
         <item name="editTextStyle">@style/editTextStyle</item>
         <item name="bottomNavigationStyle">@style/bottomNavBar</item>
+        <item name="materialAlertDialogTheme">@style/alertDialogStyle</item>
 
     </style>
 
@@ -46,7 +46,6 @@
         <item name="colorButtonNormal">@color/disabledControl</item>
         <!--item name="rippleColor">@color/disabledControl</item-->
         <!--item name="colorOnPrimary">@color/colorPrimaryDark</item-->
-
     </style>
 
 
@@ -69,20 +68,16 @@
         <item name="android:textColorHighlight">@color/colorSecondaryVariant</item>
     </style>
 
-
-    <style name="alertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="android:textColorPrimary">@color/colorPrimary</item>
-        <item name="colorAccent">@color/colorSecondary</item>
+    <style name="alertDialogStyle" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="android:textColor">@color/colorOnSurface</item>
+        <item name="colorSurface">@color/blanco</item>
     </style>
-
 
     <style name="bottomNavBar" parent="Widget.MaterialComponents.BottomNavigationView.Colored">
         <!--item name="itemTextColor">@color/colorPrimary</item>
         <item name="itemBackground">@color/colorPrimaryDark</item>
         <item name="itemIconTint">@color/colorPrimary</item-->
         <!--item name="itemRippleColor">@color/colorPrimaryVariant</item-->
-
     </style>
-
 
 </resources>
