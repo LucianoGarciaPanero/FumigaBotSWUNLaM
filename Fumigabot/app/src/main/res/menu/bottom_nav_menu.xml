@@ -15,10 +15,10 @@
         android:enabled="true"
         android:icon="@drawable/ic_science_24"
         android:title="Mis químicos"/>
-    <item
+    <!--item
         android:id="@+id/pageConfig"
         android:enabled="true"
         android:icon="@drawable/ic_settings_24"
-        android:title="Configuración"/>
+        android:title="Configuración"/-->
 
 </menu>
