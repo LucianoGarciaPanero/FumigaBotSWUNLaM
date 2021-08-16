@@ -9,49 +9,41 @@
     <color name="rosa_fuerte_transp">#9ED81B60</color>
 
 
-    <color name="colorPrimary">@color/azul_principal</color>
-    <color name="colorPrimaryVariant">@color/azul_secundario</color>
-    <color name="colorSecondary">@color/rosa_fuerte</color>
-    <color name="colorSecondaryVariant">@color/rosa_fuerte_transp</color>
-    <color name="colorBackground">@color/claro_principal</color>
-    <color name="colorSurface">@color/claro_principal</color>
+    <color name="colorPrimary">#6200EE</color>
+    <color name="colorPrimaryVariant">#3700B3</color>
+    <color name="colorSecondary">#03DAC6</color>
+    <color name="colorSecondaryVariant">#018786</color>
+    <color name="colorBackground">#FFFFFF</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorError">#B00020</color>
 
-    <color name="colorOnPrimary">@color/claro_principal</color>
-    <color name="colorOnSecondary">#E17C23</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorOnSecondary">#000000</color>
     <color name="colorOnBackground">#000000</color>
     <color name="colorOnSurface">#000000</color>
+    <color name="colorOnError">#FFFFFF</color>
     <!--color name="colorOnSurface">#23AE18</color-->
 
 
-
-    <color name="colorPrimaryVariantaversisirve">#99FBEAEB</color>
-
-
-    <!--color name="colorAccent">#D81B60</color>
-    <color name="colorAccentTransparency">#9ED81B60</color-->
-    <color name="colorAccentFilas">#E6D0D1</color>
-
-
-    <!--color name="colorError">#F06292</color-->
-
-    <!--color name="colorOnPrimary">@color/colorPrimary</color>
-    <color name="colorOnSecondary">#EDF1E2E3</color>
-    <color name="colorOnSurface">@color/colorPrimaryVariant</color>
-    <color name="colorOnError">#E45A5A</color-->
-
-
-    <!--color name="activityBackground">@color/colorPrimary</color-->
-
+    <!-- Colores nuestros -->
     <color name="colorDivider">#1F000000</color>
-
-
     <color name="disabledControl">#9B9997</color>
-
     <color name="fondoSugerencia">#66BB6A</color>
     <color name="fondoAdvertencia">#FFB74D</color>
-    //#EF5350
     <color name="fondoAlerta">#EF5350</color>
     <color name="fondoAvisoBateria">#9575CD</color>
     <color name="bordeRecuadro">@color/colorBackground</color>
+    <color name="devEncendido">#689F38</color>
+    <color name="devOcupado">#FF5722</color>
+    <color name="devApagado">#33000000</color>
+
+    <!-- Otros bonitos que quedaron y eventualmente si no se usan, vuelan -->
+    <color name="colorPrimaryVariantaversisirve">#99FBEAEB</color>
+    <!--color name="colorAccent">#D81B60</color>
+    <color name="colorAccentTransparency">#9ED81B60</color-->
+    <color name="colorAccentFilas">#E6D0D1</color>
+    <!--color name="colorError">#F06292</color-->
+    <!--color name="colorOnSecondary">#EDF1E2E3</color>
+    <color name="colorOnError">#E45A5A</color-->
 
 </resources>

@@ -4,36 +4,30 @@
     <style name="Theme.Fumigabot" parent="Base.Theme.Fumigabot" />
 
     <!-- Este es el tema que va a servir para light y dark theme -->
-    <style name="Base.Theme.Fumigabot" parent="Theme.MaterialComponents">
+    <style name="Base.Theme.Fumigabot" parent="Theme.MaterialComponents.Light">
         <!-- Colores para light theme -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <!--item name="colorPrimaryVariant">@color/colorPrimaryVariant</item-->
+        <!--item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorSecondary">@color/colorSecondary</item>
         <item name="colorSecondaryVariant">@color/colorSecondaryVariant</item>
 
-        <!-- colorBackground está atrás del scrolleable y es usado por la ventana x def
-        colorSurface se corresponde a componentes que se superponen, tales como cards,
-        sheets y menu. colorError se usa para indicar un estado de error para
-        componentes como text fields -->
         <item name="android:colorBackground">@color/colorBackground</item>
         <item name="colorSurface">@color/colorSurface</item>
-        <!--item name="colorError">@color/colorError</item-->
+        <item name="colorError">@color/colorError</item>
 
-        <!-- Los "on" colors definen cómo el texto, íconos, etc toman color en relación
-        al componente en "surface" sobre el que aparecen -->
+
         <item name="colorOnPrimary">@color/colorOnPrimary</item>
         <item name="colorOnSecondary">@color/colorOnSecondary</item>
         <item name="colorOnBackground">@color/colorOnBackground</item>
         <item name="colorOnSurface">@color/colorOnSurface</item>
-        <!--item name="colorOnError">@color/colorOnError</item-->
+        <item name="colorOnError">@color/colorOnError</item-->
 
 
         <!-- Asignamos los estilos de cada componente  -->
-        <item name="buttonStyle">@style/botonStyle</item>
+        <!--item name="buttonStyle">@style/botonStyle</item>
         <item name="android:textViewStyle">@style/labelsStyle</item>
         <item name="editTextStyle">@style/editTextStyle</item>
         <item name="bottomNavigationStyle">@style/bottomNavBar</item>
-        <item name="materialAlertDialogTheme">@style/alertDialogStyle</item>
+        <item name="materialAlertDialogTheme">@style/alertDialogStyle</item-->
 
     </style>
 

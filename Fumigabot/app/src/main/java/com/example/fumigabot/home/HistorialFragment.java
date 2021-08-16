@@ -58,7 +58,7 @@ public class HistorialFragment extends Fragment {
     private final int SEGUNDOS_MILIS = 1000;
     private final int MINUTOS_MILIS = SEGUNDOS_MILIS * 60;
     private final int HORAS_MILIS = MINUTOS_MILIS * 60;
-    private final int DIAS_MILIS = HORAS_MILIS * 24;
+    //private final int DIAS_MILIS = HORAS_MILIS * 24;
 
 
     public HistorialFragment(){

@@ -53,14 +53,6 @@ public class Fumigacion implements Comparable {
         return fechaHoraInicioFormateada;
     }
 
-    public String darFormatoFechaFin()
-    {
-        SimpleDateFormat formateador = new SimpleDateFormat("dd MMMM yyyy");
-        Date fechaHoraFin = new Date(Long.parseLong(timestampFin));
-        String fechaHoraFinFormateada = formateador.format(fechaHoraFin);
-        return fechaHoraFinFormateada;
-    }
-
     public String getHoraInicio()
     {
         SimpleDateFormat formateador = new SimpleDateFormat("HH:mm");

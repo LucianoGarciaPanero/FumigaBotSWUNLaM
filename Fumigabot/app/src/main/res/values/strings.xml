@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Fumigabot</string>
+    <string name="errorSeleccionQuimico">Se debe seleccionar un químico</string>
+    <string name="errorSeleccionCantidadArea">Se debe seleccionar una opción</string>
+    <string-array name="cantidad_quimico_por_area">
+        <item id="1">Baja - Ráfaga de 0,5 segundos</item>
+        <item id="2">Media - Ráfaga de 1 segundo</item>
+        <item id="3">Alta - Ráfaga de 2 segundos</item>
+    </string-array>
 </resources>

@@ -93,7 +93,7 @@ public class RobotHomeActivity extends AppCompatActivity {
         //Para que se mantenga sincronizado offline
         referenceFumigacion.keepSynced(true);
 
-        textActividadRobot = findViewById(R.id.textActividadRobot);
+        textActividadRobot = findViewById(R.id.textEstadoFumigacion);
         textBateria = findViewById(R.id.textBateria);
         infoBateria = findViewById(R.id.infoBateria);
         textNivelQuimico = findViewById(R.id.textNivelQuimico);

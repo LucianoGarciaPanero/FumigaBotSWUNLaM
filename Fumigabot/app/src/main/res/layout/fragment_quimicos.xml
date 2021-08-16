@@ -49,6 +49,8 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginBottom="200dp"
+            android:divider="@null"
+            android:dividerHeight="0dp"
             android:gravity="center"
             android:horizontalSpacing="3dp"
             android:verticalSpacing="3dp"
@@ -56,7 +58,25 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView5" />
+            app:layout_constraintTop_toBottomOf="@+id/textView5">
+
+        </ListView>
+
+        <EditText
+            android:id="@+id/textNuevoQuimico"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:ems="10"
+            android:hint="Ingresar un nuevo químico"
+            android:inputType="textPersonName"
+            app:layout_constraintBottom_toTopOf="@+id/btnAgregarQuimico"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/listaEntradaQuimicos"
+            app:layout_constraintVertical_bias="0.59000003" />
 
         <Button
             android:id="@+id/btnAgregarQuimico"
@@ -74,4 +94,5 @@
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </FrameLayout>

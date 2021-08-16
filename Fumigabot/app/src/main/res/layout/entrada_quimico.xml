@@ -25,7 +25,6 @@
             android:text="10 de agosto de 2021"
             android:textAlignment="viewStart"
             android:textSize="14sp"
-            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"

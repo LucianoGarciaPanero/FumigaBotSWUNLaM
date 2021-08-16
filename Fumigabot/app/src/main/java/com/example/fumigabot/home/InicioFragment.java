@@ -1,6 +1,5 @@
 package com.example.fumigabot.home;
 
-
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -9,9 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Chronometer;
-import android.widget.Spinner;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -25,12 +25,16 @@ import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.transition.MaterialFadeThrough;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -41,13 +45,14 @@ public class InicioFragment extends Fragment {
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference referenceRobot;
     private DatabaseReference referenceFumigacion;
-    private DatabaseReference referenceQuimicosDisponibles;
-    private TextView textActividadRobot;
-    private TextView textBateria;
+    private TextView estadoRobot;
+    private TextView textEstadoFumigacion;
     private TextView infoBateria;
-    private TextView textNivelQuimico;
+    private TextView textBateria;
+    private ImageView imagenBateria;
     private TextView infoNivelQuimico;
-    private TextView textQuimicosDisponibles;
+    private TextView textNivelQuimico;
+    private ImageView imagenQuimico;
     private String mensajeInfoBateria;
     private String mensajeInfoNivelQuimico;
     private Button btnIniciarFumigacion;
@@ -56,8 +61,16 @@ public class InicioFragment extends Fragment {
     private AlertDialog alertDialog;
     private Robot robot;
     private Fumigacion fumigacion;
-    private Spinner listaQuimicos;
+    private TextInputLayout listaQuimicos;
+    private AutoCompleteTextView autoCompleteTextView;
     private ArrayAdapter<String> adapterListaQuimicos;
+    private TextInputLayout listaCantidadArea;
+    private AutoCompleteTextView autoCompleteTextView2;
+    private ArrayAdapter<String> adapterListaCantidadArea;
+
+    private boolean isFumigandoAnterior;
+    private int cantQuimicosAnterior;
+
     private final int BATERIA_NIVEL_ALTO = 40;
     private final int BATERIA_NIVEL_MODERADO = 15;
     private final int BATERIA_NIVEL_BAJO = 5;
@@ -65,47 +78,32 @@ public class InicioFragment extends Fragment {
     private final int QUIMICO_NIVEL_ALTO = 40;
     private final int QUIMICO_NIVEL_MODERADO = 20;
     private final int QUIMICO_PROBLEMATICO = -1;
-    private boolean isFumigandoAnterior;
-    private int cantQuimicosAnterior;
-
+    private final int ROBOT_APAGADO = 1;
+    private final int ROBOT_ENCENDIDO = 2;
+    private final int ROBOT_OCUPADO = 3;
 
     public InicioFragment() {
         // Required empty public constructor
         super(R.layout.fragment_inicio);
     }
 
-    /*public static InicioFragment newInstance(Robot robot) {
-        InicioFragment inicioFragment = new InicioFragment();
-        Bundle argumentos = new Bundle();
-        argumentos.putSerializable("robot", robot);
-        inicioFragment.setArguments(argumentos);
-        return inicioFragment;
-    }*/
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i("FILTRO", "INICIO FRAGMENT: onCreate " + SystemClock.elapsedRealtime());
 
-        //TransitionInflater inflater = TransitionInflater.from(requireContext());
-
+        //Transiciones en los cambios de fragmento
         setEnterTransition(new MaterialFadeThrough());
         setReturnTransition(new MaterialFadeThrough());
 
 
-        //-------------- LO QUE ESTABA EN LA ACTIVITY ORIGINAL ---------------
-
         //Recibimos los datos pasados en el bundle
         robot = (Robot)getArguments().getSerializable("RobotVinculado");
-
-
         //Instancia de la BD en Firebase
         firebaseDatabase = MyFirebase.getInstance();
         //referencia de los robots
         referenceRobot = firebaseDatabase.getReference("robots");
         //Para que se mantenga sincronizado offline
         referenceRobot.keepSynced(true);
-
         referenceRobot.addValueEventListener(robotValueEventListener);
     }
 
@@ -120,29 +118,37 @@ public class InicioFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        textActividadRobot = getView().findViewById(R.id.textActividadRobot);
-        textBateria = getView().findViewById(R.id.textBateria);
-        infoBateria = getView().findViewById(R.id.infoBateria);
-        textNivelQuimico = getView().findViewById(R.id.textNivelQuimico);
-        infoNivelQuimico = getView().findViewById(R.id.infoNivelQuimico);
+        View vista = getView();
+        //Instanciamos todos los elementos de la vista una vez que está creada
+        estadoRobot = vista.findViewById(R.id.estadoRobot);
+        textEstadoFumigacion = vista.findViewById(R.id.textEstadoFumigacion);
+        infoBateria = vista.findViewById(R.id.infoBateria);
+        textBateria = vista.findViewById(R.id.porcentajeBateria);
+        imagenBateria = vista.findViewById(R.id.imagenBateria);
+        infoNivelQuimico = vista.findViewById(R.id.infoNivelQuimico);
+        textNivelQuimico = vista.findViewById(R.id.porcentajeQuimico);
+        imagenQuimico = vista.findViewById(R.id.imagenQuimico);
 
-        textQuimicosDisponibles = getView().findViewById(R.id.textQuimicosDisponibles);
-        listaQuimicos = getView().findViewById(R.id.listaQuimicos);
+        listaQuimicos = vista.findViewById(R.id.listaQuimicos);
+        autoCompleteTextView = vista.findViewById(R.id.autoCompleteTextView);
+        //autoCompleteTextView.setOnItemSelectedListener(listaQuimicosListener);
+        //listaQuimicos.setError(getString(R.string.errorSeleccionQuimico));
 
+        listaCantidadArea = vista.findViewById(R.id.listaCantidadArea);
+        autoCompleteTextView2 = vista.findViewById(R.id.autoCompleteTextView2);
+        //autoCompleteTextView2.setOnItemSelectedListener(listaCantidadAreaListener);
+        //listaCantidadArea.setError(getString(R.string.errorSeleccionCantidadArea));
 
-        btnIniciarFumigacion = getView().findViewById(R.id.btnIniciarFumigacion);
+        btnIniciarFumigacion = vista.findViewById(R.id.btnIniciarFumigacion);
         btnIniciarFumigacion.setOnClickListener(btnIniciarFumigacionListener);
 
-        cronometro = getView().findViewById(R.id.Cronometro);
+        cronometro = vista.findViewById(R.id.Cronometro);
     }
 
     @Override
     public void onStart() {
         super.onStart();
 
-
-
-        //robot = (Robot)getIntent().getSerializableExtra("RobotVinculado");
         isFumigandoAnterior = robot.isFumigando(); // cuestionable
         cantQuimicosAnterior = robot.getQuimicosDisponibles().size(); // cuestionable
 
@@ -152,8 +158,9 @@ public class InicioFragment extends Fragment {
         referenceFumigacion.keepSynced(true);
 
         configurarAdapterListaQuimicos();
-
+        configurarAdapterListaCantidadPorArea();
     }
+
 
      private View.OnClickListener btnIniciarFumigacionListener = v -> inicializarAlertDialog();
 
@@ -187,6 +194,7 @@ public class InicioFragment extends Fragment {
 
                     if (!robot.isFumigando()) {
                         robot.setFumigando(true);
+                        robot.convertirCantidadQuimicoPorArea(autoCompleteTextView2.getText().toString());
                         iniciarFumigacion();
                     }
                     else {
@@ -211,9 +219,9 @@ public class InicioFragment extends Fragment {
     }
 
     public void determinarEstadoRobot(Robot robot){
-        String estado;
+        //String condicionRobot = "Apagado";
         String porcentajeBateria;
-        String porcentajeNivelQuimico = "";
+        String porcentajeNivelQuimico;
         boolean statusBateria = false;
         boolean statusNivelQuimico = false;
         int fumigando = View.INVISIBLE;
@@ -225,39 +233,51 @@ public class InicioFragment extends Fragment {
             statusNivelQuimico = verificarNivelQuimico(nivelQuimico);
 
             if(bateria == -1)
-                porcentajeBateria = "Batería: con problemas"; //\n\n\nENCENDIDO\n\n";
+                porcentajeBateria = "";
+                //porcentajeBateria = "Batería: con problemas";
             else
-                porcentajeBateria = "Batería: " + bateria + "%"; //\n\n\nENCENDIDO\n\n";
+                porcentajeBateria = bateria + "%";
+                //porcentajeBateria = "Batería: " + bateria + "%";
 
             if(nivelQuimico == -1)
-                porcentajeNivelQuimico = "Depósito de químico con problemas";
+                porcentajeNivelQuimico = "";
+                //porcentajeNivelQuimico = "Depósito de químico con problemas";
             else
-                porcentajeNivelQuimico = "Nivel químico: " + nivelQuimico + "%";
+                porcentajeNivelQuimico = nivelQuimico + "%";
+                //porcentajeNivelQuimico = "Nivel químico: " + nivelQuimico + "%";
 
-            textQuimicosDisponibles.setVisibility(View.VISIBLE);
+
             listaQuimicos.setVisibility(View.VISIBLE);
 
             if(robot.isFumigando()) {
-                estado = "FUMIGANDO...";
+                //condicionRobot = "Fumigando...";
                 btnIniciarFumigacion.setText("DETENER FUMIGACIÓN");
                 fumigando = View.VISIBLE;
+                definirEstadoRobot(ROBOT_OCUPADO, "Fumigando...");
             }
             else {
-                estado = "ESPERANDO ÓRDENES...";
+                //estado = "ESPERANDO ÓRDENES...";
+                //condicionRobot = "Encendido";
                 btnIniciarFumigacion.setText("FUMIGAR");
                 fumigando = View.INVISIBLE;
+                definirEstadoRobot(ROBOT_ENCENDIDO, "Encendido");
             }
         }
         else {
-            porcentajeBateria = "APAGADO\n\n\n";
+            porcentajeBateria = porcentajeNivelQuimico = ""; //"APAGADO\n\n\n";
+            //estado = "Apagado";
+            definirEstadoRobot(ROBOT_APAGADO, "Apagado");
             mensajeInfoBateria = "";
             mensajeInfoNivelQuimico = "";
             infoBateria.setBackgroundResource(R.color.colorBackground);
+            imagenBateria.setImageResource(R.drawable.battery_unknown_24);
             infoNivelQuimico.setBackgroundResource(R.color.colorBackground);
-            textQuimicosDisponibles.setVisibility(View.INVISIBLE);
-            listaQuimicos.setVisibility(View.INVISIBLE);
+            imagenQuimico.setImageResource(R.drawable.ic_science_unknown);
+            //textQuimicosDisponibles.setVisibility(View.INVISIBLE);
+            listaQuimicos.setEnabled(false);
+            listaCantidadArea.setEnabled(false);
 
-            estado = "Encender el dispositivo para comenzar";
+            //estado = "Encender el dispositivo para comenzar";
             btnIniciarFumigacion.setText("FUMIGAR");
         }
 
@@ -265,41 +285,72 @@ public class InicioFragment extends Fragment {
         textBateria.setText(porcentajeBateria);
         infoNivelQuimico.setText(mensajeInfoNivelQuimico);
         textNivelQuimico.setText(porcentajeNivelQuimico);
-        textActividadRobot.setText(estado);
+        //estadoRobot.setText(condicionRobot);
+        textEstadoFumigacion.setVisibility(fumigando);
+        cronometro.setVisibility(fumigando);
 
         if(statusBateria && statusNivelQuimico)
-            btnIniciarFumigacion.setEnabled(true);
+            //btnIniciarFumigacion.setEnabled(true);
+            habilitarFumigacion(true);
         else
-            btnIniciarFumigacion.setEnabled(false);
+            //btnIniciarFumigacion.setEnabled(false);
+            habilitarFumigacion(false);
+    }
 
-        cronometro.setVisibility(fumigando);
+    private void habilitarFumigacion(boolean valor){
+        btnIniciarFumigacion.setEnabled(valor);
+        listaQuimicos.setEnabled(valor);
+        listaCantidadArea.setEnabled(valor);
+    }
+
+    private void definirEstadoRobot(int estado, String desc){
+        estadoRobot.setText(desc);
+
+        switch (estado){
+            case ROBOT_ENCENDIDO:
+                estadoRobot.setTextColor(getResources().getColor(R.color.devEncendido));
+                return;
+
+            case ROBOT_OCUPADO:
+                estadoRobot.setTextColor(getResources().getColor(R.color.devOcupado));
+                return;
+
+            case ROBOT_APAGADO:
+                estadoRobot.setTextColor(getResources().getColor(R.color.devApagado));
+                return;
+        }
     }
 
     private boolean verificarBateria(int bateria) {
         if(bateria >= BATERIA_NIVEL_ALTO) {
             mensajeInfoBateria = "";
+            imagenBateria.setImageResource(R.drawable.battery_full_24);
             infoBateria.setBackgroundResource(R.color.colorBackground);
             return true;
         }
         if(bateria >= BATERIA_NIVEL_MODERADO) {
             //Sugerencia
             mensajeInfoBateria = "Batería moderada: será necesario recargar pronto.";
+            imagenBateria.setImageResource(R.drawable.battery_full_24);
             infoBateria.setBackgroundResource(R.drawable.recuadro_sugerencia);
             return true;
         }
         if(bateria >= BATERIA_NIVEL_BAJO) {
             //Advertencia
             mensajeInfoBateria = "Batería baja: se recomienda recargar la batería.";
+            imagenBateria.setImageResource(R.drawable.battery_alert_24);
             infoBateria.setBackgroundResource(R.drawable.recuadro_advertencia);
             return true;
         }
         if(bateria == BATERIA_PROBLEMATICA) {
             mensajeInfoBateria = "Se recomienda reemplazar la batería.";
+            imagenBateria.setImageResource(R.drawable.battery_unknown_24);
             infoBateria.setBackgroundResource(R.drawable.recuadro_problemas);
             return true;
         }
         //Alerta
         mensajeInfoBateria = "Batería muy baja: el dispositivo se apagará pronto.";
+        imagenBateria.setImageResource(R.drawable.battery_alert_24);
         infoBateria.setBackgroundResource(R.drawable.recuadro_alerta);
         return false;
     }
@@ -307,32 +358,51 @@ public class InicioFragment extends Fragment {
     private boolean verificarNivelQuimico(int nivelQuimico) {
         if(nivelQuimico >= QUIMICO_NIVEL_ALTO) {
             mensajeInfoNivelQuimico = "";
+            imagenQuimico.setImageResource(R.drawable.ic_science_24);
+            imagenQuimico.setPadding(0, 0, 0, 0);
             infoNivelQuimico.setBackgroundResource(R.color.colorBackground);
             return true;
         }
         if(nivelQuimico >= QUIMICO_NIVEL_MODERADO) {
             //Sugerencia
             mensajeInfoNivelQuimico = "Nivel de químico moderado: será necesario recargar pronto.";
+            imagenQuimico.setImageResource(R.drawable.ic_science_24);
+            imagenQuimico.setPadding(0, 0, 0, 0);
             infoNivelQuimico.setBackgroundResource(R.drawable.recuadro_advertencia);
             return true;
         }
         if(nivelQuimico == QUIMICO_PROBLEMATICO) {
             mensajeInfoNivelQuimico = "Se recomienda verificar el depósito del químico.";
+            imagenQuimico.setImageResource(R.drawable.ic_science_unknown);
+            imagenQuimico.setPadding(2, 2, 2, 2);
             infoNivelQuimico.setBackgroundResource(R.drawable.recuadro_problemas);
             return true;
         }
         // Nivel de químico bajo
         mensajeInfoNivelQuimico = "Nivel de químico bajo: es necesario recargar.";
+        imagenQuimico.setImageResource(R.drawable.ic_science_alert);
+
+        imagenQuimico.setPadding(2, 2, 2, 2);
         infoNivelQuimico.setBackgroundResource(R.drawable.recuadro_alerta);
         return false;
     }
 
+
     public void configurarAdapterListaQuimicos(){
-        adapterListaQuimicos = new ArrayAdapter<>(getContext(),
+        /*adapterListaQuimicos = new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_spinner_item,
                 robot.getQuimicosDisponibles());
         adapterListaQuimicos.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        listaQuimicos.setAdapter(adapterListaQuimicos);
+        listaQuimicos.setAdapter(adapterListaQuimicos);*/
+
+        adapterListaQuimicos = new ArrayAdapter<>(getContext(), R.layout.list_item, robot.getQuimicosDisponibles());
+        autoCompleteTextView.setAdapter(adapterListaQuimicos);
+    }
+
+    public void configurarAdapterListaCantidadPorArea(){
+        adapterListaCantidadArea= new ArrayAdapter<>(getContext(), R.layout.list_item,
+                getResources().getStringArray(R.array.cantidad_quimico_por_area));
+        autoCompleteTextView2.setAdapter(adapterListaCantidadArea);
     }
 
     private ValueEventListener robotValueEventListener = new ValueEventListener() {
@@ -342,8 +412,8 @@ public class InicioFragment extends Fragment {
             determinarEstadoRobot(robot);
 
             // if cuestionable
-            if(isFumigandoAnterior == robot.isFumigando()
-                    && cantQuimicosAnterior != robot.getQuimicosDisponibles().size())
+            if(cantQuimicosAnterior != robot.getQuimicosDisponibles().size()
+                    && (isFumigandoAnterior == robot.isFumigando() || robot.isFumigando() == false))
                 configurarAdapterListaQuimicos();
 
             return;
@@ -359,28 +429,31 @@ public class InicioFragment extends Fragment {
     public void iniciarFumigacion(){
         fumigacion = new Fumigacion();
         cronometro.setBase(SystemClock.elapsedRealtime());
-        //cronometro.setBase(System.currentTimeMillis());//Clock.elapsedRealtime());
         listaQuimicos.setEnabled(false);
-        fumigacion.setTimestampInicio(Long.toString(System.currentTimeMillis())); //Long.toString(cronometro.getBase()));
+        listaCantidadArea.setEnabled(false);
+        fumigacion.setTimestampInicio(Long.toString(System.currentTimeMillis()));
         cronometro.start();
     }
 
     public void detenerFumigacion(){
         cronometro.stop();
         listaQuimicos.setEnabled(true);
+        listaCantidadArea.setEnabled(true);
 
-        //long tiempoTranscurrido = SystemClock.elapsedRealtime() - cronometro.getBase();
-        fumigacion.setTimestampFin(Long.toString(System.currentTimeMillis()));//(Long.toString(tiempoTranscurrido));
-        fumigacion.setQuimicoUtilizado(listaQuimicos.getSelectedItem().toString());
+        fumigacion.setTimestampFin(Long.toString(System.currentTimeMillis()));
+        //fumigacion.setQuimicoUtilizado(listaQuimicos.getSelectedItem().toString());
+        fumigacion.setQuimicoUtilizado(autoCompleteTextView.getText().toString());
+        fumigacion.setCantidadQuimicoPorArea(autoCompleteTextView2.getText().toString());
         updateFumigacion(fumigacion);
 
         configurarAdapterListaQuimicos(); //actualiza por si hubo un cambio en la lista de químicos
     }
 
     public void updateRobot(Robot robot) {
-        referenceRobot.child(Integer.toString(robot.getRobotId()))
-                .child("fumigando")
-                .setValue(robot.isFumigando());
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("fumigando", robot.isFumigando());
+        childUpdates.put("cantidadQuimicoPorArea", robot.getCantidadQuimicoPorArea());
+        referenceRobot.child(Integer.toString(robot.getRobotId())).updateChildren(childUpdates);
     }
 
     public void updateFumigacion(Fumigacion fumigacion){

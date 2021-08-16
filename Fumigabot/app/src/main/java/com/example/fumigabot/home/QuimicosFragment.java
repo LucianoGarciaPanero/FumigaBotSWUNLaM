@@ -63,7 +63,7 @@ public class QuimicosFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i("FILTRO", "QUIMICOS FRAGMENT: onCreate " + SystemClock.elapsedRealtime());
+        //Log.i("FILTRO", "QUIMICOS FRAGMENT: onCreate " + SystemClock.elapsedRealtime());
         setEnterTransition(new MaterialFadeThrough());
         setReturnTransition(new MaterialFadeThrough());
 
@@ -72,15 +72,12 @@ public class QuimicosFragment extends Fragment {
 
         //Recibimos los datos pasados en el bundle
         robot = (Robot)getArguments().getSerializable("RobotVinculado");
-        //Obtiene el ID del robot, único dato necesario para conocer sus historiales
-        //robotId = robot.getRobotId();
 
         //Instancia y referencia de la BD en Firebase
         firebaseDatabase = MyFirebase.getInstance();
         reference = firebaseDatabase.getReference("robots/" + robot.getRobotId());
         //Para que se mantenga sincronizado offline
         reference.keepSynced(true);
-
     }
 
     @Override
@@ -98,6 +95,7 @@ public class QuimicosFragment extends Fragment {
 
         tablaQuimicos= getView().findViewById(R.id.tablaQuimicos);
         textSinQuimicos= getView().findViewById(R.id.textSinQuimicos);
+        txtNuevoQuimico = getView().findViewById(R.id.textNuevoQuimico);
         btnAgregarQuimico = getView().findViewById(R.id.btnAgregarQuimico);
         btnAgregarQuimico.setOnClickListener(btnAgregarQuimicoListener);
         listado = getView().findViewById(R.id.listaEntradaQuimicos);
@@ -113,10 +111,15 @@ public class QuimicosFragment extends Fragment {
 
     private View.OnClickListener btnAgregarQuimicoListener = v -> {
         String nuevoQuimico = txtNuevoQuimico.getText().toString();
-        robot.getQuimicosDisponibles().add(nuevoQuimico);
-        updateRobot(robot);
-        txtNuevoQuimico.setText("");
-        Toast.makeText(getContext(), "¡Químico agregado!", Toast.LENGTH_SHORT).show();
+        if(nuevoQuimico.isEmpty()){
+            Toast.makeText(getContext(), "Debe ingresar un químico", Toast.LENGTH_LONG).show();
+        }
+        else {
+            robot.getQuimicosDisponibles().add(nuevoQuimico);
+            updateRobot(robot);
+            txtNuevoQuimico.setText("");
+            Toast.makeText(getContext(), "¡Químico agregado!", Toast.LENGTH_SHORT).show();
+        }
     };
 
     public void updateRobot(Robot robot) {

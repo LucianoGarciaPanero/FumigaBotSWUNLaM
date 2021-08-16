@@ -42,7 +42,7 @@ public class SplashActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getSupportActionBar().hide();
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_inicial);
+        setContentView(R.layout.activity_splash);
 
         anim_robot = findViewById(R.id.imageRobot);
         /*Drawable draw = anim_robot.getDrawable();
