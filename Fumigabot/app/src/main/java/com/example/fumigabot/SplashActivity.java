@@ -10,13 +10,11 @@ import android.content.pm.ActivityInfo;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
 import android.widget.ImageView;
 
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
-import com.example.fumigabot.home.FragmentActivity;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -30,10 +28,7 @@ public class SplashActivity extends AppCompatActivity {
     private DatabaseReference reference;
     private Robot robot;
     private String robotId = "";
-
     private ImageView anim_robot;
-    //private AnimatedVectorDrawableCompat avd;
-    //private AnimatedVectorDrawable avd2;
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -45,14 +40,6 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
 
         anim_robot = findViewById(R.id.imageRobot);
-        /*Drawable draw = anim_robot.getDrawable();
-        if (draw instanceof AnimatedVectorDrawableCompat) {
-            avd = (AnimatedVectorDrawableCompat) draw;
-            avd.start();
-        } else if (draw instanceof AnimatedVectorDrawable) {
-            avd2 = (AnimatedVectorDrawable) draw;
-            avd2.start();
-        }*/
 
         //Vemos si tiene vinculado algo
         robotId = getIdRobotSP();
@@ -77,17 +64,14 @@ public class SplashActivity extends AppCompatActivity {
     private void obtenerRobot() {
         if(robotId != "") { //quiere decir que tiene algo, puedo ir a buscar a la base de datos
             //Pasamos al Home y vemos toda la data del robot vinculado
-            //Intent i = new Intent(getApplicationContext(), RobotHomeActivity.class);
-            Intent i = new Intent(getApplicationContext(), FragmentActivity.class);
+            Intent i = new Intent(getApplicationContext(), RobotHomeActivity.class);
             i.putExtra("RobotVinculado", robot);
-            Log.i("FILTRO", "SPLASH: yendo a FragmentActivity " + SystemClock.elapsedRealtime());
             startActivity(i);
         }
         else {
             //Quiere decir que tiene que vincular un nuevo dispositivo
             startActivity(new Intent(getApplicationContext(), VincularDispositivoActivity.class));
         }
-        Log.i("FILTRO", "SPLASH: yendo a Finish() " + SystemClock.elapsedRealtime());
         finish();
     }
 

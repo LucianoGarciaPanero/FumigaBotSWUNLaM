@@ -1,6 +1,5 @@
 package com.example.fumigabot.firebase;
 
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;

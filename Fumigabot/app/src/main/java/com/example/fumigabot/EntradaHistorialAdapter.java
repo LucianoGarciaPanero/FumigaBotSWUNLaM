@@ -5,15 +5,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.Space;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
-
 import com.example.fumigabot.firebase.Fumigacion;
-
-import org.w3c.dom.Text;
 
 import java.util.List;
 
@@ -52,11 +45,9 @@ public class EntradaHistorialAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.entrada_historial, parent, false);
         }
 
-
         TextView fechaFumigacion = convertView.findViewById(R.id.fechaFumigacion);
         TextView duracion = convertView.findViewById(R.id.duracion);
         TextView horaYQuimico = convertView.findViewById(R.id.horaQuimico);
-
 
         //Agregamos toda la data
         final Fumigacion item = (Fumigacion)getItem(position);

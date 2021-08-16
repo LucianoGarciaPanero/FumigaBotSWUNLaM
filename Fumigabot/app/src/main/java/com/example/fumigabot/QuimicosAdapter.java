@@ -6,9 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-
-import com.example.fumigabot.firebase.Fumigacion;
-
 import java.util.List;
 
 public class QuimicosAdapter extends BaseAdapter {
@@ -16,8 +13,7 @@ public class QuimicosAdapter extends BaseAdapter {
     private Context context;
     private List<String> quimicos;
 
-    public QuimicosAdapter(Context context, List<String> quimicos)
-    {
+    public QuimicosAdapter(Context context, List<String> quimicos) {
         this.context = context;
         this.quimicos = quimicos;
     }
@@ -38,14 +34,12 @@ public class QuimicosAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent)
-    {
+    public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.entrada_quimico, parent, false);
         }
-
 
         TextView nombreQuimico = convertView.findViewById(R.id.nombreQuimico);
 

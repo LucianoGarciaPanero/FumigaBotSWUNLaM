@@ -1,7 +1,6 @@
 package com.example.fumigabot.firebase;
 
 import com.google.firebase.database.Exclude;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;

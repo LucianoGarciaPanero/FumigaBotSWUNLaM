@@ -1,7 +1,6 @@
 package com.example.fumigabot.home;
 
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,19 +8,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
-import com.example.fumigabot.EntradaHistorialAdapter;
 import com.example.fumigabot.QuimicosAdapter;
 import com.example.fumigabot.R;
-import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
 import com.google.android.material.transition.MaterialFadeThrough;
@@ -30,12 +23,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -46,11 +34,9 @@ public class QuimicosFragment extends Fragment {
 
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference reference;
-    private int robotId;
     private ArrayList<String> listaQuimicos = new ArrayList<>();
-    private TableLayout tablaQuimicos;
     private TextView textSinQuimicos;
-    private ListView listado;
+    private ListView listadoQuimicos;
     private QuimicosAdapter adapter;
     private EditText txtNuevoQuimico;
     private Button btnAgregarQuimico;
@@ -66,9 +52,6 @@ public class QuimicosFragment extends Fragment {
         //Log.i("FILTRO", "QUIMICOS FRAGMENT: onCreate " + SystemClock.elapsedRealtime());
         setEnterTransition(new MaterialFadeThrough());
         setReturnTransition(new MaterialFadeThrough());
-
-
-        //---------- LO QUE ESTA EN LA ACTIVITY ORIGINAL ----------------
 
         //Recibimos los datos pasados en el bundle
         robot = (Robot)getArguments().getSerializable("RobotVinculado");
@@ -93,19 +76,19 @@ public class QuimicosFragment extends Fragment {
 
         reference.addValueEventListener(robotEventListener);
 
-        tablaQuimicos= getView().findViewById(R.id.tablaQuimicos);
-        textSinQuimicos= getView().findViewById(R.id.textSinQuimicos);
-        txtNuevoQuimico = getView().findViewById(R.id.textNuevoQuimico);
-        btnAgregarQuimico = getView().findViewById(R.id.btnAgregarQuimico);
+        View vista = getView();
+        textSinQuimicos= vista.findViewById(R.id.textSinQuimicos);
+        txtNuevoQuimico = vista.findViewById(R.id.textNuevoQuimico);
+        btnAgregarQuimico = vista.findViewById(R.id.btnAgregarQuimico);
         btnAgregarQuimico.setOnClickListener(btnAgregarQuimicoListener);
-        listado = getView().findViewById(R.id.listaEntradaQuimicos);
+        listadoQuimicos = vista.findViewById(R.id.listaEntradaQuimicos);
 
         cargarVista();
     }
 
     private void cargarVista() {
         adapter = new QuimicosAdapter(getContext(), listaQuimicos);
-        listado.setAdapter(adapter);
+        listadoQuimicos.setAdapter(adapter);
         //acá podemos agregar un listener para on item click
     }
 
@@ -133,7 +116,6 @@ public class QuimicosFragment extends Fragment {
             listaQuimicos.clear();
 
             // Buscamos las fumigaciones en Firebase
-            //robot = dataSnapshot.child(Integer.toString(robot.getRobotId())).getValue(Robot.class);
             robot = dataSnapshot.getValue(Robot.class);
             listaQuimicos = robot.getQuimicosDisponibles();
 
@@ -141,7 +123,7 @@ public class QuimicosFragment extends Fragment {
                 cargarVista();
             }
             else {
-                listado.setVisibility(View.INVISIBLE);
+                listadoQuimicos.setVisibility(View.INVISIBLE);
                 textSinQuimicos.setVisibility(View.VISIBLE);
             }
         }

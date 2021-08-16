@@ -9,7 +9,7 @@
         android:roundIcon="@mipmap/ic_fumigabot_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Fumigabot">
-        <activity android:name=".home.FragmentActivity"></activity>
+        <activity android:name=".RobotHomeActivity"></activity>
         <activity android:name=".SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -17,9 +17,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".VincularDispositivoActivity"></activity>
-        <activity android:name=".RobotHomeActivity"></activity>
-        <activity android:name=".RobotHistorialActivity"></activity>
-        <activity android:name=".MisQuimicosActivity"></activity>
     </application>
 
 </manifest>

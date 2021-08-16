@@ -1,24 +1,15 @@
 package com.example.fumigabot.home;
 
-import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
-
 import com.example.fumigabot.EntradaHistorialAdapter;
 import com.example.fumigabot.R;
 import com.example.fumigabot.firebase.Fumigacion;
@@ -30,11 +21,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 
 
 /**
@@ -49,15 +37,14 @@ public class HistorialFragment extends Fragment {
     private int robotId;
     private ArrayList<Fumigacion> listaFumigaciones = new ArrayList<>();
     private Fumigacion fumigacion;
-    private TableLayout tablaHistorial;
     private TextView textSinFumigaciones;
-    private ListView listado;
+    private ListView listadoHistorial;
     private EntradaHistorialAdapter adapter;
 
 
-    private final int SEGUNDOS_MILIS = 1000;
+/*    private final int SEGUNDOS_MILIS = 1000;
     private final int MINUTOS_MILIS = SEGUNDOS_MILIS * 60;
-    private final int HORAS_MILIS = MINUTOS_MILIS * 60;
+    private final int HORAS_MILIS = MINUTOS_MILIS * 60;*/
     //private final int DIAS_MILIS = HORAS_MILIS * 24;
 
 
@@ -66,26 +53,13 @@ public class HistorialFragment extends Fragment {
         super(R.layout.fragment_historial);
     }
 
-    /*public static HistorialFragment newInstance(Robot robot) {
-        HistorialFragment historialFragment = new HistorialFragment();
-        Bundle argumentos = new Bundle();
-        argumentos.putSerializable("robot", robot);
-        historialFragment.setArguments(argumentos);
-        return historialFragment;
-    }*/
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i("FILTRO", "HISTORIAL FRAGMENT: onCreate " + SystemClock.elapsedRealtime());
-        //TransitionInflater inflater = TransitionInflater.from(requireContext());
-        //setEnterTransition(new MaterialFadeThrough());
-        //setExitTransition(new MaterialFadeThrough());
+        //Log.i("FILTRO", "HISTORIAL FRAGMENT: onCreate " + SystemClock.elapsedRealtime());
+        //Transiciones al cambiar de pantallas en la navegación
         setEnterTransition(new MaterialFadeThrough());
         setReturnTransition(new MaterialFadeThrough());
-
-
-        //---------- LO QUE ESTA EN LA ACTIVITY ORIGINAL ----------------
 
         //Recibimos los datos pasados en el bundle
         robot = (Robot)getArguments().getSerializable("RobotVinculado");
@@ -97,7 +71,6 @@ public class HistorialFragment extends Fragment {
         reference = firebaseDatabase.getReference("fumigaciones/" + robotId);
         //Para que se mantenga sincronizado offline
         reference.keepSynced(true);
-
     }
 
     @Override
@@ -113,9 +86,10 @@ public class HistorialFragment extends Fragment {
 
         reference.addValueEventListener(fumigacionesEventListener);
 
-        tablaHistorial = getView().findViewById(R.id.tablaHistorial);
-        textSinFumigaciones = getView().findViewById(R.id.textSinFumigaciones); // View.INVISIBLE x default
-        listado = getView().findViewById(R.id.listaEntradaFumigaciones);
+        View vista = getView();
+
+        textSinFumigaciones = vista.findViewById(R.id.textSinFumigaciones); // View.INVISIBLE x default
+        listadoHistorial = vista.findViewById(R.id.listaEntradaFumigaciones);
 
         cargarVista();
     }
@@ -123,7 +97,7 @@ public class HistorialFragment extends Fragment {
     private void cargarVista() {
         Collections.sort(listaFumigaciones);
         adapter = new EntradaHistorialAdapter(getContext(), listaFumigaciones);
-        listado.setAdapter(adapter);
+        listadoHistorial.setAdapter(adapter);
         //acá podemos agregar un listener para on item click
     }
 
@@ -142,13 +116,10 @@ public class HistorialFragment extends Fragment {
             }
 
             if(listaFumigaciones.size() > 0){
-                // Ordena la lista descendentemente según timestampInicio
-                /*Collections.sort(listaFumigaciones);
-                generarTablaFumigaciones(listaFumigaciones);*/
                 cargarVista();
             }
             else {
-                listado.setVisibility(View.INVISIBLE);
+                listadoHistorial.setVisibility(View.INVISIBLE);
                 textSinFumigaciones.setVisibility(View.VISIBLE);
             }
         }
