@@ -3,6 +3,8 @@ package com.example.fumigabot.home;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.transition.AutoTransition;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +14,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -24,6 +27,7 @@ import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.transition.MaterialFadeThrough;
@@ -45,6 +49,10 @@ public class InicioFragment extends Fragment {
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference referenceRobot;
     private DatabaseReference referenceFumigacion;
+    private LinearLayout layoutExpandible;
+    private Button botonExpandir;
+    private MaterialCardView cardViewEstado;
+    private MaterialCardView cardViewFumigacion;
     private TextView estadoRobot;
     private TextView textEstadoFumigacion;
     private TextView infoBateria;
@@ -119,6 +127,13 @@ public class InicioFragment extends Fragment {
 
         View vista = getView();
         //Instanciamos todos los elementos de la vista una vez que está creada
+        layoutExpandible = vista.findViewById(R.id.layoutExpandible);
+        cardViewEstado = vista.findViewById(R.id.cardEstadoRobot);
+        /*botonExpandir = vista.findViewById(R.id.botonExpandir);
+        botonExpandir.setOnClickListener(botonExpandirListener);*/
+
+        cardViewFumigacion = vista.findViewById(R.id.cardIniciarFumigacion);
+
         estadoRobot = vista.findViewById(R.id.estadoRobot);
         textEstadoFumigacion = vista.findViewById(R.id.textEstadoFumigacion);
         infoBateria = vista.findViewById(R.id.infoBateria);
@@ -155,7 +170,26 @@ public class InicioFragment extends Fragment {
         configurarAdapterListaQuimicos();
         configurarAdapterListaCantidadPorArea();
     }
-
+/*
+    private View.OnClickListener botonExpandirListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if(layoutExpandible.getVisibility()==View.GONE){
+                TransitionManager.beginDelayedTransition(cardViewEstado, new AutoTransition());
+                TransitionManager.beginDelayedTransition(cardViewFumigacion, new AutoTransition());
+                layoutExpandible.setVisibility(View.VISIBLE);
+                //cambiar boton
+                botonExpandir.setText("-");
+            }
+            else{
+                TransitionManager.beginDelayedTransition(cardViewEstado, new AutoTransition());
+                TransitionManager.beginDelayedTransition(cardViewFumigacion, new AutoTransition());
+                layoutExpandible.setVisibility(View.GONE);
+                //cambiar boton
+                botonExpandir.setText("+");
+            }
+        }
+    };*/
 
      private View.OnClickListener btnIniciarFumigacionListener = v -> inicializarAlertDialog();
 
@@ -258,7 +292,7 @@ public class InicioFragment extends Fragment {
         else {
             porcentajeBateria = porcentajeNivelQuimico = "";
             definirEstadoRobot(ROBOT_APAGADO, "Apagado");
-            mensajeInfoBateria = "";
+            mensajeInfoBateria = "Encender el robot para comenzar";
             mensajeInfoNivelQuimico = "";
             infoBateria.setBackgroundResource(R.color.colorBackground);
             imagenBateria.setImageResource(R.drawable.battery_unknown_24);
@@ -311,7 +345,8 @@ public class InicioFragment extends Fragment {
         if(bateria >= BATERIA_NIVEL_ALTO) {
             mensajeInfoBateria = "";
             imagenBateria.setImageResource(R.drawable.battery_full_24);
-            infoBateria.setBackgroundResource(R.color.colorBackground);
+            //infoBateria.setBackgroundResource(R.color.colorBackground);
+            infoBateria.setVisibility(View.GONE);
             return true;
         }
         if(bateria >= BATERIA_NIVEL_MODERADO) {
@@ -319,6 +354,7 @@ public class InicioFragment extends Fragment {
             mensajeInfoBateria = "Batería moderada: será necesario recargar pronto.";
             imagenBateria.setImageResource(R.drawable.battery_full_24);
             infoBateria.setBackgroundResource(R.drawable.recuadro_sugerencia);
+            infoBateria.setVisibility(View.VISIBLE);
             return true;
         }
         if(bateria >= BATERIA_NIVEL_BAJO) {
@@ -326,50 +362,56 @@ public class InicioFragment extends Fragment {
             mensajeInfoBateria = "Batería baja: se recomienda recargar la batería.";
             imagenBateria.setImageResource(R.drawable.battery_alert_24);
             infoBateria.setBackgroundResource(R.drawable.recuadro_advertencia);
+            infoBateria.setVisibility(View.VISIBLE);
             return true;
         }
         if(bateria == BATERIA_PROBLEMATICA) {
             mensajeInfoBateria = "Se recomienda reemplazar la batería.";
             imagenBateria.setImageResource(R.drawable.battery_unknown_24);
             infoBateria.setBackgroundResource(R.drawable.recuadro_problemas);
+            infoBateria.setVisibility(View.VISIBLE);
             return true;
         }
         //Alerta
         mensajeInfoBateria = "Batería muy baja: el dispositivo se apagará pronto.";
         imagenBateria.setImageResource(R.drawable.battery_alert_24);
         infoBateria.setBackgroundResource(R.drawable.recuadro_alerta);
+        infoBateria.setVisibility(View.VISIBLE);
         return false;
     }
 
     private boolean verificarNivelQuimico(int nivelQuimico) {
         if(nivelQuimico >= QUIMICO_NIVEL_ALTO) {
             mensajeInfoNivelQuimico = "";
-            imagenQuimico.setImageResource(R.drawable.ic_science_24);
-            imagenQuimico.setPadding(0, 0, 0, 0);
-            infoNivelQuimico.setBackgroundResource(R.color.colorBackground);
+            imagenQuimico.setImageResource(R.drawable.ic_science);
+            //imagenQuimico.setPadding(0, 0, 0, 0);
+            //infoNivelQuimico.setBackgroundResource(R.color.colorBackground);
+            infoNivelQuimico.setVisibility(View.GONE);
             return true;
         }
         if(nivelQuimico >= QUIMICO_NIVEL_MODERADO) {
             //Sugerencia
             mensajeInfoNivelQuimico = "Nivel de químico moderado: será necesario recargar pronto.";
-            imagenQuimico.setImageResource(R.drawable.ic_science_24);
-            imagenQuimico.setPadding(0, 0, 0, 0);
+            imagenQuimico.setImageResource(R.drawable.ic_science);
+            //imagenQuimico.setPadding(0, 0, 0, 0);
             infoNivelQuimico.setBackgroundResource(R.drawable.recuadro_advertencia);
+            infoNivelQuimico.setVisibility(View.VISIBLE);
             return true;
         }
         if(nivelQuimico == QUIMICO_PROBLEMATICO) {
             mensajeInfoNivelQuimico = "Se recomienda verificar el depósito del químico.";
             imagenQuimico.setImageResource(R.drawable.ic_science_unknown);
-            imagenQuimico.setPadding(2, 2, 2, 2);
+            //imagenQuimico.setPadding(2, 2, 2, 2);
             infoNivelQuimico.setBackgroundResource(R.drawable.recuadro_problemas);
+            infoNivelQuimico.setVisibility(View.VISIBLE);
             return true;
         }
         // Nivel de químico bajo
         mensajeInfoNivelQuimico = "Nivel de químico bajo: es necesario recargar.";
         imagenQuimico.setImageResource(R.drawable.ic_science_alert);
-
-        imagenQuimico.setPadding(2, 2, 2, 2);
+        //imagenQuimico.setPadding(2, 2, 2, 2);
         infoNivelQuimico.setBackgroundResource(R.drawable.recuadro_alerta);
+        infoNivelQuimico.setVisibility(View.VISIBLE);
         return false;
     }
 

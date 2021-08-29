@@ -71,7 +71,7 @@ public class VincularDispositivoActivity extends AppCompatActivity {
                             if (snapshot.hasChild(pin)) {
                                 robot = snapshot.child(pin).getValue(Robot.class);
                                 guardarPinSP(pin);
-                                mensajeVinculacion = "¡Fumigabot vinculado!";
+                                mensajeVinculacion = "¡Robot vinculado!";
 
                                 //Vamos al Home
                                 Intent i = new Intent(getApplicationContext(), RobotHomeActivity.class);//RobotHomeActivity.class);

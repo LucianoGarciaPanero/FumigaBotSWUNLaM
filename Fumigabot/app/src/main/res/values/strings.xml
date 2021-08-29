@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Fumigabot</string>
+    <string name="app_name">Defy</string>
     <string name="errorSeleccionQuimico">Se debe seleccionar un químico</string>
     <string name="errorSeleccionCantidadArea">Se debe seleccionar una opción</string>
     <string-array name="cantidad_quimico_por_area">

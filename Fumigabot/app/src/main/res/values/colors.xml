@@ -33,8 +33,8 @@
     <color name="fondoAlerta">#EF5350</color>
     <color name="fondoAvisoBateria">#9575CD</color>
     <color name="bordeRecuadro">@color/colorBackground</color>
-    <color name="devEncendido">#689F38</color>
-    <color name="devOcupado">#FF5722</color>
+    <color name="devEncendido">#4CAF50</color>
+    <color name="devOcupado">#FF9800</color>
     <color name="devApagado">#33000000</color>
 
     <!-- Otros bonitos que quedaron y eventualmente si no se usan, vuelan -->

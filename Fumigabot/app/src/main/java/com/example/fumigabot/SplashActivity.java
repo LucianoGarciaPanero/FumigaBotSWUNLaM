@@ -39,7 +39,7 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        anim_robot = findViewById(R.id.imageRobot);
+        anim_robot = findViewById(R.id.logoCompleto);
 
         //Vemos si tiene vinculado algo
         robotId = getIdRobotSP();
