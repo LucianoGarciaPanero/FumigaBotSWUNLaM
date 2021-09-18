@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="card_layout_margin">16dp</dimen>
+    <dimen name="card_content_padding">8dp</dimen>
+    <dimen name="textview_in_card_margin_top">6dp</dimen>
+    <dimen name="text_size_stepper">12sp</dimen>
+    <dimen name="keyline_4">16dp</dimen>
+    <dimen name="keyline_5">24dp</dimen>
+
+    <dimen name="component_label_horizontal_margin">@dimen/keyline_4</dimen>
+    <dimen name="elevation_default_top_app_bar">4dp</dimen>
+</resources>

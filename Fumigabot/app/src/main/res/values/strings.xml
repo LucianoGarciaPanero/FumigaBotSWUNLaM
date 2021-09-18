@@ -2,6 +2,12 @@
     <string name="app_name">Defy</string>
     <string name="errorSeleccionQuimico">Se debe seleccionar un químico</string>
     <string name="errorSeleccionCantidadArea">Se debe seleccionar una opción</string>
+
+    <string name="stepper_type_tab">tab</string>
+    <string name="stepper_type_tab_numered">tab_numered</string>
+    <string name="stepper_type_progress">progress</string>
+    <string name="stepper_type_fleets">fleets</string>
+
     <string-array name="cantidad_quimico_por_area">
         <item id="1">Baja - Ráfaga de 0,5 segundos</item>
         <item id="2">Media - Ráfaga de 1 segundo</item>
