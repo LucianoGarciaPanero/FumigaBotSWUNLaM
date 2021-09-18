@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base application theme. -->
+    <style name="Theme.Defy" parent="Base.Theme.Defy" />
+
+    <!-- Este es el tema que va a servir para light y dark theme -->
+    <style name="Base.Theme.Defy" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Colores para light theme -->
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorSecondary">@color/green_200</item>
+        <item name="colorSecondaryVariant">@color/green_500</item>
+
+        <item name="android:colorBackground">@color/white_50</item>
+        <item name="colorSurface">@color/white_50</item>
+        <item name="colorError">@color/red_600</item>
+
+        <item name="colorOnPrimary">@color/white_50</item>
+        <item name="colorOnSecondary">@color/black_900</item>
+        <item name="colorOnBackground">@color/black_900</item>
+        <item name="colorOnSurface">@color/black_900</item>
+        <item name="colorOnError">@color/white_50</item>
+
+
+        <!-- Componentes -->
+        <!--item name="bottomNavigationStyle">@style/bottomNavBar</item-->
+        <!--item  name="android:windowActivityTransitions">true</item-->
+
+    </style>
+
+</resources>

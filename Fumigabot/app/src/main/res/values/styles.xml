@@ -1,11 +1,11 @@
 <resources>
 
-    <!-- Base application theme. -->
+    <!-- Base application theme.
     <style name="Theme.Fumigabot" parent="Base.Theme.Fumigabot" />
 
-    <!-- Este es el tema que va a servir para light y dark theme -->
-    <style name="Base.Theme.Fumigabot" parent="Theme.MaterialComponents.Light">
-        <!-- Colores para light theme -->
+    < Este es el tema que va a servir para light y dark theme
+    <style name="Base.Theme.Fumigabot" parent="Theme.MaterialComponents.DayNight">
+        <- Colores para light theme -->
         <!--item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorSecondary">@color/colorSecondary</item>
         <item name="colorSecondaryVariant">@color/colorSecondaryVariant</item>
@@ -27,9 +27,9 @@
         <item name="android:textViewStyle">@style/labelsStyle</item>
         <item name="editTextStyle">@style/editTextStyle</item>
         <item name="bottomNavigationStyle">@style/bottomNavBar</item>
-        <item name="materialAlertDialogTheme">@style/alertDialogStyle</item-->
+        <item name="materialAlertDialogTheme">@style/alertDialogStyle</item
 
-    </style>
+    </style-->
 
 
     <!-- Estilos de cada componente  -->
@@ -44,30 +44,30 @@
 
 
     <style name="labelsStyle">
-        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
     </style>
 
     <style name="labelAdvertenciaStyle">
-        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
         <item name="android:background">@color/fondoAdvertencia</item>
     </style>
 
     <style name="labelAlertaStyle">
-        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
         <item name="android:background">@color/fondoAlerta</item>
     </style>
 
     <style name="editTextStyle" parent="Widget.AppCompat.EditText">
-        <item name="android:textColor">@color/colorPrimary</item>
-        <item name="android:textColorHighlight">@color/colorSecondaryVariant</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
+        <item name="android:textColorHighlight">?attr/colorSecondaryVariant</item>
     </style>
 
     <style name="alertDialogStyle" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
-        <item name="android:textColor">@color/colorOnSurface</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="colorSurface">@color/blanco</item>
     </style>
 
-    <style name="bottomNavBar" parent="Widget.MaterialComponents.BottomNavigationView.Colored">
+    <style name="bottomNavBar" parent="Widget.MaterialComponents.BottomNavigationView">
         <!--item name="itemTextColor">@color/colorPrimary</item>
         <item name="itemBackground">@color/colorPrimaryDark</item>
         <item name="itemIconTint">@color/colorPrimary</item-->

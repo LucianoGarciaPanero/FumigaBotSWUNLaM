@@ -30,7 +30,7 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        getSupportActionBar().hide();
+        //getSupportActionBar().hide();
         setContentView(R.layout.activity_robot_home);
         super.onCreate(savedInstanceState);
 
