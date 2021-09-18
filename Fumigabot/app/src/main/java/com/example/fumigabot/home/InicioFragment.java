@@ -294,9 +294,9 @@ public class InicioFragment extends Fragment {
             definirEstadoRobot(ROBOT_APAGADO, "Apagado");
             mensajeInfoBateria = "Encender el robot para comenzar";
             mensajeInfoNivelQuimico = "";
-            infoBateria.setBackgroundResource(R.color.colorBackground);
+            infoBateria.setBackgroundColor(R.attr.backgroundColor);
             imagenBateria.setImageResource(R.drawable.battery_unknown_24);
-            infoNivelQuimico.setBackgroundResource(R.color.colorBackground);
+            infoNivelQuimico.setBackgroundColor(R.attr.backgroundColor);
             imagenQuimico.setImageResource(R.drawable.ic_science_unknown);
             listaQuimicos.setEnabled(false);
             listaCantidadArea.setEnabled(false);
