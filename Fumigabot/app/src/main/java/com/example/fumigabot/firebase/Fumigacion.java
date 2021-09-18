@@ -1,12 +1,11 @@
 package com.example.fumigabot.firebase;
 
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Fumigacion implements Comparable, Serializable {
+public class Fumigacion implements Comparable {
 
     private String fumigacionId;
     private String timestampInicio;
