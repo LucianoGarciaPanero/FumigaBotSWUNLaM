@@ -9,10 +9,12 @@
         android:roundIcon="@mipmap/ic_fumigabot_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Defy">
+        <activity android:name=".NuevaFumigacionActivity"></activity>
         <activity android:name=".RobotHomeActivity" />
         <activity android:name=".SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
