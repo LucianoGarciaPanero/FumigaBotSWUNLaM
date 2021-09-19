@@ -110,7 +110,8 @@ public class InicioFragment extends Fragment {
         referenceRobot.addValueEventListener(robotValueEventListener);
 
         //referencia de las fumigaciones para empezar a guardarlas
-        referenceFumigacion = firebaseDatabase.getReference("fumigaciones/" + robot.getRobotId());
+        referenceFumigacion = firebaseDatabase
+            .getReference("fumigaciones_historial/" + robot.getRobotId());
         //Para que se mantenga sincronizado offline
         referenceFumigacion.keepSynced(true);
 

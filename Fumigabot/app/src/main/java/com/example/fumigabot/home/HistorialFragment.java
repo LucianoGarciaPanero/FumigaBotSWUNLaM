@@ -68,7 +68,7 @@ public class HistorialFragment extends Fragment {
 
         //Instancia y referencia de la BD en Firebase
         firebaseDatabase = MyFirebase.getInstance();
-        reference = firebaseDatabase.getReference("fumigaciones/" + robotId);
+        reference = firebaseDatabase.getReference("fumigaciones_historial/" + robotId);
         //Para que se mantenga sincronizado offline
         reference.keepSynced(true);
     }

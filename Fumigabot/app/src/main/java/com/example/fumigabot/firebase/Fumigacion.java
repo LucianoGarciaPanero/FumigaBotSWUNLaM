@@ -45,24 +45,21 @@ public class Fumigacion implements Comparable, Serializable {
         this.cantidadQuimicoPorArea = cantidadQuimicoPorArea;
     }
 
-    public String darFormatoFechaInicio()
-    {
+    public String darFormatoFechaInicio() {
         SimpleDateFormat formateador = new SimpleDateFormat("dd MMMM yyyy");
         Date fechaHoraInicio = new Date(Long.parseLong(timestampInicio));
         String fechaHoraInicioFormateada = formateador.format(fechaHoraInicio);
         return fechaHoraInicioFormateada;
     }
 
-    public String getHoraInicio()
-    {
+    public String getHoraInicio() {
         SimpleDateFormat formateador = new SimpleDateFormat("HH:mm");
         Date horaInicio = new Date(Long.parseLong(timestampInicio));
         String horaInicioFormateada = formateador.format(horaInicio);
         return horaInicioFormateada;
     }
 
-    public String getHoraFin()
-    {
+    public String getHoraFin() {
         SimpleDateFormat formateador = new SimpleDateFormat("HH:mm");
         Date horaFin = new Date(Long.parseLong(timestampFin));
         String horaFinFormateada = formateador.format(horaFin);
