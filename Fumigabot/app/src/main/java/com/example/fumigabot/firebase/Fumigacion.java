@@ -13,6 +13,8 @@ public class Fumigacion implements Comparable, Serializable {
     private String timestampFin;
     private String quimicoUtilizado;
     private String cantidadQuimicoPorArea;
+    private String observaciones;
+    private boolean programada;
 
     private final int SEGUNDOS_MILIS = 1000;
     private final int MINUTOS_MILIS = SEGUNDOS_MILIS * 60;
@@ -44,6 +46,14 @@ public class Fumigacion implements Comparable, Serializable {
     public void setCantidadQuimicoPorArea(String cantidadQuimicoPorArea) {
         this.cantidadQuimicoPorArea = cantidadQuimicoPorArea;
     }
+
+    public String getObservaciones() { return observaciones; }
+
+    public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
+
+    public boolean isProgramada() { return programada; }
+
+    public void setProgramada(boolean programada) { this.programada = programada; }
 
     public String darFormatoFechaInicio() {
         SimpleDateFormat formateador = new SimpleDateFormat("dd MMMM yyyy");

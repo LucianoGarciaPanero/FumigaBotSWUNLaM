@@ -501,7 +501,7 @@ public class InicioFragment extends Fragment {
                 DataSnapshot snapshot = task1.getResult();
                 cant = (int) snapshot.getChildrenCount();
 
-                fumigacion.setFumigacionId("f" + (cant + 1));
+                fumigacion.setFumigacionId("fh" + (cant + 1));
                 referenceFumigacion.child(fumigacion.getFumigacionId()).setValue(fumigacion.toMap());
             }
         });
