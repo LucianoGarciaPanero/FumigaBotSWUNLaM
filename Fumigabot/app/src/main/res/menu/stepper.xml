@@ -8,7 +8,7 @@
         android:title="Cantidad" />
 
     <item android:id="@+id/step_3"
-        android:title="Horario" />
+        android:title="Día y hora" />
 
     <item android:id="@+id/step_4"
         android:title="Confirmación" />
