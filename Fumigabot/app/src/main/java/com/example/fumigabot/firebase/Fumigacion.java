@@ -15,6 +15,7 @@ public class Fumigacion implements Comparable, Serializable {
     private String cantidadQuimicoPorArea;
     private String observaciones;
     private boolean programada;
+    private boolean recurrente;
 
     private final int SEGUNDOS_MILIS = 1000;
     private final int MINUTOS_MILIS = SEGUNDOS_MILIS * 60;
@@ -54,6 +55,10 @@ public class Fumigacion implements Comparable, Serializable {
     public boolean isProgramada() { return programada; }
 
     public void setProgramada(boolean programada) { this.programada = programada; }
+
+    public boolean isRecurrente() { return recurrente; }
+
+    public void setRecurrente(boolean programada) { this.recurrente = recurrente; }
 
     public String darFormatoFechaInicio() {
         SimpleDateFormat formateador = new SimpleDateFormat("dd MMMM yyyy");
