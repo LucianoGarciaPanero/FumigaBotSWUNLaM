@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import com.example.fumigabot.firebase.Robot;
 import com.example.fumigabot.home.HistorialFragment;
 import com.example.fumigabot.home.InicioFragment;
+import com.example.fumigabot.home.ProgramadasFragment;
 import com.example.fumigabot.home.QuimicosFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -21,6 +22,7 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
     private static final String INICIO_FRAGMENTO = "inicio_fragmento";
     private static final String HISTORIAL_FRAGMENTO = "historial_fragmento";
     private static final String QUIMICOS_FRAGMENTO = "quimicos_fragmento";
+    private static final String PROGRAMADAS_FRAGMENTO = "programadas_fragmento";
 
 
     public RobotHomeActivity() {
@@ -65,12 +67,16 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
                         .add(R.id.fragment_container_view, InicioFragment.class, bundle, INICIO_FRAGMENTO)
                         .add(R.id.fragment_container_view, HistorialFragment.class, bundle, HISTORIAL_FRAGMENTO)
                         .add(R.id.fragment_container_view, QuimicosFragment.class, bundle, QUIMICOS_FRAGMENTO)
+                        .add(R.id.fragment_container_view, ProgramadasFragment.class, bundle, PROGRAMADAS_FRAGMENTO)
                         //.addToBackStack(null)
                         .commitNow();
 
                 //Mostramos solamente el home en un principio
-                fragmentManager.beginTransaction().hide(fragmentManager.findFragmentByTag(HISTORIAL_FRAGMENTO))
-                        .hide(fragmentManager.findFragmentByTag(QUIMICOS_FRAGMENTO)).commitNow();
+                fragmentManager.beginTransaction()
+                        .hide(fragmentManager.findFragmentByTag(HISTORIAL_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(QUIMICOS_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(PROGRAMADAS_FRAGMENTO))
+                        .commitNow();
             } catch (Exception e) {
                 //Log.i("FILTRO", "CATCH: " + e.getMessage());
             }
@@ -83,23 +89,38 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
         switch(item.getItemId()){
             case R.id.pageInicio:
                 //Seleccionar el fragmento del inicio
-                fragmentManager.beginTransaction().hide(fragmentManager.findFragmentByTag(HISTORIAL_FRAGMENTO))
+                fragmentManager.beginTransaction()
+                        .hide(fragmentManager.findFragmentByTag(HISTORIAL_FRAGMENTO))
                         .hide(fragmentManager.findFragmentByTag(QUIMICOS_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(PROGRAMADAS_FRAGMENTO))
                         .show(fragmentManager.findFragmentByTag(INICIO_FRAGMENTO)).commitNow();
                 return true;
 
             case R.id.pageHistorial:
                 //Seleccionar el fragmento del historial
-                fragmentManager.beginTransaction().hide(fragmentManager.findFragmentByTag(INICIO_FRAGMENTO))
+                fragmentManager.beginTransaction()
+                        .hide(fragmentManager.findFragmentByTag(INICIO_FRAGMENTO))
                         .hide(fragmentManager.findFragmentByTag(QUIMICOS_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(PROGRAMADAS_FRAGMENTO))
                         .show(fragmentManager.findFragmentByTag(HISTORIAL_FRAGMENTO)).commitNow();
                 return true;
 
             case R.id.pageQuimicos:
                 //Seleccionar el fragmento de los químicos
-                fragmentManager.beginTransaction().hide(fragmentManager.findFragmentByTag(INICIO_FRAGMENTO))
+                fragmentManager.beginTransaction()
+                        .hide(fragmentManager.findFragmentByTag(INICIO_FRAGMENTO))
                         .hide(fragmentManager.findFragmentByTag(HISTORIAL_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(PROGRAMADAS_FRAGMENTO))
                         .show(fragmentManager.findFragmentByTag(QUIMICOS_FRAGMENTO)).commitNow();
+                return true;
+
+            case R.id.pageProgramadas:
+                //Seleccionar el fragmento de los químicos
+                fragmentManager.beginTransaction()
+                        .hide(fragmentManager.findFragmentByTag(INICIO_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(HISTORIAL_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(QUIMICOS_FRAGMENTO))
+                        .show(fragmentManager.findFragmentByTag(PROGRAMADAS_FRAGMENTO)).commitNow();
                 return true;
         }
         return false;

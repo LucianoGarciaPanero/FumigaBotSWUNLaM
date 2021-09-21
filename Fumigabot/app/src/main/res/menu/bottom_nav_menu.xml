@@ -14,11 +14,10 @@
         android:id="@+id/pageQuimicos"
         android:enabled="true"
         android:icon="@drawable/ic_science_24"
-        android:title="Mis químicos"/>
-    <!--item
-        android:id="@+id/pageConfig"
+        android:title="Químicos"/>
+    <item
+        android:id="@+id/pageProgramadas"
         android:enabled="true"
-        android:icon="@drawable/ic_settings_24"
-        android:title="Configuración"/-->
-
+        android:icon="@drawable/ic_event_black_24dp"
+        android:title="Programadas" />
 </menu>
