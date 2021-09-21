@@ -120,19 +120,26 @@ public class Fumigacion implements Comparable, Serializable {
 
     public Map<String, Object> toMap() {
         HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("timestampFin", timestampFin);
         hashMap.put("timestampInicio", timestampInicio);
+        hashMap.put("timestampFin", timestampFin);
         hashMap.put("quimicoUtilizado", quimicoUtilizado);
         hashMap.put("cantidadQuimicoPorArea", cantidadQuimicoPorArea);
+
+        Boolean esProgramada = programada;
+        if(esProgramada != null)
+            hashMap.put("programada", programada);
+        if(observaciones != null)
+            hashMap.put("observaciones", observaciones);
         return hashMap;
     }
 
     public Map<String, Object> toMapProgramada() {
+        //Crear programadas
         HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("recurrente", false);
         hashMap.put("timestampInicio", timestampInicio);
         hashMap.put("quimicoUtilizado", quimicoUtilizado);
         hashMap.put("cantidadQuimicoPorArea", cantidadQuimicoPorArea);
+        hashMap.put("recurrente", recurrente);
         return hashMap;
     }
 }

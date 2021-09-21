@@ -13,4 +13,10 @@
         <item id="2">Media - Ráfaga de 1 segundo</item>
         <item id="3">Alta - Ráfaga de 2 segundos</item>
     </string-array>
+
+    <string-array name="observaciones_fumigacion">
+        <item id="1">No se pudo realizar la fumigación porque había otra en curso</item>
+        <item id="2">No se pudo realizar la fumigación por batería baja</item>
+        <item id="3">No se pudo realizar la fumigación por falta de químico</item>
+    </string-array>
 </resources>
