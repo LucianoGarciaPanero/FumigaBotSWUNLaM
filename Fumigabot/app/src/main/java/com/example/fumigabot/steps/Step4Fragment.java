@@ -21,6 +21,7 @@ public class Step4Fragment extends Fragment {
     private ItemViewModel viewModelResumen;
     private TextView quimicoSeleccionado;
     private TextView cantidadSeleccionada;
+    private TextView horarioSeleccionado;
 
     public Step4Fragment() {
         // Required empty public constructor
@@ -52,16 +53,28 @@ public class Step4Fragment extends Fragment {
         //Instanciamos todos los elementos de la vista una vez que está creada
         quimicoSeleccionado = vista.findViewById(R.id.quimicoSeleccionado);
         cantidadSeleccionada = vista.findViewById(R.id.cantidadSeleccionada);
+        horarioSeleccionado = vista.findViewById(R.id.horarioSeleccionado);
         viewModelResumen = new ViewModelProvider(requireActivity()).get(ItemViewModel.class);
-        viewModelResumen.getCantidadSeleccionada().observe(requireActivity(), item -> {
-            if(item != null)
+        /*viewModelResumen.isDisponible().observe(requireActivity(), item -> {
+            if(item != null && item.booleanValue())
                 cargarDatos();
-        });
+        });*/
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(viewModelResumen.isDisponible())
+            cargarDatos();
     }
 
     private void cargarDatos(){
         quimicoSeleccionado.setText(viewModelResumen.getQuimicoSeleccionado().getValue().getText());
         cantidadSeleccionada.setText(viewModelResumen.getCantidadSeleccionada().getValue().getText());
+        if(viewModelResumen.isInstantanea().getValue())
+            horarioSeleccionado.setText("INICIAR AHORA");
+        else
+            horarioSeleccionado.setText(viewModelResumen.getHorarioSeleccionado().getValue().toString());
     }
 
     @Override

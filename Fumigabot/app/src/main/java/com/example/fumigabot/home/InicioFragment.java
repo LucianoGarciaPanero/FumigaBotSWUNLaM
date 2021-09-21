@@ -124,7 +124,8 @@ public class InicioFragment extends Fragment {
                             //El callback se ejecuta cuando se cierre la activity de Nueva Fumigación
                             Bundle bundle = result.getData().getExtras();
                             fumigacion = (Fumigacion)bundle.getSerializable("fumigacion_nueva");
-                            iniciarFumigacion();
+                            //if(!fumigacion.isProgramada())
+                                iniciarFumigacion();
                         }
                     }
                 });
@@ -246,7 +247,8 @@ public class InicioFragment extends Fragment {
     public void nuevaFumigacion(){
         //startActivity(new Intent(getContext(), NuevaFumigacionActivity.class).putExtra("robot", robot));
         activityResultLauncher.launch(new Intent(getContext(), NuevaFumigacionActivity.class)
-                .putExtra("robot_quimicos", robot.getQuimicosDisponibles()));
+                .putExtra("robot_quimicos", robot.getQuimicosDisponibles())
+                .putExtra("robotId", robot.getRobotId()));
     }
 
     public void determinarEstadoRobot(Robot robot){

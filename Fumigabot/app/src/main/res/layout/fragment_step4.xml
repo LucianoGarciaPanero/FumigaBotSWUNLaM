@@ -70,6 +70,20 @@
             app:layout_constraintTop_toBottomOf="@+id/quimicoSeleccionado"
             app:layout_constraintVertical_bias="0.0" />
 
+        <TextView
+            android:id="@+id/horarioSeleccionado"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Horario seleccionado"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cantidadSeleccionada"
+            app:layout_constraintVertical_bias="0.0" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

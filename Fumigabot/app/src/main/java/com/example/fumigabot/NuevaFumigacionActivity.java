@@ -3,6 +3,7 @@ package com.example.fumigabot;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 import android.content.ClipData;
 import android.content.DialogInterface;
@@ -14,18 +15,26 @@ import android.widget.Toast;
 import com.aceinteract.android.stepper.StepperNavListener;
 import com.aceinteract.android.stepper.StepperNavigationView;
 import com.example.fumigabot.firebase.Fumigacion;
+import com.example.fumigabot.firebase.MyFirebase;
+import com.example.fumigabot.firebase.Robot;
 import com.example.fumigabot.steps.Step1Fragment;
 import com.example.fumigabot.steps.Step2Fragment;
 import com.example.fumigabot.steps.Step3Fragment;
 import com.example.fumigabot.steps.Step4Fragment;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
-import java.util.ArrayList;
+import com.google.firebase.database.FirebaseDatabase;
 
-public class NuevaFumigacionActivity extends AppCompatActivity implements StepperNavListener {
+import java.util.ArrayList;
+import java.util.Date;
+
+public class NuevaFumigacionActivity extends AppCompatActivity implements StepperNavListener, LifecycleOwner {
 
     private Fumigacion fumigacion;
+    private int robotId;
     private ArrayList<String> quimicosDisponibles;
     private FragmentManager fragmentManager;
     private StepperNavigationView stepper;
@@ -33,13 +42,15 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
     private MaterialButton siguiente;
     private MaterialAlertDialogBuilder builder;
     private AlertDialog alertDialog;
+    private ItemViewModel viewModelNuevaFumigacion;
+    private FirebaseDatabase firebaseDatabase;
+    private DatabaseReference referenceProgramadas;
 
     private static final String STEP_1 = "step_1";
     private static final String STEP_2 = "step_2";
     private static final String STEP_3 = "step_3";
     private static final String STEP_4 = "step_4";
 
-    private ItemViewModel viewModelNuevaFumigacion;
 
     public NuevaFumigacionActivity() {
         super(R.layout.activity_nueva_fumigacion);
@@ -52,14 +63,24 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
         setContentView(R.layout.activity_nueva_fumigacion);
         super.onCreate(savedInstanceState);
 
-        //Obtenemos el manager y creamos todos los fragments
-        fragmentManager = getSupportFragmentManager();
-
-        //Obtenemos los químicos disponibles para el robot
+        //Obtenemos el Id y los químicos disponibles para el robot
         quimicosDisponibles = (ArrayList<String>) getIntent().getSerializableExtra("robot_quimicos");
+        robotId = (int)getIntent().getSerializableExtra("robotId");
+
+        //Instancia de la BD en Firebase
+        firebaseDatabase = MyFirebase.getInstance();
+        //referencia de las fumigaciones programadas para empezar a guardarlas
+        referenceProgramadas = firebaseDatabase
+                .getReference("fumigaciones_programadas/" + robotId);
+        //Para que se mantenga sincronizado offline
+        referenceProgramadas.keepSynced(true);
+
+        inicializarFragmentos();
+
 
         fumigacion = new Fumigacion();
-
+        //Esto lo dejo para probar pero es un parámetro que establece el user
+        //fumigacion.setProgramada(true);
         stepper = findViewById(R.id.stepper);
         anterior = findViewById(R.id.anterior);
         anterior.setOnClickListener(anteriorListener);
@@ -67,6 +88,11 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
         siguiente.setOnClickListener(siguienteListener);
         //stepper.setupWithNavController(NavHostFragment.findNavController(fragmentManager.findFragmentById(R.id.frame_stepper)));
         stepper.setStepperNavListener(this);
+    }
+
+    private void inicializarFragmentos(){
+        //Obtenemos el manager y creamos todos los fragments
+        fragmentManager = getSupportFragmentManager();
 
         if(fragmentManager.getFragments().size() == 0) {
             //El "intent" entre fragments
@@ -89,14 +115,13 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
                         .hide(fragmentManager.findFragmentByTag(STEP_4)).commitNow();
             } catch (Exception e) {
             }
-
             configurarViewModels();
         }
     }
 
     private void configurarViewModels(){
-        //Selección del químico
         viewModelNuevaFumigacion = new ViewModelProvider(this).get(ItemViewModel.class);
+        //Selección del químico
         viewModelNuevaFumigacion.getQuimicoSeleccionado().observe(this, item -> {
             quimicoSeleccionado(item);
         });
@@ -104,6 +129,11 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
         //Selección de la cantidad
         viewModelNuevaFumigacion.getCantidadSeleccionada().observe(this, item -> {
             cantidadSeleccionada(item);
+        });
+
+        //Selección del horario
+        viewModelNuevaFumigacion.getHorarioSeleccionado().observe(this, item->{
+            horarioSeleccionado(item);
         });
     }
 
@@ -127,13 +157,30 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
         siguiente.setEnabled(habilitar);
     }
 
+    private void horarioSeleccionado(Date fecha){
+        boolean habilitar = false;
+
+        if(fecha != null) {
+            fumigacion.setTimestampInicio(Long.toString(fecha.getTime()));// item.getText().toString());
+            //fumigacion.setProgramada(true);
+            habilitar = true;
+        }
+        siguiente.setEnabled(habilitar);
+    }
+
     @Override
     public void onCompleted() {
         //Toast.makeText(this, "Stepper completed", Toast.LENGTH_SHORT).show();
 
         //A este punto, ya tenemos creado el objeto Fumigacion, que es la fumigacion que acabamos de crear
         //Es acá donde tenemos que mostrar el Alert Dialog para tener confirmación
-        inicializarAlertDialog();
+        if(viewModelNuevaFumigacion.isInstantanea().getValue()) {//if(fumigacion.isProgramada())
+            //fumigacion.setTimestampInicio(Long.toString(viewModelNuevaFumigacion
+                    //.getHorarioSeleccionado().getValue().getTime()));
+            inicializarAlertDialog();//crearProgramada();
+        }
+        else
+            crearProgramada();//inicializarAlertDialog();
     }
 
     public void inicializarAlertDialog() {
@@ -159,14 +206,39 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
     }
 
     public void iniciarFumigacion(){
-        //Setemos la fecha y hora del comienzo
-        fumigacion.setTimestampInicio(Long.toString(System.currentTimeMillis()));
-        //La creacion de la fumigacion se hace cuando se obtiene el tiempo final:
-        //tenemos que pasarle la fumigacion al home/main host:
-        setResult(RESULT_OK, new Intent().putExtra("fumigacion_nueva", fumigacion));
+        //Si la fumigación es programada, la guardamos desde acá
+        //if(fumigacion.isProgramada()){
+           // crearProgramada();
+            //No la pasamos al home para que la inicie
+            //setResult(RESULT_CANCELED);
+        //}
+        //else{
+            //tenemos que pasarle la fumigacion al home/main host:
+            setResult(RESULT_OK, new Intent().putExtra("fumigacion_nueva", fumigacion));
+            finish();
+        //}
+    }
+
+    public void crearProgramada(){
+        fumigacion.setProgramada(true);
+        //Necesita hacer una task porque primero consulta la cantidad y necesita esperar a que termine
+        Task<DataSnapshot> task = referenceProgramadas.get();
+
+        task.addOnCompleteListener(task1 -> {
+            int cant;
+
+            if (task1.isSuccessful()) {
+                DataSnapshot snapshot = task1.getResult();
+                cant = (int) snapshot.getChildrenCount();
+
+                fumigacion.setFumigacionId("fp" + (cant + 1));
+                referenceProgramadas.child(fumigacion.getFumigacionId()).setValue(fumigacion.toMapProgramada());
+            }
+        });
+
+        Toast.makeText(this, "SE GUARDÓ PROGRAMADA!", Toast.LENGTH_LONG).show();
+        setResult(RESULT_CANCELED);
         finish();
-        /*todo:
-           cuando se vuelve al home, hay que hacer un refresh del status y arrancar el timer*/
     }
 
     @Override
