@@ -27,24 +27,34 @@
             android:padding="16dp"
             app:stepperIconSize="20dp"
             app:stepperItems="@menu/stepper"
-            app:stepperType="tab_numbered"
             app:stepperTextColor="?attr/colorOnBackground"
             app:stepperTextSize="@dimen/text_size_stepper"
+            app:stepperType="tab_numbered"
             app:stepperWidgetColor="?attr/colorPrimary" />
 
     </com.google.android.material.card.MaterialCardView>
 
-    <FrameLayout
-        android:id="@+id/frame_stepper"
-        android:name="androidx.navigation.fragment.NavHostFragment"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+    <ScrollView
+        android:layout_width="409dp"
+        android:layout_height="538dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline_bottom"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/card_stepper"
-        />
+        app:layout_constraintVertical_bias="0.0">
+
+        <FrameLayout
+            android:id="@+id/frame_stepper"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/guideline_bottom"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/card_stepper" />
+    </ScrollView>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/siguiente"

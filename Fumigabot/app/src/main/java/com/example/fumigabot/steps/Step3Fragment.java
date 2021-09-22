@@ -1,28 +1,21 @@
 package com.example.fumigabot.steps;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.CalendarView;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TimePicker;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-
 import com.example.fumigabot.ItemViewModel;
 import com.example.fumigabot.R;
-import com.example.fumigabot.firebase.Fumigacion;
-import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.transition.MaterialSharedAxis;
-import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -34,7 +27,8 @@ public class Step3Fragment extends Fragment {
     private CalendarView calendario;
     private Date fecha;
     private ItemViewModel viewModelHorario;
-    private CheckBox iniciarAhora;
+    private Switch switchComenzar;
+    private ConstraintLayout layoutProgramar;
 
     public Step3Fragment() {
         // Required empty public constructor
@@ -67,10 +61,11 @@ public class Step3Fragment extends Fragment {
         calendario = vista.findViewById(R.id.calendario);
         fecha = new Date(calendario.getDate());
         timePicker = vista.findViewById(R.id.horaPicker);
-        iniciarAhora = vista.findViewById(R.id.checkInstantanea);
+        switchComenzar = vista.findViewById(R.id.switchComenzar);
+        layoutProgramar = vista.findViewById(R.id.layoutProgramar);
         calendario.setOnDateChangeListener(calendarioListener);
         timePicker.setOnTimeChangedListener(timeListener);
-        iniciarAhora.setOnCheckedChangeListener(iniciarAhoraListener);
+        switchComenzar.setOnCheckedChangeListener(switchComenzarListener);
 
         viewModelHorario = new ViewModelProvider(requireActivity()).get(ItemViewModel.class);
         viewModelHorario.setInstantanea(false);
@@ -96,13 +91,21 @@ public class Step3Fragment extends Fragment {
         }
     };
 
-    private CompoundButton.OnCheckedChangeListener iniciarAhoraListener = new CompoundButton.OnCheckedChangeListener() {
+    private CompoundButton.OnCheckedChangeListener switchComenzarListener = new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             viewModelHorario.setInstantanea(isChecked);
-            viewModelHorario.seleccionarHorario(new Date());
+            habilitarProgramacion(!isChecked);
+            //viewModelHorario.seleccionarHorario(new Date());
         }
     };
+
+    private void habilitarProgramacion(boolean valor){
+        if(!valor)
+            layoutProgramar.setVisibility(View.GONE);
+        else
+            layoutProgramar.setVisibility(View.VISIBLE);
+    }
 
     @Override
     public void onStart() {
