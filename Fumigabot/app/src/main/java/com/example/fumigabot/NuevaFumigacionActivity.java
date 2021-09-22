@@ -16,7 +16,6 @@ import com.aceinteract.android.stepper.StepperNavListener;
 import com.aceinteract.android.stepper.StepperNavigationView;
 import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
-import com.example.fumigabot.firebase.Robot;
 import com.example.fumigabot.steps.Step1Fragment;
 import com.example.fumigabot.steps.Step2Fragment;
 import com.example.fumigabot.steps.Step3Fragment;
@@ -135,6 +134,11 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
         viewModelNuevaFumigacion.getHorarioSeleccionado().observe(this, item->{
             horarioSeleccionado(item);
         });
+
+        //Se repite diaramente (que por ahora es el "es recurrente")
+        viewModelNuevaFumigacion.getRepetirDiariamente().observe(this, item->{
+             repetirDiariamente(item);
+        });
     }
 
     private void quimicoSeleccionado(ClipData.Item item){
@@ -168,19 +172,25 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
         siguiente.setEnabled(habilitar);
     }
 
+    private void repetirDiariamente(Boolean repetir){
+        //boolean habilitar = false;
+
+        if(repetir != null) {
+            fumigacion.setRecurrente(repetir);
+            //habilitar = true;
+        }
+        //siguiente.setEnabled(habilitar);
+    }
+
     @Override
     public void onCompleted() {
-        //Toast.makeText(this, "Stepper completed", Toast.LENGTH_SHORT).show();
-
-        //A este punto, ya tenemos creado el objeto Fumigacion, que es la fumigacion que acabamos de crear
-        //Es acá donde tenemos que mostrar el Alert Dialog para tener confirmación
-        if(viewModelNuevaFumigacion.isInstantanea().getValue()) {//if(fumigacion.isProgramada())
-            //fumigacion.setTimestampInicio(Long.toString(viewModelNuevaFumigacion
-                    //.getHorarioSeleccionado().getValue().getTime()));
-            inicializarAlertDialog();//crearProgramada();
+        //A este punto, ya tenemos creado el objeto Fumigacion
+        //Si es instantánea, la hacemos ahora
+        if(viewModelNuevaFumigacion.isInstantanea().getValue()) {
+            inicializarAlertDialog();
         }
         else
-            crearProgramada();//inicializarAlertDialog();
+            crearProgramada();
     }
 
     public void inicializarAlertDialog() {
@@ -206,17 +216,9 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
     }
 
     public void iniciarFumigacion(){
-        //Si la fumigación es programada, la guardamos desde acá
-        //if(fumigacion.isProgramada()){
-           // crearProgramada();
-            //No la pasamos al home para que la inicie
-            //setResult(RESULT_CANCELED);
-        //}
-        //else{
-            //tenemos que pasarle la fumigacion al home/main host:
-            setResult(RESULT_OK, new Intent().putExtra("fumigacion_nueva", fumigacion));
-            finish();
-        //}
+        //tenemos que pasarle la fumigacion al home/main host:
+        setResult(RESULT_OK, new Intent().putExtra("fumigacion_nueva", fumigacion));
+        finish();
     }
 
     public void crearProgramada(){
@@ -287,6 +289,7 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
                         .hide(fragmentManager.findFragmentByTag(STEP_3))
                         .show(fragmentManager.findFragmentByTag(STEP_4)).commitNow();
                 configurarBotonFinal();
+                mostrarResumen();
                 return;
 
         }
@@ -301,6 +304,10 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
     private void configurarBotonFinal(){
         siguiente.setText("Finalizar");
         siguiente.setIcon(getDrawable(R.drawable.ic_check_black_24dp));
+    }
+
+    private void mostrarResumen(){
+        viewModelNuevaFumigacion.setDisponible();
     }
 
     private View.OnClickListener anteriorListener = new View.OnClickListener() {

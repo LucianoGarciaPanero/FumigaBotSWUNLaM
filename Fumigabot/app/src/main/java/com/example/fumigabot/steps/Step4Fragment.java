@@ -13,6 +13,10 @@ import com.example.fumigabot.ItemViewModel;
 import com.example.fumigabot.R;
 import com.google.android.material.transition.MaterialSharedAxis;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -55,26 +59,33 @@ public class Step4Fragment extends Fragment {
         cantidadSeleccionada = vista.findViewById(R.id.cantidadSeleccionada);
         horarioSeleccionado = vista.findViewById(R.id.horarioSeleccionado);
         viewModelResumen = new ViewModelProvider(requireActivity()).get(ItemViewModel.class);
-        /*viewModelResumen.isDisponible().observe(requireActivity(), item -> {
+        viewModelResumen.isDisponible().observe(requireActivity(), item -> {
             if(item != null && item.booleanValue())
                 cargarDatos();
-        });*/
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if(viewModelResumen.isDisponible())
-            cargarDatos();
+        });
     }
 
     private void cargarDatos(){
+        String horarios;
+
         quimicoSeleccionado.setText(viewModelResumen.getQuimicoSeleccionado().getValue().getText());
         cantidadSeleccionada.setText(viewModelResumen.getCantidadSeleccionada().getValue().getText());
         if(viewModelResumen.isInstantanea().getValue())
             horarioSeleccionado.setText("INICIAR AHORA");
-        else
-            horarioSeleccionado.setText(viewModelResumen.getHorarioSeleccionado().getValue().toString());
+        else {
+            horarios = viewModelResumen.getHorarioSeleccionado().getValue().toString();
+            if(viewModelResumen.getRepetirDiariamente().getValue().booleanValue())
+                horarios += "\n Se repite todos los "
+                        + getDiaSemana(viewModelResumen.getHorarioSeleccionado().getValue());
+
+            horarioSeleccionado.setText(horarios);
+        }
+    }
+
+    private String getDiaSemana(Date fecha){
+        String resultado = new SimpleDateFormat("EEEE", Locale.getDefault())
+                .format(fecha.getTime());
+        return resultado;
     }
 
     @Override

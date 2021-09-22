@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CalendarView;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TimePicker;
@@ -23,12 +24,13 @@ import java.util.Date;
  */
 public class Step3Fragment extends Fragment {
 
-    private TimePicker timePicker;
+    private Switch switchComenzar;
     private CalendarView calendario;
+    private TimePicker timePicker;
+    private CheckBox repetirDiariamente;
+    private ConstraintLayout layoutProgramar;
     private Date fecha;
     private ItemViewModel viewModelHorario;
-    private Switch switchComenzar;
-    private ConstraintLayout layoutProgramar;
 
     public Step3Fragment() {
         // Required empty public constructor
@@ -42,7 +44,6 @@ public class Step3Fragment extends Fragment {
         //Transiciones en los cambios de fragmento
         setEnterTransition(new MaterialSharedAxis(MaterialSharedAxis.X, true));
         setReturnTransition(new MaterialSharedAxis(MaterialSharedAxis.X, false));
-
     }
 
     @Override
@@ -58,17 +59,23 @@ public class Step3Fragment extends Fragment {
 
         View vista = getView();
         //Instanciamos todos los elementos de la vista una vez que está creada
-        calendario = vista.findViewById(R.id.calendario);
-        fecha = new Date(calendario.getDate());
-        timePicker = vista.findViewById(R.id.horaPicker);
         switchComenzar = vista.findViewById(R.id.switchComenzar);
+        calendario = vista.findViewById(R.id.calendario);
+        timePicker = vista.findViewById(R.id.horaPicker);
+        repetirDiariamente = vista.findViewById(R.id.checkEsRecurrente);
         layoutProgramar = vista.findViewById(R.id.layoutProgramar);
+
+        switchComenzar.setOnCheckedChangeListener(switchComenzarListener);
         calendario.setOnDateChangeListener(calendarioListener);
         timePicker.setOnTimeChangedListener(timeListener);
-        switchComenzar.setOnCheckedChangeListener(switchComenzarListener);
+        repetirDiariamente.setOnCheckedChangeListener(repetirDiariamenteListener);
 
+        fecha = new Date(calendario.getDate());
         viewModelHorario = new ViewModelProvider(requireActivity()).get(ItemViewModel.class);
-        viewModelHorario.setInstantanea(false);
+        //Por defecto dejamos seleccionado "comenzar ahora", por lo tanto, en principio, es instantánea
+        viewModelHorario.setInstantanea(true);
+        viewModelHorario.seleccionarHorario(fecha);
+        viewModelHorario.setRepetirDiariamente(false);
     }
 
     private CalendarView.OnDateChangeListener calendarioListener = new CalendarView.OnDateChangeListener() {
@@ -80,25 +87,32 @@ public class Step3Fragment extends Fragment {
         }
     };
 
-    private TimePicker.OnTimeChangedListener timeListener = new TimePicker.OnTimeChangedListener() {
-        @Override
-        public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
-            //Log.d("STEP3", hourOfDay + ":" + minute);
-            fecha.setHours(hourOfDay);//(timePicker.getHour());
-            fecha.setMinutes(minute);//(timePicker.getMinute());
-
-            viewModelHorario.seleccionarHorario(fecha);
-        }
-    };
-
     private CompoundButton.OnCheckedChangeListener switchComenzarListener = new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             viewModelHorario.setInstantanea(isChecked);
             habilitarProgramacion(!isChecked);
-            //viewModelHorario.seleccionarHorario(new Date());
         }
     };
+
+    private TimePicker.OnTimeChangedListener timeListener = new TimePicker.OnTimeChangedListener() {
+        @Override
+        public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
+            //Log.d("STEP3", hourOfDay + ":" + minute);
+            fecha.setHours(hourOfDay);
+            fecha.setMinutes(minute);
+
+            viewModelHorario.seleccionarHorario(fecha);
+        }
+    };
+
+    private CompoundButton.OnCheckedChangeListener repetirDiariamenteListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            viewModelHorario.setRepetirDiariamente(isChecked);
+        }
+    };
+
 
     private void habilitarProgramacion(boolean valor){
         if(!valor)

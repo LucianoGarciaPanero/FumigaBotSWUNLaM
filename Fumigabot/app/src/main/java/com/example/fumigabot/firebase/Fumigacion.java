@@ -58,7 +58,7 @@ public class Fumigacion implements Comparable, Serializable {
 
     public boolean isRecurrente() { return recurrente; }
 
-    public void setRecurrente(boolean programada) { this.recurrente = recurrente; }
+    public void setRecurrente(boolean recurrente) { this.recurrente = recurrente; }
 
     public String darFormatoFechaInicio() {
         SimpleDateFormat formateador = new SimpleDateFormat("dd MMMM yyyy");

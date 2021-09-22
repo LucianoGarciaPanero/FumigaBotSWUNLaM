@@ -16,7 +16,8 @@ public class ItemViewModel extends ViewModel {
     private final MutableLiveData<ClipData.Item> cantidadSeleccionada = new MutableLiveData<>();
     private final MutableLiveData<Date> horarioSeleccionado = new MutableLiveData<>();
     private final MutableLiveData<Boolean> iniciarAhora = new MutableLiveData<>();
-   // private final MutableLiveData<Boolean> disponible = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> repetirDiariamente = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> disponible = new MutableLiveData<>();
 
     public void seleccionarQuimico(ClipData.Item item) {
         quimicoSeleccionado.setValue(item);
@@ -50,14 +51,27 @@ public class ItemViewModel extends ViewModel {
         return iniciarAhora;
     }
 
-    public Boolean isDisponible() {
-        Boolean disponible = false;
-        if(quimicoSeleccionado.getValue() != null
-                        && cantidadSeleccionada.getValue() != null
-                        && horarioSeleccionado.getValue() != null
-                        && iniciarAhora.getValue() != null)
-            disponible = true;
+    public void setRepetirDiariamente(Boolean repetir){
+        repetirDiariamente.setValue(repetir);
+    }
 
+    public LiveData<Boolean> getRepetirDiariamente() {
+        return repetirDiariamente;
+    }
+
+    public void setDisponible(){
+        if(quimicoSeleccionado.getValue() != null
+                && cantidadSeleccionada.getValue() != null
+                && horarioSeleccionado.getValue() != null
+                && iniciarAhora.getValue() != null
+                && repetirDiariamente.getValue() != null)
+            disponible.setValue(true);
+
+        else
+            disponible.setValue(false);
+    }
+
+    public LiveData<Boolean> isDisponible() {
         return disponible;
     }
 }

@@ -35,6 +35,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -124,8 +126,7 @@ public class InicioFragment extends Fragment {
                             //El callback se ejecuta cuando se cierre la activity de Nueva Fumigación
                             Bundle bundle = result.getData().getExtras();
                             fumigacion = (Fumigacion)bundle.getSerializable("fumigacion_nueva");
-                            //if(!fumigacion.isProgramada())
-                                iniciarFumigacion();
+                            iniciarFumigacion();
                         }
                     }
                 });
@@ -471,14 +472,14 @@ public class InicioFragment extends Fragment {
         robot.setFumigando(true);
         robot.convertirCantidadQuimicoPorArea(fumigacion.getCantidadQuimicoPorArea());
         cronometro.setBase(SystemClock.elapsedRealtime());
-        //.setEnabled(false);
+        //Actualizamos la hora a ahora
+        fumigacion.setTimestampInicio(Long.toString(System.currentTimeMillis()));
         cronometro.start();
         updateRobot(robot);
     }
 
     public void detenerFumigacion(){
         cronometro.stop();
-        //fab.setEnabled(true);
         fumigacion.setTimestampFin(Long.toString(System.currentTimeMillis()));
         robot.setFumigando(false);
         updateRobot(robot);
