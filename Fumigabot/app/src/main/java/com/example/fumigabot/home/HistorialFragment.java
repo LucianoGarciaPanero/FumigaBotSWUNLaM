@@ -1,15 +1,19 @@
 package com.example.fumigabot.home;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.example.fumigabot.DetalleEntradaHistorialActivity;
 import com.example.fumigabot.EntradaHistorialAdapter;
 import com.example.fumigabot.R;
 import com.example.fumigabot.firebase.Fumigacion;
@@ -99,7 +103,17 @@ public class HistorialFragment extends Fragment {
         adapter = new EntradaHistorialAdapter(getContext(), listaFumigaciones);
         listadoHistorial.setAdapter(adapter);
         //acá podemos agregar un listener para on item click
+        listadoHistorial.setOnItemClickListener(entradaListener);
     }
+
+    private AdapterView.OnItemClickListener entradaListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Intent i = new Intent(getContext(), DetalleEntradaHistorialActivity.class);
+            i.putExtra("entradaHistorialSeleccionada",((Fumigacion)listadoHistorial.getItemAtPosition(position)));
+            startActivity(i);
+        }
+    };
 
     private ValueEventListener fumigacionesEventListener = new ValueEventListener() {
         @Override

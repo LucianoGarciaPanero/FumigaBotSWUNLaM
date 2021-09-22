@@ -9,9 +9,10 @@
         android:roundIcon="@mipmap/ic_fumigabot_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Defy">
-        <activity android:name=".NuevaFumigacionActivity"
-            android:windowSoftInputMode="adjustResize">
-        </activity>
+        <activity android:name=".DetalleEntradaHistorialActivity"></activity>
+        <activity
+            android:name=".NuevaFumigacionActivity"
+            android:windowSoftInputMode="adjustResize"></activity>
         <activity android:name=".RobotHomeActivity" />
         <activity android:name=".SplashActivity">
             <intent-filter>
