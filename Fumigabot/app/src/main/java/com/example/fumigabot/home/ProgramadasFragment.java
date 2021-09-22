@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.fumigabot.EntradaHistorialAdapter;
+import com.example.fumigabot.EntradaProgramadaAdapter;
 import com.example.fumigabot.R;
 import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
@@ -39,10 +40,10 @@ public class ProgramadasFragment extends Fragment {
     private DatabaseReference reference;
     private int robotId;
     private ArrayList<Fumigacion> listaProgramadas = new ArrayList<>();
-    private Fumigacion fumigacion;
+    private Fumigacion fumigacionProgramada;
     private TextView textSinFumigaciones;
     private ListView listadoProgramadas;
-    private EntradaHistorialAdapter adapter;
+    private EntradaProgramadaAdapter adapter;
 
 
     public ProgramadasFragment(){
@@ -79,45 +80,42 @@ public class ProgramadasFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-/*
+
         reference.addValueEventListener(fumigacionesEventListener);
 
         View vista = getView();
 
         textSinFumigaciones = vista.findViewById(R.id.textSinFumigaciones); // View.INVISIBLE x default
-        listadoHistorial = vista.findViewById(R.id.listaEntradaFumigaciones);
+        listadoProgramadas = vista.findViewById(R.id.listaFumigacionesProgramadas);
 
-        cargarVista();*/
+        cargarVista();
     }
 
     private void cargarVista() {
-        /*Collections.sort(listaFumigaciones);
-        adapter = new EntradaHistorialAdapter(getContext(), listaFumigaciones);
-        listadoHistorial.setAdapter(adapter);*/
-        //acá podemos agregar un listener para on item click
+        Collections.sort(listaProgramadas);
+        adapter = new EntradaProgramadaAdapter(getContext(), listaProgramadas);
+        listadoProgramadas.setAdapter(adapter);
     }
 
     private ValueEventListener fumigacionesEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
-            // Limpiamos todas las fumigaciones anteriores
-            // ya que si se agrega o modifica una, va a cargar repetidas
-            /*listaFumigaciones.clear();
+            listaProgramadas.clear();
 
-            // Buscamos las fumigaciones en Firebase
+            // Buscamos las fumigaciones programadas en Firebase
             for(DataSnapshot item : dataSnapshot.getChildren()) {
-                fumigacion = item.getValue(Fumigacion.class);
-                fumigacion.setFumigacionId(item.getKey());
-                listaFumigaciones.add(fumigacion);
+                fumigacionProgramada = item.getValue(Fumigacion.class);
+                fumigacionProgramada.setFumigacionId(item.getKey());
+                listaProgramadas.add(fumigacionProgramada);
             }
 
-            if(listaFumigaciones.size() > 0){
+            if(listaProgramadas.size() > 0){
                 cargarVista();
             }
             else {
-                listadoHistorial.setVisibility(View.INVISIBLE);
+                listadoProgramadas.setVisibility(View.INVISIBLE);
                 textSinFumigaciones.setVisibility(View.VISIBLE);
-            }*/
+            }
         }
 
         @Override
