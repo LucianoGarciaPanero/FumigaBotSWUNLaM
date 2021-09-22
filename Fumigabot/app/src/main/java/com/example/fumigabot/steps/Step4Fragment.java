@@ -67,24 +67,30 @@ public class Step4Fragment extends Fragment {
 
     private void cargarDatos(){
         String horarios;
+        Long fechaHora = viewModelResumen.getHorarioSeleccionado().getValue().getTime();
 
         quimicoSeleccionado.setText(viewModelResumen.getQuimicoSeleccionado().getValue().getText());
         cantidadSeleccionada.setText(viewModelResumen.getCantidadSeleccionada().getValue().getText());
         if(viewModelResumen.isInstantanea().getValue())
-            horarioSeleccionado.setText("INICIAR AHORA");
+            horarioSeleccionado.setText("Inicia ahora");
         else {
-            horarios = viewModelResumen.getHorarioSeleccionado().getValue().toString();
+            horarios = new SimpleDateFormat("dd MMMM YYYY", Locale.getDefault())
+                    .format(fechaHora);
+
+            horarios += " a las " + new SimpleDateFormat("HH:mm")
+                    .format(fechaHora);
+
             if(viewModelResumen.getRepetirDiariamente().getValue().booleanValue())
-                horarios += "\n Se repite todos los "
-                        + getDiaSemana(viewModelResumen.getHorarioSeleccionado().getValue());
+                horarios += "\n\nRepetir cada "
+                        + getDiaSemana(fechaHora);
 
             horarioSeleccionado.setText(horarios);
         }
     }
 
-    private String getDiaSemana(Date fecha){
+    private String getDiaSemana(Long fecha){
         String resultado = new SimpleDateFormat("EEEE", Locale.getDefault())
-                .format(fecha.getTime());
+                .format(fecha);
         return resultado;
     }
 
