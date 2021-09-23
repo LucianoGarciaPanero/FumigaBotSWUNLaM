@@ -1,5 +1,6 @@
 package com.example.fumigabot.firebase;
 
+import androidx.annotation.Nullable;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -116,6 +117,11 @@ public class Fumigacion implements Comparable, Serializable {
     public int compareTo(Object o) {
         String timestampInicioCmp = ((Fumigacion) o).getTimestampInicio();
         return timestampInicioCmp.compareTo(this.timestampInicio);
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return (((Fumigacion)obj).getFumigacionId().equals(this.fumigacionId));
     }
 
     public Map<String, Object> toMap() {

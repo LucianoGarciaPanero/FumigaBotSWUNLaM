@@ -1,6 +1,7 @@
 package com.example.fumigabot.home;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -35,10 +36,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -51,6 +54,7 @@ public class InicioFragment extends Fragment {
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference referenceRobot;
     private DatabaseReference referenceFumigacion;
+    private DatabaseReference refProgramadas;
     private MaterialCardView cardEstadoBateria;
     private MaterialCardView cardEstadoQuimico;
     private ImageView imgEstadoBateria;
@@ -71,6 +75,9 @@ public class InicioFragment extends Fragment {
     private AlertDialog alertDialog;
     private Robot robot;
     private Fumigacion fumigacion;
+    private Fumigacion programada;
+    private ArrayList<Fumigacion> fumigacionesProgramadas = new ArrayList<>();
+    private Timer timerProgramadas;
     private Button detenerFumigacion;
     private ActivityResultLauncher<Intent> activityResultLauncher;
 
@@ -103,6 +110,7 @@ public class InicioFragment extends Fragment {
 
         //Recibimos los datos pasados en el bundle
         robot = (Robot)getArguments().getSerializable("RobotVinculado");
+        //fumigacionesProgramadas = (ArrayList<Fumigacion>) getArguments().getSerializable("fumigaciones_programadas");
         //Instancia de la BD en Firebase
         firebaseDatabase = MyFirebase.getInstance();
         //referencia de los robots
@@ -117,6 +125,17 @@ public class InicioFragment extends Fragment {
         //Para que se mantenga sincronizado offline
         referenceFumigacion.keepSynced(true);
 
+
+        refProgramadas = firebaseDatabase.getReference("fumigaciones_programadas/" + robot.getRobotId());
+        refProgramadas.keepSynced(true);
+        refProgramadas.addValueEventListener(fumigacionesEventListener);
+
+
+        //Timer para capturar las fumigaciones programadas
+        timerProgramadas = new Timer();
+        //programarEjecucionFumigaciones();
+
+
         //Register para tomar los datos del fragmento de la nueva fumigación
         activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
@@ -126,7 +145,7 @@ public class InicioFragment extends Fragment {
                             //El callback se ejecuta cuando se cierre la activity de Nueva Fumigación
                             Bundle bundle = result.getData().getExtras();
                             fumigacion = (Fumigacion)bundle.getSerializable("fumigacion_nueva");
-                            iniciarFumigacion();
+                            iniciarFumigacion(fumigacion);
                         }
                     }
                 });
@@ -168,68 +187,26 @@ public class InicioFragment extends Fragment {
         detenerFumigacion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                detenerFumigacion();
+                //detenerFumigacion();
+                detenerFumigacionAlertDialog();
             }
         });
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-
-        isFumigandoAnterior = robot.isFumigando(); // cuestionable
-        cantQuimicosAnterior = robot.getQuimicosDisponibles().size(); // cuestionable
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
-        this.onStart();
         determinarEstadoRobot(robot);
     }
 
-    /*private View.OnClickListener btnIniciarFumigacionListener = v -> inicializarAlertDialog();*/
-
-  /*  public void inicializarAlertDialog() {
+    public void detenerFumigacionAlertDialog() {
         builder = new MaterialAlertDialogBuilder(getContext());
 
-        String titleAlertDialog;
-        String accion;
+        builder.setMessage("¿Seguro querés detener la fumigación?");
 
-        if(!robot.isFumigando()) {
-            titleAlertDialog = "iniciar una ";
-            accion = "iniciar";
-        }
-        else {
-            titleAlertDialog = "detener la ";
-            accion = "detener";
-        }
-
-        builder.setMessage("¿Seguro querés " + titleAlertDialog + "fumigación?");
-
-        builder.setPositiveButton(accion, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("detener", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                if(!robot.isEncendido()) {
-                    builder.setMessage("El dispositivo se encuentra apagado");
-                    return;
-                }
-                else {
-                    isFumigandoAnterior = robot.isFumigando(); // cuestionable
-                    cantQuimicosAnterior = robot.getQuimicosDisponibles().size(); // cuestionable
-
-                    if (!robot.isFumigando()) {
-                        robot.setFumigando(true);
-                        robot.convertirCantidadQuimicoPorArea(autoCompleteTextView2.getText().toString());
-                        iniciarFumigacion();
-                    }
-                    else {
-                        robot.setFumigando(false);
-                        detenerFumigacion();
-                    }
-
-                    updateRobot(robot);
-                }
-                determinarEstadoRobot(robot);
+                detenerFumigacion();
             }
         });
 
@@ -241,7 +218,7 @@ public class InicioFragment extends Fragment {
 
         alertDialog = builder.create();
         alertDialog.show();
-    }*/
+    }
 
     public View.OnClickListener fabNuevaFumigacionListener = v -> nuevaFumigacion();
 
@@ -310,6 +287,7 @@ public class InicioFragment extends Fragment {
         infoNivelQuimico.setText(mensajeInfoNivelQuimico);
         textNivelQuimico.setText(porcentajeNivelQuimico);
         textEstadoFumigacion.setVisibility(fumigando);
+        detenerFumigacion.setVisibility(fumigando);
         cronometro.setVisibility(fumigando);
     }
 
@@ -346,7 +324,6 @@ public class InicioFragment extends Fragment {
         if(bateria >= BATERIA_NIVEL_ALTO) {
             mensajeInfoBateria = "";
             imagenBateria.setImageResource(R.drawable.battery_full_24);
-            //infoBateria.setBackgroundResource(R.color.colorBackground);
             cardEstadoBateria.setVisibility(View.GONE);
             return true;
         }
@@ -354,20 +331,16 @@ public class InicioFragment extends Fragment {
             //Sugerencia
             mensajeInfoBateria = "Batería moderada: será necesario recargar pronto.";
             imagenBateria.setImageResource(R.drawable.battery_full_24);
-            //infoBateria.setBackgroundResource(R.drawable.recuadro_sugerencia);
             imgEstadoBateria.setImageResource(R.drawable.round_warning_amber_24);
             int color = getResources().getColor(R.color.fondoSugerencia);
             imgEstadoBateria.getDrawable().setTint(color);
-            infoBateria.setTextColor(color);
-            //getResources().getDrawable(R.drawable.round_warning_amber_24).setTint(getResources().getColor(R.color.fondoSugerencia));
-            cardEstadoBateria.setVisibility(View.VISIBLE);
+            infoBateria.setTextColor(color);cardEstadoBateria.setVisibility(View.VISIBLE);
             return true;
         }
         if(bateria >= BATERIA_NIVEL_BAJO) {
             //Advertencia
             mensajeInfoBateria = "Batería baja: se recomienda recargar la batería.";
             imagenBateria.setImageResource(R.drawable.battery_alert_24);
-            //infoBateria.setBackgroundResource(R.drawable.recuadro_advertencia);
             imgEstadoBateria.setImageResource(R.drawable.round_warning_amber_24);
             int color = getResources().getColor(R.color.fondoAdvertencia);
             imgEstadoBateria.getDrawable().setTint(color);
@@ -378,7 +351,6 @@ public class InicioFragment extends Fragment {
         if(bateria == BATERIA_PROBLEMATICA) {
             mensajeInfoBateria = "Se recomienda reemplazar la batería.";
             imagenBateria.setImageResource(R.drawable.battery_unknown_24);
-            //infoBateria.setBackgroundResource(R.drawable.recuadro_problemas);
             imgEstadoBateria.setImageResource(R.drawable.round_error_outline_24);
             int color = getResources().getColor(R.color.fondoAvisoBateria);
             imgEstadoBateria.getDrawable().setTint(color);
@@ -389,7 +361,6 @@ public class InicioFragment extends Fragment {
         //Alerta
         mensajeInfoBateria = "Batería muy baja: el dispositivo se apagará pronto.";
         imagenBateria.setImageResource(R.drawable.battery_alert_24);
-        //infoBateria.setBackgroundResource(R.drawable.recuadro_alerta);
         imgEstadoBateria.setImageResource(R.drawable.round_error_outline_24);
         int color = getResources().getColor(R.color.fondoAlerta);
         imgEstadoBateria.getDrawable().setTint(color);
@@ -403,8 +374,6 @@ public class InicioFragment extends Fragment {
         if(nivelQuimico >= QUIMICO_NIVEL_ALTO) {
             mensajeInfoNivelQuimico = "";
             imagenQuimico.setImageResource(R.drawable.ic_science);
-            //imagenQuimico.setPadding(0, 0, 0, 0);
-            //infoNivelQuimico.setBackgroundResource(R.color.colorBackground);
             cardEstadoQuimico.setVisibility(View.GONE);
             return true;
         }
@@ -412,8 +381,6 @@ public class InicioFragment extends Fragment {
             //Sugerencia
             mensajeInfoNivelQuimico = "Nivel de químico moderado: será necesario recargar pronto.";
             imagenQuimico.setImageResource(R.drawable.ic_science);
-            //imagenQuimico.setPadding(0, 0, 0, 0);
-            //infoNivelQuimico.setBackgroundResource(R.drawable.recuadro_advertencia);
             imgEstadoQuimico.setImageResource(R.drawable.round_warning_amber_24);
             int color = getResources().getColor(R.color.fondoSugerencia);
             imgEstadoQuimico.getDrawable().setTint(color);
@@ -424,8 +391,6 @@ public class InicioFragment extends Fragment {
         if(nivelQuimico == QUIMICO_PROBLEMATICO) {
             mensajeInfoNivelQuimico = "Se recomienda verificar el depósito del químico.";
             imagenQuimico.setImageResource(R.drawable.ic_science_unknown);
-            //imagenQuimico.setPadding(2, 2, 2, 2);
-            //infoNivelQuimico.setBackgroundResource(R.drawable.recuadro_problemas);
             imgEstadoQuimico.setImageResource(R.drawable.round_error_outline_24);
             int color = getResources().getColor(R.color.fondoAvisoBateria);
             imgEstadoQuimico.getDrawable().setTint(color);
@@ -436,8 +401,6 @@ public class InicioFragment extends Fragment {
         // Nivel de químico bajo
         mensajeInfoNivelQuimico = "Nivel de químico bajo: es necesario recargar.";
         imagenQuimico.setImageResource(R.drawable.ic_science_alert);
-        //imagenQuimico.setPadding(2, 2, 2, 2);
-        //infoNivelQuimico.setBackgroundResource(R.drawable.recuadro_alerta);
         imgEstadoQuimico.setImageResource(R.drawable.round_error_outline_24);
         int color = getResources().getColor(R.color.fondoAlerta);
         imgEstadoQuimico.getDrawable().setTint(color);
@@ -452,12 +415,6 @@ public class InicioFragment extends Fragment {
         public void onDataChange(DataSnapshot dataSnapshot) {
             robot = dataSnapshot.child(Integer.toString(robot.getRobotId())).getValue(Robot.class);
             determinarEstadoRobot(robot);
-/*
-            // if cuestionable
-            if(cantQuimicosAnterior != robot.getQuimicosDisponibles().size()
-                    && (isFumigandoAnterior == robot.isFumigando() || robot.isFumigando() == false))
-                //configurarAdapterListaQuimicos();
-*/
             return;
         }
 
@@ -468,22 +425,28 @@ public class InicioFragment extends Fragment {
         }
     };
 
-    public void iniciarFumigacion(){
+    public void iniciarFumigacion(Fumigacion fumigacion){
+        //Horrible pero para que ande
+        this.fumigacion = fumigacion;
         robot.setFumigando(true);
-        robot.convertirCantidadQuimicoPorArea(fumigacion.getCantidadQuimicoPorArea());
+        robot.convertirCantidadQuimicoPorArea(this.fumigacion.getCantidadQuimicoPorArea());
         cronometro.setBase(SystemClock.elapsedRealtime());
         //Actualizamos la hora a ahora
-        fumigacion.setTimestampInicio(Long.toString(System.currentTimeMillis()));
+        this.fumigacion.setTimestampInicio(Long.toString(System.currentTimeMillis()));
         cronometro.start();
         updateRobot(robot);
+
+        //Log.i("TIMER|INICIAR", fumigacion.getFumigacionId());
     }
 
     public void detenerFumigacion(){
         cronometro.stop();
         fumigacion.setTimestampFin(Long.toString(System.currentTimeMillis()));
+        //Long tiempoTranscurrido = SystemClock.elapsedRealtime() - cronometro.getBase();
+        //fumigacion.setTimestampFin(Long.toString(tiempoTranscurrido));
         robot.setFumigando(false);
         updateRobot(robot);
-        updateFumigacion(fumigacion);
+        updateFumigacion();//(fumigacion);
     }
 
     public void updateRobot(Robot robot) {
@@ -493,7 +456,7 @@ public class InicioFragment extends Fragment {
         referenceRobot.child(Integer.toString(robot.getRobotId())).updateChildren(childUpdates);
     }
 
-    public void updateFumigacion(Fumigacion fumigacion){
+    public void updateFumigacion(){//(Fumigacion fumigacion){
         //Necesita hacer una task porque primero consulta la cantidad y necesita esperar a que termine
         Task<DataSnapshot> task = referenceFumigacion.get();
 
@@ -509,4 +472,57 @@ public class InicioFragment extends Fragment {
             }
         });
     }
+
+
+    public void programarEjecucionFumigaciones(Fumigacion fumigacion){
+        //for(Fumigacion fumigacion : fumigacionesProgramadas){
+           Long fechaInicio = Long.parseLong(fumigacion.getTimestampInicio());
+            //Horrible pero es para probar
+            //this.fumigacion = fumigacion;
+
+            //Se le dice al timer que ejecute la Task (método run) en la fecha y hora determinada
+            timerProgramadas.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            iniciarFumigacion(fumigacion);
+                            //Log.i("TIMER SCHEDULE", fumigacion.getFumigacionId());
+                        }
+                    });
+                }
+            }, new Date(fechaInicio));
+        //}
+    }
+
+    private ValueEventListener fumigacionesEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            //fumigacionesProgramadas.clear();
+
+            Long ahora = System.currentTimeMillis();
+
+            // Buscamos las fumigaciones programadas en Firebase
+            for(DataSnapshot item : dataSnapshot.getChildren()) {
+                programada = item.getValue(Fumigacion.class);
+                programada.setFumigacionId(item.getKey());
+
+                Long fechaInicio = Long.parseLong(programada.getTimestampInicio());
+                if(fechaInicio >= ahora){
+                    if(!fumigacionesProgramadas.contains(programada)) {
+                        fumigacionesProgramadas.add(programada);
+                        //Log.i("TIMER | ADD LISTA", programada.getFumigacionId());
+                        programarEjecucionFumigaciones(programada);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError error) {
+            // Failed to read value
+            Log.w("WTF", "Failed to read value.", error.toException());
+        }
+    };
 }

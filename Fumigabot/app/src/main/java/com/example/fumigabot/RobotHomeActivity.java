@@ -16,7 +16,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class RobotHomeActivity extends AppCompatActivity implements BottomNavigationView.OnItemSelectedListener {
 
-    public Robot robot;
+    private Robot robot;
     private FragmentManager fragmentManager;
     private BottomNavigationView bottomNav;
     private static final String INICIO_FRAGMENTO = "inicio_fragmento";
