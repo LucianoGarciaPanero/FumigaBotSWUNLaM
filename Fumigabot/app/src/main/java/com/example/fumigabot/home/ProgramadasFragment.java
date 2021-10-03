@@ -1,10 +1,12 @@
 package com.example.fumigabot.home;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -12,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.fumigabot.DetalleEntradaHistorialActivity;
+import com.example.fumigabot.DetalleFumigacionProgramadaActivity;
 import com.example.fumigabot.EntradaHistorialAdapter;
 import com.example.fumigabot.EntradaProgramadaAdapter;
 import com.example.fumigabot.R;
@@ -95,7 +99,19 @@ public class ProgramadasFragment extends Fragment {
         Collections.sort(listaProgramadas);
         adapter = new EntradaProgramadaAdapter(getContext(), listaProgramadas);
         listadoProgramadas.setAdapter(adapter);
+        //acá podemos agregar un listener para on item click
+        listadoProgramadas.setOnItemClickListener(entradaListener);
     }
+
+    private AdapterView.OnItemClickListener entradaListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Intent i = new Intent(getContext(), DetalleFumigacionProgramadaActivity.class);
+            i.putExtra("fumigacionProgramadaSeleccionada",((Fumigacion)listadoProgramadas.getItemAtPosition(position)));
+            i.putExtra("idRobot", robot.getRobotId());
+            startActivity(i);
+        }
+    };
 
     private ValueEventListener fumigacionesEventListener = new ValueEventListener() {
         @Override
