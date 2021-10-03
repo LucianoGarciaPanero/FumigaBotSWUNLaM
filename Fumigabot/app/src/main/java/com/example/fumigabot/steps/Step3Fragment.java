@@ -101,6 +101,7 @@ public class Step3Fragment extends Fragment {
             //Log.d("STEP3", hourOfDay + ":" + minute);
             fecha.setHours(hourOfDay);
             fecha.setMinutes(minute);
+            fecha.setSeconds(0);
 
             viewModelHorario.seleccionarHorario(fecha);
         }
