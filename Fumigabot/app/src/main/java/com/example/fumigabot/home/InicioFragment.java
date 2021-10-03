@@ -23,6 +23,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import com.example.fumigabot.NuevaFumigacionActivity;
 import com.example.fumigabot.R;
+import com.example.fumigabot.alarmasProgramadas.Alarma;
 import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
@@ -50,6 +51,8 @@ import static android.app.Activity.RESULT_OK;
  * A simple {@link Fragment} subclass.
  */
 public class InicioFragment extends Fragment {
+
+    public static InicioFragment Instance;
 
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference referenceRobot;
@@ -132,7 +135,7 @@ public class InicioFragment extends Fragment {
 
 
         //Timer para capturar las fumigaciones programadas
-        timerProgramadas = new Timer();
+        //timerProgramadas = new Timer(); --> AL FINAL USAMOS ALARMAS
         //programarEjecucionFumigaciones();
 
 
@@ -149,6 +152,8 @@ public class InicioFragment extends Fragment {
                         }
                     }
                 });
+
+        Instance = this;
     }
 
     @Override
@@ -196,7 +201,7 @@ public class InicioFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        determinarEstadoRobot(robot);
+        //determinarEstadoRobot(robot);
     }
 
     public void detenerFumigacionAlertDialog() {
@@ -474,7 +479,7 @@ public class InicioFragment extends Fragment {
     }
 
 
-    public void programarEjecucionFumigaciones(Fumigacion fumigacion){
+   /* public void programarEjecucionFumigaciones(Fumigacion fumigacion){
         //for(Fumigacion fumigacion : fumigacionesProgramadas){
            Long fechaInicio = Long.parseLong(fumigacion.getTimestampInicio());
             //Horrible pero es para probar
@@ -494,7 +499,7 @@ public class InicioFragment extends Fragment {
                 }
             }, new Date(fechaInicio));
         //}
-    }
+    }*/
 
     private ValueEventListener fumigacionesEventListener = new ValueEventListener() {
         @Override
@@ -513,7 +518,8 @@ public class InicioFragment extends Fragment {
                     if(!fumigacionesProgramadas.contains(programada)) {
                         fumigacionesProgramadas.add(programada);
                         //Log.i("TIMER | ADD LISTA", programada.getFumigacionId());
-                        programarEjecucionFumigaciones(programada);
+                        //programarEjecucionFumigaciones(programada);
+                        Alarma.empezarAlarma(getContext(), programada);
                     }
                 }
             }

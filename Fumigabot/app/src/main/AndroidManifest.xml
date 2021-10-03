@@ -23,6 +23,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".VincularDispositivoActivity" />
+        <receiver android:name=".alarmasProgramadas.AlarmaReceiver"/>
     </application>
 
 </manifest>

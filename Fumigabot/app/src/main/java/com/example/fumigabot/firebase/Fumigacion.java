@@ -121,7 +121,8 @@ public class Fumigacion implements Comparable, Serializable {
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        return (((Fumigacion)obj).getFumigacionId().equals(this.fumigacionId));
+        return //(((Fumigacion)obj).getFumigacionId().equals(this.fumigacionId) ||
+                ((Fumigacion)obj).getTimestampInicio().equals(this.timestampInicio);
     }
 
     public Map<String, Object> toMap() {
