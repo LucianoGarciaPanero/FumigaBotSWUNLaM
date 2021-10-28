@@ -2,6 +2,7 @@ package com.example.fumigabot.steps;
 
 import android.content.ClipData;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-
 import com.example.fumigabot.ItemViewModel;
 import com.example.fumigabot.R;
+import com.example.fumigabot.firebase.Robot;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.transition.MaterialSharedAxis;
 import java.util.ArrayList;
@@ -24,11 +25,13 @@ import java.util.ArrayList;
  */
 public class Step2Fragment extends Fragment {
 
-    private TextInputLayout listaCantidadPorArea;
+    private TextInputLayout listaQuimicos;
     private AutoCompleteTextView autoCompleteTextView;
-    private ArrayAdapter<String> adapterListaCantidadPorArea;
+    private ArrayAdapter<String> adapterListaQuimicos;
+    private ArrayList<String> quimicosDisponibles;
+    private Robot robot;
 
-    private ItemViewModel viewModelCantidad;
+    private ItemViewModel viewModelQuimico;
 
     public Step2Fragment() {
         // Required empty public constructor
@@ -42,6 +45,9 @@ public class Step2Fragment extends Fragment {
         //Transiciones en los cambios de fragmento
         setEnterTransition(new MaterialSharedAxis(MaterialSharedAxis.X, true));
         setReturnTransition(new MaterialSharedAxis(MaterialSharedAxis.X, false));
+
+        quimicosDisponibles = (ArrayList<String>) getArguments().getSerializable("quimicos");
+        robot = (Robot) getArguments().getSerializable("quimicoRobot");
     }
 
     @Override
@@ -57,31 +63,51 @@ public class Step2Fragment extends Fragment {
 
         View vista = getView();
         //Instanciamos todos los elementos de la vista una vez que está creada
-        listaCantidadPorArea = vista.findViewById(R.id.listaCantidadArea);
-        autoCompleteTextView = vista.findViewById(R.id.autoCompleteTextView2);
-        ((AutoCompleteTextView)listaCantidadPorArea.getEditText()).setOnItemClickListener(listaListener);
+        listaQuimicos = vista.findViewById(R.id.listaQuimicos);
+        autoCompleteTextView = vista.findViewById(R.id.autoCompleteTextView);
+        ((AutoCompleteTextView)listaQuimicos.getEditText()).setOnItemClickListener(listaListener);
 
-        viewModelCantidad = new ViewModelProvider(requireActivity()).get(ItemViewModel.class);
+        //Decimos que este fragmento va a proveer info a la activity host (nueva fumigación)
+        viewModelQuimico = new ViewModelProvider(requireActivity()).get(ItemViewModel.class);
+        //verificarFumigacion();
+        viewModelQuimico.isInstantanea().observe(this, item -> {
+            verificarFumigacion(item);
+        });
+    }
+
+    private void verificarFumigacion(Boolean isInstantanea){
+        if(isInstantanea == true){
+            //Si es instantánea, no tenemos que dejarle cambiar el químico
+            //viewModelQuimico.seleccionarQuimico(new ClipData.Item(robot.getUltimoQuimico()));
+            Log.i("STEP", "Verificar fumigacion: es instantanea");
+            autoCompleteTextView.setEnabled(false);
+            listaQuimicos.setEnabled(false);
+        }
+        else {
+            Log.i("STEP", "Verificar fumigacion: NO es instantanea");
+            autoCompleteTextView.setEnabled(true);
+            listaQuimicos.setEnabled(true);
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        configurarAdapterListaCantidadPorArea();
+        configurarAdapterListaQuimicos();
     }
 
     public AdapterView.OnItemClickListener listaListener = new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-            if(position != -1){
-                viewModelCantidad.seleccionarCantidad(new ClipData.Item(adapterListaCantidadPorArea.getItem(position)));
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                //Tomamos el valor del químico seleccionado
+                if(position != -1){
+                    viewModelQuimico.seleccionarQuimico(new ClipData.Item(adapterListaQuimicos.getItem(position)));
+                }
             }
-        }
-    };
+        };
 
-    public void configurarAdapterListaCantidadPorArea(){
-        adapterListaCantidadPorArea = new ArrayAdapter<>(getContext(), R.layout.list_item,
-                getResources().getStringArray(R.array.cantidad_quimico_por_area));
-        autoCompleteTextView.setAdapter(adapterListaCantidadPorArea);
+    public void configurarAdapterListaQuimicos() {
+        adapterListaQuimicos = new ArrayAdapter<>(getContext(), R.layout.list_item, quimicosDisponibles);
+        autoCompleteTextView.setAdapter(adapterListaQuimicos);
     }
 }

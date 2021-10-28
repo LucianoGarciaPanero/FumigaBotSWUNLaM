@@ -16,9 +16,10 @@ import com.aceinteract.android.stepper.StepperNavListener;
 import com.aceinteract.android.stepper.StepperNavigationView;
 import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
-import com.example.fumigabot.steps.Step1Fragment;
+import com.example.fumigabot.firebase.Robot;
 import com.example.fumigabot.steps.Step2Fragment;
 import com.example.fumigabot.steps.Step3Fragment;
+import com.example.fumigabot.steps.Step1Fragment;
 import com.example.fumigabot.steps.Step4Fragment;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
@@ -33,7 +34,7 @@ import java.util.Date;
 public class NuevaFumigacionActivity extends AppCompatActivity implements StepperNavListener, LifecycleOwner {
 
     private Fumigacion fumigacion;
-    private int robotId;
+    private Robot robot;
     private ArrayList<String> quimicosDisponibles;
     private FragmentManager fragmentManager;
     private StepperNavigationView stepper;
@@ -64,13 +65,13 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
 
         //Obtenemos el Id y los químicos disponibles para el robot
         quimicosDisponibles = (ArrayList<String>) getIntent().getSerializableExtra("robot_quimicos");
-        robotId = (int)getIntent().getSerializableExtra("robotId");
+        robot = (Robot)getIntent().getSerializableExtra("robot");
 
         //Instancia de la BD en Firebase
         firebaseDatabase = MyFirebase.getInstance();
         //referencia de las fumigaciones programadas para empezar a guardarlas
         referenceProgramadas = firebaseDatabase
-                .getReference("fumigaciones_programadas/" + robotId);
+                .getReference("fumigaciones_programadas/" + robot.getRobotId());
         //Para que se mantenga sincronizado offline
         referenceProgramadas.keepSynced(true);
 
@@ -78,8 +79,6 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
 
 
         fumigacion = new Fumigacion();
-        //Esto lo dejo para probar pero es un parámetro que establece el user
-        //fumigacion.setProgramada(true);
         stepper = findViewById(R.id.stepper);
         anterior = findViewById(R.id.anterior);
         anterior.setOnClickListener(anteriorListener);
@@ -96,13 +95,14 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
         if(fragmentManager.getFragments().size() == 0) {
             //El "intent" entre fragments
             Bundle bundleQuimicos = new Bundle();
-            bundleQuimicos.putSerializable("quimicos",quimicosDisponibles);
+            bundleQuimicos.putSerializable("quimicos", quimicosDisponibles);
+            bundleQuimicos.putSerializable("quimicoRobot", robot.getUltimoQuimico());
 
             try {
                 fragmentManager.beginTransaction()
                         .setReorderingAllowed(true)
-                        .add(R.id.frame_stepper, Step1Fragment.class, bundleQuimicos, STEP_1)
-                        .add(R.id.frame_stepper, Step2Fragment.class, null, STEP_2)
+                        .add(R.id.frame_stepper, Step1Fragment.class, null, STEP_1)
+                        .add(R.id.frame_stepper, Step2Fragment.class, bundleQuimicos, STEP_2)
                         .add(R.id.frame_stepper, Step3Fragment.class, null, STEP_3)
                         .add(R.id.frame_stepper, Step4Fragment.class, null, STEP_4)
                         //.addToBackStack(null)

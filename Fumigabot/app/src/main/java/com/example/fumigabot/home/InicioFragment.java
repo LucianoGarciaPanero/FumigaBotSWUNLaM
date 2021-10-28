@@ -231,7 +231,7 @@ public class InicioFragment extends Fragment {
         //startActivity(new Intent(getContext(), NuevaFumigacionActivity.class).putExtra("robot", robot));
         activityResultLauncher.launch(new Intent(getContext(), NuevaFumigacionActivity.class)
                 .putExtra("robot_quimicos", robot.getQuimicosDisponibles())
-                .putExtra("robotId", robot.getRobotId()));
+                .putExtra("robot", robot));
     }
 
     public void determinarEstadoRobot(Robot robot){
@@ -300,7 +300,7 @@ public class InicioFragment extends Fragment {
         /*btnIniciarFumigacion.setEnabled(valor);
         listaQuimicos.setEnabled(valor);
         listaCantidadArea.setEnabled(valor);*/
-        fab.setEnabled(valor);
+        //fab.setEnabled(valor);
     }
 
     private void definirEstadoRobot(int estado, String desc){

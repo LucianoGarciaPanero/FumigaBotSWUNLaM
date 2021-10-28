@@ -7,9 +7,9 @@
 
     <fragment
         android:id="@+id/step_1"
-        android:name="com.example.fumigabot.steps.Step1Fragment"
+        android:name="com.example.fumigabot.steps.Step2Fragment"
         android:label="Seleccionar químico"
-        tools:layout="@layout/fragment_step1">
+        tools:layout="@layout/fragment_stepN">
         <action
             android:id="@+id/action_step_1_to_step_2"
             app:destination="@id/step_2" />
@@ -17,9 +17,9 @@
 
     <fragment
         android:id="@+id/step_2"
-        android:name="com.example.fumigabot.steps.Step2Fragment"
+        android:name="com.example.fumigabot.steps.Step3Fragment"
         android:label="Seleccionar cantidad por área"
-        tools:layout="@layout/fragment_step2">
+        tools:layout="@layout/fragment_step3">
         <action
             android:id="@+id/action_step_2_to_step_3"
             app:destination="@id/step_3" />
@@ -30,9 +30,9 @@
 
     <fragment
         android:id="@+id/step_3"
-        android:name="com.example.fumigabot.steps.Step3Fragment"
+        android:name="com.example.fumigabot.steps.Step1Fragment"
         android:label="Seleccionar fecha y hora"
-        tools:layout="@layout/fragment_step3">
+        tools:layout="@layout/fragment_step1">
         <action
             android:id="@+id/action_step_3_to_step_2"
             app:destination="@id/step_2" />

@@ -49,13 +49,14 @@ public class Alarma {
         bundle.putSerializable("fumigacion", fumigacion);
         intent.putExtra("fumigacion_bundle", bundle);
 
+        Long timeStampInicio = Long.parseLong(fumigacion.getTimestampInicio());
+
         //Pending intent params: (contexto, un número único x cada PI, intent de arriba, 0)
         //one shot es para que se ejecute una sola vez, cambiar cuando se quiera "repetir"
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, ++alarmaId, intent, PendingIntent.FLAG_ONE_SHOT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, timeStampInicio.intValue(), intent, PendingIntent.FLAG_ONE_SHOT);
 
         //inicializar alarma: este metodo lanza en el tiempo exacto
         //se ejecuta en el tiempo dicho por c (en milis) y ejecuta lo del pending intent
-        Long timeStampInicio = Long.parseLong(fumigacion.getTimestampInicio());
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeStampInicio, pendingIntent);
 
         Log.i("ALARMA", "Se empezó la alarma");
@@ -63,11 +64,12 @@ public class Alarma {
     }
 
     /***/
-    public static void cancelarAlarma(Context context, int idAlarma){
+    public static void cancelarAlarma(Context context, Fumigacion fumigacion){
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AlarmaReceiver.class);
         //Pending intent params: (contexto, un número único x cada PI, intent de arriba, 0)
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, idAlarma, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Long id = Long.parseLong(fumigacion.getTimestampInicio());
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, id.intValue(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         alarmManager.cancel(pendingIntent);
     }

@@ -1,34 +1,36 @@
 package com.example.fumigabot.steps;
 
-import android.content.ClipData;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
+import android.widget.CalendarView;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.Switch;
+import android.widget.TimePicker;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import com.example.fumigabot.ItemViewModel;
 import com.example.fumigabot.R;
-import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.transition.MaterialSharedAxis;
-import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class Step1Fragment extends Fragment {
 
-    private TextInputLayout listaQuimicos;
-    private AutoCompleteTextView autoCompleteTextView;
-    private ArrayAdapter<String> adapterListaQuimicos;
-    private ArrayList<String> quimicosDisponibles;
-
-    private ItemViewModel viewModelQuimico;
+    private Switch switchComenzar;
+    private CalendarView calendario;
+    private TimePicker timePicker;
+    private CheckBox repetirDiariamente;
+    private ConstraintLayout layoutProgramar;
+    private Date fecha;
+    private ItemViewModel viewModelHorario;
 
     public Step1Fragment() {
         // Required empty public constructor
@@ -42,8 +44,6 @@ public class Step1Fragment extends Fragment {
         //Transiciones en los cambios de fragmento
         setEnterTransition(new MaterialSharedAxis(MaterialSharedAxis.X, true));
         setReturnTransition(new MaterialSharedAxis(MaterialSharedAxis.X, false));
-
-        quimicosDisponibles = (ArrayList<String>) getArguments().getSerializable("quimicos");
     }
 
     @Override
@@ -59,32 +59,71 @@ public class Step1Fragment extends Fragment {
 
         View vista = getView();
         //Instanciamos todos los elementos de la vista una vez que está creada
-        listaQuimicos = vista.findViewById(R.id.listaQuimicos);
-        autoCompleteTextView = vista.findViewById(R.id.autoCompleteTextView);
-        ((AutoCompleteTextView)listaQuimicos.getEditText()).setOnItemClickListener(listaListener);
+        switchComenzar = vista.findViewById(R.id.switchComenzar);
+        calendario = vista.findViewById(R.id.calendario);
+        timePicker = vista.findViewById(R.id.horaPicker);
+        repetirDiariamente = vista.findViewById(R.id.checkEsRecurrente);
+        layoutProgramar = vista.findViewById(R.id.layoutProgramar);
 
-        //Decimos que este fragmento va a proveer info a la activity host (nueva fumigación)
-        viewModelQuimico = new ViewModelProvider(requireActivity()).get(ItemViewModel.class);
+        switchComenzar.setOnCheckedChangeListener(switchComenzarListener);
+        calendario.setOnDateChangeListener(calendarioListener);
+        timePicker.setOnTimeChangedListener(timeListener);
+        repetirDiariamente.setOnCheckedChangeListener(repetirDiariamenteListener);
+
+        fecha = new Date(calendario.getDate());
+        viewModelHorario = new ViewModelProvider(requireActivity()).get(ItemViewModel.class);
+        //Por defecto dejamos seleccionado "comenzar ahora", por lo tanto, en principio, es instantánea
+        viewModelHorario.setInstantanea(true);
+        viewModelHorario.seleccionarHorario(fecha);
+        viewModelHorario.setRepetirDiariamente(false);
+    }
+
+    private CalendarView.OnDateChangeListener calendarioListener = new CalendarView.OnDateChangeListener() {
+        @Override
+        public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
+            //Log.d("STEP3", dayOfMonth + " " + month + " " + year);
+            fecha = new Date(year  - 1900, month, dayOfMonth);
+            viewModelHorario.seleccionarHorario(fecha);
+        }
+    };
+
+    private CompoundButton.OnCheckedChangeListener switchComenzarListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            viewModelHorario.setInstantanea(isChecked);
+            habilitarProgramacion(!isChecked);
+        }
+    };
+
+    private TimePicker.OnTimeChangedListener timeListener = new TimePicker.OnTimeChangedListener() {
+        @Override
+        public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
+            //Log.d("STEP3", hourOfDay + ":" + minute);
+            fecha.setHours(hourOfDay);
+            fecha.setMinutes(minute);
+            fecha.setSeconds(0);
+
+            viewModelHorario.seleccionarHorario(fecha);
+        }
+    };
+
+    private CompoundButton.OnCheckedChangeListener repetirDiariamenteListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            viewModelHorario.setRepetirDiariamente(isChecked);
+        }
+    };
+
+
+    private void habilitarProgramacion(boolean valor){
+        if(!valor)
+            layoutProgramar.setVisibility(View.GONE);
+        else
+            layoutProgramar.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        configurarAdapterListaQuimicos();
-    }
-
-    public AdapterView.OnItemClickListener listaListener = new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                //Tomamos el valor del químico seleccionado
-                if(position != -1){
-                    viewModelQuimico.seleccionarQuimico(new ClipData.Item(adapterListaQuimicos.getItem(position)));
-                }
-            }
-        };
-
-    public void configurarAdapterListaQuimicos() {
-        adapterListaQuimicos = new ArrayAdapter<>(getContext(), R.layout.list_item, quimicosDisponibles);
-        autoCompleteTextView.setAdapter(adapterListaQuimicos);
     }
 }

@@ -1,36 +1,33 @@
 package com.example.fumigabot.steps;
 
+import android.content.ClipData;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CalendarView;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.Switch;
-import android.widget.TimePicker;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+
 import com.example.fumigabot.ItemViewModel;
 import com.example.fumigabot.R;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.transition.MaterialSharedAxis;
-import java.util.Date;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class Step3Fragment extends Fragment {
 
-    private Switch switchComenzar;
-    private CalendarView calendario;
-    private TimePicker timePicker;
-    private CheckBox repetirDiariamente;
-    private ConstraintLayout layoutProgramar;
-    private Date fecha;
-    private ItemViewModel viewModelHorario;
+    private TextInputLayout listaCantidadPorArea;
+    private AutoCompleteTextView autoCompleteTextView;
+    private ArrayAdapter<String> adapterListaCantidadPorArea;
+
+    private ItemViewModel viewModelCantidad;
 
     public Step3Fragment() {
         // Required empty public constructor
@@ -59,71 +56,31 @@ public class Step3Fragment extends Fragment {
 
         View vista = getView();
         //Instanciamos todos los elementos de la vista una vez que está creada
-        switchComenzar = vista.findViewById(R.id.switchComenzar);
-        calendario = vista.findViewById(R.id.calendario);
-        timePicker = vista.findViewById(R.id.horaPicker);
-        repetirDiariamente = vista.findViewById(R.id.checkEsRecurrente);
-        layoutProgramar = vista.findViewById(R.id.layoutProgramar);
+        listaCantidadPorArea = vista.findViewById(R.id.listaCantidadArea);
+        autoCompleteTextView = vista.findViewById(R.id.autoCompleteTextView2);
+        ((AutoCompleteTextView)listaCantidadPorArea.getEditText()).setOnItemClickListener(listaListener);
 
-        switchComenzar.setOnCheckedChangeListener(switchComenzarListener);
-        calendario.setOnDateChangeListener(calendarioListener);
-        timePicker.setOnTimeChangedListener(timeListener);
-        repetirDiariamente.setOnCheckedChangeListener(repetirDiariamenteListener);
-
-        fecha = new Date(calendario.getDate());
-        viewModelHorario = new ViewModelProvider(requireActivity()).get(ItemViewModel.class);
-        //Por defecto dejamos seleccionado "comenzar ahora", por lo tanto, en principio, es instantánea
-        viewModelHorario.setInstantanea(true);
-        viewModelHorario.seleccionarHorario(fecha);
-        viewModelHorario.setRepetirDiariamente(false);
-    }
-
-    private CalendarView.OnDateChangeListener calendarioListener = new CalendarView.OnDateChangeListener() {
-        @Override
-        public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-            //Log.d("STEP3", dayOfMonth + " " + month + " " + year);
-            fecha = new Date(year  - 1900, month, dayOfMonth);
-            viewModelHorario.seleccionarHorario(fecha);
-        }
-    };
-
-    private CompoundButton.OnCheckedChangeListener switchComenzarListener = new CompoundButton.OnCheckedChangeListener() {
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            viewModelHorario.setInstantanea(isChecked);
-            habilitarProgramacion(!isChecked);
-        }
-    };
-
-    private TimePicker.OnTimeChangedListener timeListener = new TimePicker.OnTimeChangedListener() {
-        @Override
-        public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
-            //Log.d("STEP3", hourOfDay + ":" + minute);
-            fecha.setHours(hourOfDay);
-            fecha.setMinutes(minute);
-            fecha.setSeconds(0);
-
-            viewModelHorario.seleccionarHorario(fecha);
-        }
-    };
-
-    private CompoundButton.OnCheckedChangeListener repetirDiariamenteListener = new CompoundButton.OnCheckedChangeListener() {
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            viewModelHorario.setRepetirDiariamente(isChecked);
-        }
-    };
-
-
-    private void habilitarProgramacion(boolean valor){
-        if(!valor)
-            layoutProgramar.setVisibility(View.GONE);
-        else
-            layoutProgramar.setVisibility(View.VISIBLE);
+        viewModelCantidad = new ViewModelProvider(requireActivity()).get(ItemViewModel.class);
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        configurarAdapterListaCantidadPorArea();
+    }
+
+    public AdapterView.OnItemClickListener listaListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+            if(position != -1){
+                viewModelCantidad.seleccionarCantidad(new ClipData.Item(adapterListaCantidadPorArea.getItem(position)));
+            }
+        }
+    };
+
+    public void configurarAdapterListaCantidadPorArea(){
+        adapterListaCantidadPorArea = new ArrayAdapter<>(getContext(), R.layout.list_item,
+                getResources().getStringArray(R.array.cantidad_quimico_por_area));
+        autoCompleteTextView.setAdapter(adapterListaCantidadPorArea);
     }
 }
