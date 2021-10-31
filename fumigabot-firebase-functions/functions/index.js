@@ -68,21 +68,27 @@ function verificarFumigacion(robotId, fumigacionId, tsInicio) {
       .once("value").then( (snap) => {
         snap.forEach( (fumigacion) => {
           const tsFumigacion = fumigacion.val().timestampInicio;
-          const cmp = tsFumigacion === tsInicio;
-          const difFumi = fumigacionId !== fumigacion.key;
-          if ( cmp && difFumi ) {
-            // Si son iguales, no puedo guardarla
-            // console.log("---VERIFICAR FUMIGACION: SON IGUALES---");
-            throw new Error("Timestamp repetido");
-          } else if (difFumi) {
-            // si no son iguales, podemos verificar la brecha temporal
-            console.log("Analizando nueva (" + fumigacionId +
+          // comparo con las programadas que sean de hoy (-12hs) en adelante
+          // (12 * cant min en 1 hr * cant seg en 1 min * cant ms en 1 seg)
+          const hoy = new Date(Date.now() - (12 * 60 * 60 * 1000));
+          if (tsFumigacion >= hoy) {
+            // comparo a ver si es el mismo timestamp
+            const cmp = tsFumigacion === tsInicio;
+            // comparo que sean diferentes ids
+            const difFumi = fumigacionId !== fumigacion.key;
+            if ( cmp && difFumi ) {
+              // Si son iguales, no puedo guardarla
+              throw new Error("Timestamp repetido");
+            } else if (difFumi) {
+              // si no son iguales, podemos verificar la brecha temporal
+              console.log("Analizando nueva (" + fumigacionId +
                 ") contra " + fumigacion.key + "...");
-            const evaluacionBrecha =
-                evaluarBrechaTemporal(tsInicio, tsFumigacion);
-            if (evaluacionBrecha == false) {
-              // si hay conflictos con las fechas, salgo
-              throw new Error("Conflicto con las brechas temporales");
+              const evaluacionBrecha =
+              evaluarBrechaTemporal(tsInicio, tsFumigacion);
+              if (evaluacionBrecha == false) {
+                // si hay conflictos con las fechas, salgo
+                throw new Error("Conflicto con las brechas temporales");
+              }
             }
           }
         });
@@ -101,40 +107,29 @@ function evaluarBrechaTemporal(tsNueva, tsExistente) {
   const nueva = new Date(parseInt(tsNueva));
   const existente = new Date(parseInt(tsExistente));
   // en principio, vemos si son para el mismo día, o sea, misma fecha:
-  const fechaNueva = nueva.getDate() + "-" + (nueva.getMonth()+1) +
-    "-" + nueva.getFullYear();
-  const fechaExistente = existente.getDate() + "-" + (existente.getMonth()+1) +
-    "-" + existente.getFullYear();
+  // const fechaNueva = nueva.getDate() + "-" + (nueva.getMonth()+1) +
+  //  "-" + nueva.getFullYear();
+  // const fechaExistente=existente.getDate() + "-" + (existente.getMonth()+1)+
+  //  "-" + existente.getFullYear();
   // hacemos la comparación entre fechas
-  // console.log("Fecha nueva: " + fechaNueva);
-  // console.log("Fecha existente: " + fechaExistente);
-  const cmpFechas = fechaNueva === fechaExistente;
-  if (cmpFechas == false) {
-    // no son en el mismo día, siga siga
-    // ver qué pasa cuando son días distintos pero su dif
-    // está dentro de la brecha
-    return true;
-  }
+  // const cmpFechas = fechaNueva === fechaExistente;
+  // if (cmpFechas == false) {
+  // no son en el mismo día, siga siga
+  // ver qué pasa cuando son días distintos pero su dif
+  // está dentro de la brecha
+  // return true;
+  // }
   // si son en el mismo día, tengo que ver la hora
   // la brecha es de 15 minutos
   const brecha = 15 * 60 * 1000;
   const superior = new Date(parseInt(tsNueva) + brecha);
   const inferior = new Date(parseInt(tsNueva) - brecha);
-  console.log("-----------------");
   console.log("Brecha superior: " + superior);
   console.log("Brecha inferior: " + inferior);
   console.log("Hora nueva: " + nueva);
   console.log("Hora existente: " + existente);
+  console.log("-----------------");
   // comparamos y verificamos brecha
   const cmpBrecha = (existente < inferior || existente > superior);
-  if (cmpBrecha == true) {
-    // si brecha es true, significa que está fuera de los límites
-    // y se puede insertar la fumigación nueva
-    // console.log("Brecha limpia: PROCEDA");
-    return true;
-  } else {
-    // si no, tengo que cancelarla
-    console.log("Hay conflictos con la brecha");
-    return false;// Promise.reject(new Error("Hay conflictos con la brecha"));
-  }
+  return cmpBrecha;
 }
