@@ -37,7 +37,7 @@ exports.programadaUpdate = functions.database
         antes.quimicoUtilizado === despues.quimicoUtilizado &&
         antes.recurrente === despues.recurrente) {
         // retornamos nulo porque no tenemos más trabajo que hacer
-        console.log("ES LA MISMA");
+        // console.log("ES LA MISMA");
         return null;
       }
       // verificarFumigacion retorna promesa:
@@ -67,18 +67,17 @@ function verificarFumigacion(robotId, fumigacionId, tsInicio) {
   return admin.database().ref("fumigaciones_programadas/" + robotId + "/")
       .once("value").then( (snap) => {
         snap.forEach( (fumigacion) => {
-          // console.log("FUMIGACION: " + fumigacion.val());
           const tsFumigacion = fumigacion.val().timestampInicio;
           const cmp = tsFumigacion === tsInicio;
           const difFumi = fumigacionId !== fumigacion.key;
           if ( cmp && difFumi ) {
             // Si son iguales, no puedo guardarla
-            console.log("---VERIFICAR FUMIGACION: SON IGUALES---");
+            // console.log("---VERIFICAR FUMIGACION: SON IGUALES---");
             throw new Error("Timestamp repetido");
           } else if (difFumi) {
             // si no son iguales, podemos verificar la brecha temporal
-            // console.log("tsInicio (nueva): " + tsInicio);
-            // console.log("tsFumigacion: " + tsFumigacion);
+            console.log("Analizando nueva (" + fumigacionId +
+                ") contra " + fumigacion.key + "...");
             const evaluacionBrecha =
                 evaluarBrechaTemporal(tsInicio, tsFumigacion);
             if (evaluacionBrecha == false) {
@@ -89,7 +88,6 @@ function verificarFumigacion(robotId, fumigacionId, tsInicio) {
         });
         return Promise.resolve();
       }).catch((err) => {
-        // console.log(err);
         return Promise.reject(err);
       });
 }
@@ -102,26 +100,26 @@ function verificarFumigacion(robotId, fumigacionId, tsInicio) {
 function evaluarBrechaTemporal(tsNueva, tsExistente) {
   const nueva = new Date(parseInt(tsNueva));
   const existente = new Date(parseInt(tsExistente));
-  // vemos si son para el mismo día, o sea, misma fecha:
+  // en principio, vemos si son para el mismo día, o sea, misma fecha:
   const fechaNueva = nueva.getDate() + "-" + (nueva.getMonth()+1) +
     "-" + nueva.getFullYear();
   const fechaExistente = existente.getDate() + "-" + (existente.getMonth()+1) +
     "-" + existente.getFullYear();
   // hacemos la comparación entre fechas
-  console.log("Fecha nueva: " + fechaNueva);
-  console.log("Fecha existente: " + fechaExistente);
+  // console.log("Fecha nueva: " + fechaNueva);
+  // console.log("Fecha existente: " + fechaExistente);
   const cmpFechas = fechaNueva === fechaExistente;
   if (cmpFechas == false) {
-    // no son en el mismo día, proceda
+    // no son en el mismo día, siga siga
+    // ver qué pasa cuando son días distintos pero su dif
+    // está dentro de la brecha
     return true;
   }
   // si son en el mismo día, tengo que ver la hora
   // la brecha es de 15 minutos
-  const brecha = 15;
-  const superior = nueva;
-  superior.setMinutes((nueva.getMinutes() + brecha), 0, 0);
-  const inferior = nueva;
-  inferior.setMinutes((nueva.getMinutes() - brecha), 0, 0);
+  const brecha = 15 * 60 * 1000;
+  const superior = new Date(parseInt(tsNueva) + brecha);
+  const inferior = new Date(parseInt(tsNueva) - brecha);
   console.log("-----------------");
   console.log("Brecha superior: " + superior);
   console.log("Brecha inferior: " + inferior);
