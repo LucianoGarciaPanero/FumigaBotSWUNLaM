@@ -96,7 +96,7 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
             //El "intent" entre fragments
             Bundle bundleQuimicos = new Bundle();
             bundleQuimicos.putSerializable("quimicos", quimicosDisponibles);
-            bundleQuimicos.putSerializable("quimicoRobot", robot.getUltimoQuimico());
+            //bundleQuimicos.putSerializable("quimicoRobot", robot.getUltimoQuimico());
 
             try {
                 fragmentManager.beginTransaction()

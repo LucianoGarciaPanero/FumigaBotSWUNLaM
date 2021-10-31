@@ -42,6 +42,17 @@
         <!--item name="colorOnPrimary">@color/colorPrimaryDark</item-->
     </style>
 
+    <style name="botonCardStyle" parent="Widget.MaterialComponents.Button">
+        <!--item name="android:borderlessButtonStyle">?attr/borderlessButtonStyle</item-->
+        <item name="materialThemeOverlay">@style/ThemeOverlayButton</item>
+        <item name="iconTint">?attr/colorOnSurface</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="ThemeOverlayButton">
+        <item name="colorPrimary">@android:color/transparent</item>
+        <!--item name="elevation">0dp</item-->
+    </style>
 
     <style name="labelsStyle">
         <item name="android:textColor">?attr/colorPrimary</item>

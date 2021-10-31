@@ -31,7 +31,7 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="match_parent">
 
                 <!-- Titulo y estado del robot -->
                 <TextView
@@ -61,11 +61,26 @@
                     app:layout_constraintTop_toBottomOf="@+id/textView6"
                     app:layout_constraintVertical_bias="0.0" />
 
+                <TextView
+                    android:id="@+id/quimicoRobot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="64dp"
+                    android:text="Amonio cuaternario"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/estadoRobot"
+                    app:layout_constraintVertical_bias="0.0" />
+
                 <ImageView
                     android:id="@+id/imagenBateria"
                     android:layout_width="19dp"
                     android:layout_height="19dp"
-                    android:layout_marginTop="@dimen/textview_in_card_margin_top"
+                    android:layout_marginTop="16dp"
                     android:layout_marginEnd="@dimen/card_content_padding"
                     android:maxWidth="18dp"
                     android:maxHeight="18dp"
@@ -81,7 +96,7 @@
                     android:id="@+id/porcentajeBateria"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/textview_in_card_margin_top"
+                    android:layout_marginTop="16dp"
                     android:gravity="bottom"
                     android:text="100%"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -95,6 +110,7 @@
                     android:id="@+id/imagenQuimico"
                     android:layout_width="19dp"
                     android:layout_height="19dp"
+                    android:layout_marginTop="2dp"
                     android:layout_marginEnd="8dp"
                     android:maxWidth="18dp"
                     android:maxHeight="18dp"
@@ -105,13 +121,13 @@
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/imagenBateria"
+                    app:layout_constraintVertical_bias="0.0"
                     app:srcCompat="@drawable/ic_science_alert" />
 
                 <TextView
                     android:id="@+id/porcentajeQuimico"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="1dp"
                     android:gravity="bottom"
                     android:text="100%"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -119,7 +135,36 @@
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/porcentajeBateria"
-                    app:layout_constraintVertical_bias="0.5" />
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <View
+                    android:id="@+id/divider"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/colorDivider"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/quimicoRobot"
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <Button
+                    android:id="@+id/btnMas"
+                    style="@style/botonCardStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="start|center_vertical"
+                    android:stateListAnimator="@null"
+                    android:text="Ver más"
+                    app:icon="@drawable/ic_navigate_next_black_24dp"
+                    app:iconGravity="end"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/divider" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

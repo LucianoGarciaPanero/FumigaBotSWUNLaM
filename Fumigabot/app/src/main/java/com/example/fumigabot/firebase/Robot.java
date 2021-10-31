@@ -14,6 +14,7 @@ public class Robot implements Serializable {
     private int nivelQuimico;
     private ArrayList<String> quimicosDisponibles = new ArrayList<>();
     private int cantidadQuimicoPorArea;
+    private String ultimoQuimico;
 
     public Robot(){
         // Default constructor required for calls to DataSnapshot.getValue(Robot.class)
@@ -73,6 +74,12 @@ public class Robot implements Serializable {
 
     public void setCantidadQuimicoPorArea(int cantidadQuimicoPorArea) {
         this.cantidadQuimicoPorArea = cantidadQuimicoPorArea;
+    }
+
+    public String getUltimoQuimico(){ return ultimoQuimico; }
+
+    public void setUltimoQuimico(String ultimoQuimico) {
+        this.ultimoQuimico = ultimoQuimico;
     }
 
     public void convertirCantidadQuimicoPorArea(String cantidadQuimicoPorArea){
