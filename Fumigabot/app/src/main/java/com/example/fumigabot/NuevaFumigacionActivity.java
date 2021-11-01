@@ -27,7 +27,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -45,6 +44,8 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
     private ItemViewModel viewModelNuevaFumigacion;
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference referenceProgramadas;
+    private boolean habilitarStepQuimico = false;
+    private boolean habilitarStepCantidad = false;
 
     private static final String STEP_1 = "step_1";
     private static final String STEP_2 = "step_2";
@@ -96,7 +97,7 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
             //El "intent" entre fragments
             Bundle bundleQuimicos = new Bundle();
             bundleQuimicos.putSerializable("quimicos", quimicosDisponibles);
-            //bundleQuimicos.putSerializable("quimicoRobot", robot.getUltimoQuimico());
+            bundleQuimicos.putString("quimicoRobot", robot.getUltimoQuimico());
 
             try {
                 fragmentManager.beginTransaction()
@@ -141,24 +142,20 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
         });
     }
 
-    private void quimicoSeleccionado(ClipData.Item item){
-        boolean habilitar = false;
-
+    private void quimicoSeleccionado(String item){
         if(item != null) {
-            fumigacion.setQuimicoUtilizado(item.getText().toString());
-            habilitar = true;
+            fumigacion.setQuimicoUtilizado(item);
+            habilitarStepQuimico = true;
         }
-        siguiente.setEnabled(habilitar);
+        siguiente.setEnabled(habilitarStepQuimico);
     }
 
     private void cantidadSeleccionada(ClipData.Item item){
-        boolean habilitar = false;
-
         if(item != null) {
             fumigacion.setCantidadQuimicoPorArea(item.getText().toString());
-            habilitar = true;
+            habilitarStepCantidad = true;
         }
-        siguiente.setEnabled(habilitar);
+        siguiente.setEnabled(habilitarStepCantidad);
     }
 
     private void horarioSeleccionado(Date fecha){
@@ -253,7 +250,7 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
     public void onStepChanged(int i) {
         switch(i){
             case 0:
-                //Seleccionar el químico
+                //Seleccionar fecha y hora
                 fragmentManager.beginTransaction().hide(fragmentManager.findFragmentByTag(STEP_2))
                         .hide(fragmentManager.findFragmentByTag(STEP_3))
                         .hide(fragmentManager.findFragmentByTag(STEP_4))
@@ -263,23 +260,24 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
                 return;
 
             case 1:
-                //Seleccionar cantidad por área
+                //Seleccionar químico
                 fragmentManager.beginTransaction().hide(fragmentManager.findFragmentByTag(STEP_1))
                         .hide(fragmentManager.findFragmentByTag(STEP_3))
                         .hide(fragmentManager.findFragmentByTag(STEP_4))
                         .show(fragmentManager.findFragmentByTag(STEP_2)).commitNow();
 
                 anterior.setEnabled(true);
-                siguiente.setEnabled(false);
+                siguiente.setEnabled(habilitarStepQuimico);
                 return;
 
             case 2:
-                //Seleccionar horario
+                //Seleccionar cantidad de químico por área
                 fragmentManager.beginTransaction().hide(fragmentManager.findFragmentByTag(STEP_1))
                         .hide(fragmentManager.findFragmentByTag(STEP_2))
                         .hide(fragmentManager.findFragmentByTag(STEP_4))
                         .show(fragmentManager.findFragmentByTag(STEP_3)).commitNow();
                 reiniciarBotonSiguiente();
+                siguiente.setEnabled(habilitarStepCantidad);
                 return;
 
             case 3:

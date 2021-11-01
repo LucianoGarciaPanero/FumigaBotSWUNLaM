@@ -69,7 +69,7 @@ public class Step4Fragment extends Fragment {
         String horarios;
         Long fechaHora = viewModelResumen.getHorarioSeleccionado().getValue().getTime();
 
-        quimicoSeleccionado.setText(viewModelResumen.getQuimicoSeleccionado().getValue().getText());
+        quimicoSeleccionado.setText(viewModelResumen.getQuimicoSeleccionado().getValue());
         cantidadSeleccionada.setText(viewModelResumen.getCantidadSeleccionada().getValue().getText());
         if(viewModelResumen.isInstantanea().getValue())
             horarioSeleccionado.setText("Inicia ahora");

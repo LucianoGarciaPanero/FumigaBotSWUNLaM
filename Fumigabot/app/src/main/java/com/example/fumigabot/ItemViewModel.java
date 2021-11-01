@@ -1,6 +1,7 @@
 package com.example.fumigabot;
 
 import android.content.ClipData;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -12,18 +13,16 @@ public class ItemViewModel extends ViewModel {
 
     //Esta clase la necesitamos para hacer el envío de informacion entre los fragmentos y la activity host (Nueva fumigación)
 
-    private final MutableLiveData<ClipData.Item> quimicoSeleccionado = new MutableLiveData<>();
+    private final MutableLiveData<String> quimicoSeleccionado = new MutableLiveData<>();
     private final MutableLiveData<ClipData.Item> cantidadSeleccionada = new MutableLiveData<>();
     private final MutableLiveData<Date> horarioSeleccionado = new MutableLiveData<>();
     private final MutableLiveData<Boolean> iniciarAhora = new MutableLiveData<>();
     private final MutableLiveData<Boolean> repetirDiariamente = new MutableLiveData<>();
     private final MutableLiveData<Boolean> disponible = new MutableLiveData<>();
 
-    public void seleccionarQuimico(ClipData.Item item) {
-        quimicoSeleccionado.setValue(item);
-    }
+    public void seleccionarQuimico(String valor) { quimicoSeleccionado.setValue(valor); }
 
-    public LiveData<ClipData.Item> getQuimicoSeleccionado() {
+    public LiveData<String> getQuimicoSeleccionado() {
         return quimicoSeleccionado;
     }
 

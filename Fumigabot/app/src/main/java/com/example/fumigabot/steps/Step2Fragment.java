@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import com.example.fumigabot.ItemViewModel;
@@ -29,7 +30,8 @@ public class Step2Fragment extends Fragment {
     private AutoCompleteTextView autoCompleteTextView;
     private ArrayAdapter<String> adapterListaQuimicos;
     private ArrayList<String> quimicosDisponibles;
-    private Robot robot;
+    private ConstraintLayout panelMensaje;
+    private String ultimoQuimico;
 
     private ItemViewModel viewModelQuimico;
 
@@ -47,7 +49,13 @@ public class Step2Fragment extends Fragment {
         setReturnTransition(new MaterialSharedAxis(MaterialSharedAxis.X, false));
 
         quimicosDisponibles = (ArrayList<String>) getArguments().getSerializable("quimicos");
-        robot = (Robot) getArguments().getSerializable("quimicoRobot");
+        ultimoQuimico = getArguments().getString("quimicoRobot");
+        if(ultimoQuimico==null)
+            ultimoQuimico="";
+
+        //Decimos que este fragmento va a proveer info a la activity host (nueva fumigación)
+        viewModelQuimico = new ViewModelProvider(requireActivity()).get(ItemViewModel.class);
+        viewModelQuimico.seleccionarQuimico(ultimoQuimico);
     }
 
     @Override
@@ -63,12 +71,11 @@ public class Step2Fragment extends Fragment {
 
         View vista = getView();
         //Instanciamos todos los elementos de la vista una vez que está creada
+        panelMensaje = vista.findViewById(R.id.mensajeQuimico);
         listaQuimicos = vista.findViewById(R.id.listaQuimicos);
         autoCompleteTextView = vista.findViewById(R.id.autoCompleteTextView);
         ((AutoCompleteTextView)listaQuimicos.getEditText()).setOnItemClickListener(listaListener);
 
-        //Decimos que este fragmento va a proveer info a la activity host (nueva fumigación)
-        viewModelQuimico = new ViewModelProvider(requireActivity()).get(ItemViewModel.class);
         //verificarFumigacion();
         viewModelQuimico.isInstantanea().observe(this, item -> {
             verificarFumigacion(item);
@@ -78,15 +85,25 @@ public class Step2Fragment extends Fragment {
     private void verificarFumigacion(Boolean isInstantanea){
         if(isInstantanea == true){
             //Si es instantánea, no tenemos que dejarle cambiar el químico
-            //viewModelQuimico.seleccionarQuimico(new ClipData.Item(robot.getUltimoQuimico()));
-            Log.i("STEP", "Verificar fumigacion: es instantanea");
+            viewModelQuimico.seleccionarQuimico(ultimoQuimico);
+            Log.i("test", "Verificar fumigacion: es instantanea");
             autoCompleteTextView.setEnabled(false);
             listaQuimicos.setEnabled(false);
+            autoCompleteTextView.setText(ultimoQuimico, false);
+            mostrarMensaje(View.VISIBLE);
         }
         else {
             Log.i("STEP", "Verificar fumigacion: NO es instantanea");
             autoCompleteTextView.setEnabled(true);
             listaQuimicos.setEnabled(true);
+            mostrarMensaje(View.GONE);
+        }
+    }
+
+    private void mostrarMensaje(int valor){
+        panelMensaje.setVisibility(valor);
+        if(valor==View.VISIBLE){
+            //si lo muestra, habilito directamente el boton de siguiente
         }
     }
 
@@ -101,7 +118,7 @@ public class Step2Fragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 //Tomamos el valor del químico seleccionado
                 if(position != -1){
-                    viewModelQuimico.seleccionarQuimico(new ClipData.Item(adapterListaQuimicos.getItem(position)));
+                    viewModelQuimico.seleccionarQuimico(adapterListaQuimicos.getItem(position));
                 }
             }
         };
