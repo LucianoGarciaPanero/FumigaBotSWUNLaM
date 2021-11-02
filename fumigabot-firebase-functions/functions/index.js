@@ -14,7 +14,7 @@ exports.programadaNueva = functions.database
           .then(() => {
             // si la promesa sale bien, hacemos:
             console.log("Se agregó la fumigación " + snapshot.key);
-            return Promise.resolve();
+            return Promise.resolve("Ok");
           })
           .catch((error) => {
             console.log(error);
@@ -23,7 +23,8 @@ exports.programadaNueva = functions.database
           });
     });
 
-exports.programadaUpdate = functions.database
+// arreglar después
+/* exports.programadaUpdate = functions.database
     .ref("fumigaciones_programadas/{robotId}/{fumigacionId}")
     .onUpdate((cambios, context) => {
       const robotId = context.params.robotId;
@@ -53,7 +54,7 @@ exports.programadaUpdate = functions.database
             console.log("Nope, restablecemos after ref: " + cambios.after.ref);
             return cambios.after.ref.set(antes);
           });
-    });
+    });*/
 
 
 /** Verifica que no se creen dos fumigaciones para la
@@ -78,7 +79,9 @@ function verificarFumigacion(robotId, fumigacionId, tsInicio) {
             const difFumi = fumigacionId !== fumigacion.key;
             if ( cmp && difFumi ) {
               // Si son iguales, no puedo guardarla
-              throw new Error("Timestamp repetido");
+              // throw new Error("Timestamp repetido");
+              throw new functions.https.HttpsError("already-exists",
+                  "Timestamp repetido");
             } else if (difFumi) {
               // si no son iguales, podemos verificar la brecha temporal
               console.log("Analizando nueva (" + fumigacionId +
@@ -86,15 +89,14 @@ function verificarFumigacion(robotId, fumigacionId, tsInicio) {
               const evaluacionBrecha =
               evaluarBrechaTemporal(tsInicio, tsFumigacion);
               if (evaluacionBrecha == false) {
-                // si hay conflictos con las fechas, salgo
-                throw new Error("Conflicto con las brechas temporales");
+                // throw new Error("Conflicto con las brechas temporales");
+                throw new functions.https.HttpsError("out-of-range",
+                    "Conflicto con las brechas temporales");
               }
             }
           }
         });
-        return Promise.resolve();
-      }).catch((err) => {
-        return Promise.reject(err);
+        return Promise.resolve("Ok");
       });
 }
 
@@ -104,32 +106,32 @@ function verificarFumigacion(robotId, fumigacionId, tsInicio) {
  @return {Boolean} retorna `true` si está todo ok, caso contrario, `false`
  */
 function evaluarBrechaTemporal(tsNueva, tsExistente) {
-  const nueva = new Date(parseInt(tsNueva));
+  // const nueva = new Date(parseInt(tsNueva));
   const existente = new Date(parseInt(tsExistente));
-  // en principio, vemos si son para el mismo día, o sea, misma fecha:
-  // const fechaNueva = nueva.getDate() + "-" + (nueva.getMonth()+1) +
-  //  "-" + nueva.getFullYear();
-  // const fechaExistente=existente.getDate() + "-" + (existente.getMonth()+1)+
-  //  "-" + existente.getFullYear();
-  // hacemos la comparación entre fechas
-  // const cmpFechas = fechaNueva === fechaExistente;
-  // if (cmpFechas == false) {
-  // no son en el mismo día, siga siga
-  // ver qué pasa cuando son días distintos pero su dif
-  // está dentro de la brecha
-  // return true;
-  // }
-  // si son en el mismo día, tengo que ver la hora
   // la brecha es de 15 minutos
   const brecha = 15 * 60 * 1000;
   const superior = new Date(parseInt(tsNueva) + brecha);
   const inferior = new Date(parseInt(tsNueva) - brecha);
-  console.log("Brecha superior: " + superior);
-  console.log("Brecha inferior: " + inferior);
-  console.log("Hora nueva: " + nueva);
-  console.log("Hora existente: " + existente);
-  console.log("-----------------");
+  // console.log("Brecha superior: " + superior);
+  // console.log("Brecha inferior: " + inferior);
+  // console.log("Hora nueva: " + nueva);
+  // console.log("Hora existente: " + existente);
+  // console.log("-----------------");
   // comparamos y verificamos brecha
   const cmpBrecha = (existente < inferior || existente > superior);
   return cmpBrecha;
 }
+
+
+exports.evaluarInstantanea = functions.https.onCall((data, context) => {
+  // data contiene la data que le pasemos cuando la llamamos desde la app
+  // context tiene informacion de autenticacion del user
+  // si queremos, podemos retornar un JSON
+  const robotId = data.robotId;
+  const fumigacionId = data.fumigacionId;
+  const tsInicio = data.tsInicio;
+  // console.log("onCall - robotId: " + robotId);
+  // console.log("onCall - fumiId: " + fumigacionId);
+  // console.log("onCall - tsInicio: " + tsInicio);
+  return verificarFumigacion(robotId, fumigacionId, tsInicio);
+});
