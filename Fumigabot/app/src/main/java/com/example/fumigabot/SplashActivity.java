@@ -48,7 +48,7 @@ public class SplashActivity extends AppCompatActivity {
         robotId = getIdRobotSP();
 
         //Instancia y referencia de la BD en Firebase
-        firebaseDatabase = MyFirebase.getInstance();
+        firebaseDatabase = MyFirebase.getDatabaseInstance();
         reference = firebaseDatabase.getReference("robots");
         reference.addValueEventListener(robotValueEventListener);
 

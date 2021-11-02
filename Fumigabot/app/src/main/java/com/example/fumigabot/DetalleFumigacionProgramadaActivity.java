@@ -47,7 +47,7 @@ public class DetalleFumigacionProgramadaActivity extends AppCompatActivity {
         if(robotId == -1)
             Log.i("DETALLE FP", "robot id no encontrado");
 
-        firebaseDatabase = MyFirebase.getInstance();
+        firebaseDatabase = MyFirebase.getDatabaseInstance();
         referenceProgramadas = firebaseDatabase.getReference("fumigaciones_programadas/" + robotId);
         //Para que se mantenga sincronizado offline
         referenceProgramadas.keepSynced(true);

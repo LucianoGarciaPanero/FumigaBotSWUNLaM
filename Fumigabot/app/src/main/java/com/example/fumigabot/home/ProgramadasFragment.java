@@ -68,7 +68,7 @@ public class ProgramadasFragment extends Fragment {
         robotId = robot.getRobotId();
 
         //Instancia y referencia de la BD en Firebase
-        firebaseDatabase = MyFirebase.getInstance();
+        firebaseDatabase = MyFirebase.getDatabaseInstance();
         reference = firebaseDatabase.getReference("fumigaciones_programadas/" + robotId);
         //Para que se mantenga sincronizado offline
         reference.keepSynced(true);

@@ -1,5 +1,6 @@
 package com.example.fumigabot;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
@@ -10,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import com.aceinteract.android.stepper.StepperNavListener;
@@ -21,14 +23,21 @@ import com.example.fumigabot.steps.Step2Fragment;
 import com.example.fumigabot.steps.Step3Fragment;
 import com.example.fumigabot.steps.Step1Fragment;
 import com.example.fumigabot.steps.Step4Fragment;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.functions.FirebaseFunctions;
+import com.google.firebase.functions.FirebaseFunctionsException;
+import com.google.firebase.functions.HttpsCallableResult;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class NuevaFumigacionActivity extends AppCompatActivity implements StepperNavListener, LifecycleOwner {
 
@@ -42,6 +51,7 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
     private MaterialAlertDialogBuilder builder;
     private AlertDialog alertDialog;
     private ItemViewModel viewModelNuevaFumigacion;
+    private FirebaseFunctions firebaseFunctions;
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference referenceProgramadas;
     private boolean habilitarStepQuimico = false;
@@ -68,8 +78,10 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
         quimicosDisponibles = (ArrayList<String>) getIntent().getSerializableExtra("robot_quimicos");
         robot = (Robot)getIntent().getSerializableExtra("robot");
 
+        //Instancia de las Functions en Firebase
+        firebaseFunctions = MyFirebase.getFunctionsInstance();
         //Instancia de la BD en Firebase
-        firebaseDatabase = MyFirebase.getInstance();
+        firebaseDatabase = MyFirebase.getDatabaseInstance();
         //referencia de las fumigaciones programadas para empezar a guardarlas
         referenceProgramadas = firebaseDatabase
                 .getReference("fumigaciones_programadas/" + robot.getRobotId());
@@ -213,9 +225,61 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
     }
 
     public void iniciarFumigacion(){
-        //tenemos que pasarle la fumigacion al home/main host:
-        setResult(RESULT_OK, new Intent().putExtra("fumigacion_nueva", fumigacion));
-        finish();
+        //podemos consultar acá a Functions que verifique la fumigación
+        //pasamos lo que queremos a la funcion callable
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("robotId", robot.getRobotId());
+        hashMap.put("fumigacionId", "instantanea");
+        hashMap.put("tsInicio", fumigacion.getTimestampInicio());
+
+        validarFumigacionInstantanea(hashMap).addOnCompleteListener(new OnCompleteListener<String>() {
+            @Override
+            public void onComplete(@NonNull Task<String> task) {
+                String resultado = "";
+
+                if(task.isComplete()) {
+
+                    if (task.isSuccessful()) {
+                        resultado = task.getResult();
+                        //Si todo sale bien, tomamos el resultado de si podemos o no iniciar la fumigación ahora
+                        if (resultado.equalsIgnoreCase("Ok")) {
+                            //tenemos que pasarle la fumigacion al home/main host:
+                            setResult(RESULT_OK, new Intent().putExtra("fumigacion_nueva", fumigacion));
+                            finish();
+                        }
+                    } else {
+                        Exception e = task.getException();
+                        if (e instanceof FirebaseFunctionsException) {
+                            FirebaseFunctionsException ffe = (FirebaseFunctionsException) e;
+                            FirebaseFunctionsException.Code code = ffe.getCode();
+                            Object details = ffe.getDetails();
+                            Log.i("test", "Firebase Functions Exception: Code " + code);
+
+                        }
+                        resultado = e.getMessage();
+                        Log.i("test", "task no es successful, resultado: " + resultado);
+                    }
+                    //cambiar la forma en que informa al user que no lo hizo
+                    runOnUiThread(Toast.makeText(getApplicationContext(), resultado, Toast.LENGTH_SHORT)::show);
+                }
+            }
+        });
+    }
+
+    private Task<String> validarFumigacionInstantanea(Map<String, Object> fumigacion){
+        //invocamos a la Function
+        return firebaseFunctions.getHttpsCallable("evaluarInstantanea")
+                .call(fumigacion)
+                .continueWith(new Continuation<HttpsCallableResult, String>() {
+                    @Override
+                    public String then(@NonNull Task<HttpsCallableResult> task) throws Exception {
+                        //esta continuacion se ejecuta en caso de éxito o falla, pero si la Task
+                        //falla, entonces gtResult() va a arrojar una excepción la cual se va a propagar
+                        String resultado = (String) task.getResult().getData();
+                        Log.i("test", "Task retorna resultado: " + resultado);
+                        return resultado;
+                    }
+                });
     }
 
     public void crearProgramada(){

@@ -39,7 +39,7 @@ public class VincularDispositivoActivity extends AppCompatActivity {
 
 
         //Instancia y referencia de la BD en Firebase
-        firebaseDatabase = MyFirebase.getInstance();
+        firebaseDatabase = MyFirebase.getDatabaseInstance();
         reference = firebaseDatabase.getReference("robots");
 
 

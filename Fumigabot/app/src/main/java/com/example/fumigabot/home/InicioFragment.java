@@ -112,7 +112,7 @@ public class InicioFragment extends Fragment {
         robot = (Robot)getArguments().getSerializable("RobotVinculado");
         //fumigacionesProgramadas = (ArrayList<Fumigacion>) getArguments().getSerializable("fumigaciones_programadas");
         //Instancia de la BD en Firebase
-        firebaseDatabase = MyFirebase.getInstance();
+        firebaseDatabase = MyFirebase.getDatabaseInstance();
         //referencia de los robots
         referenceRobot = firebaseDatabase.getReference("robots");
         //Para que se mantenga sincronizado offline

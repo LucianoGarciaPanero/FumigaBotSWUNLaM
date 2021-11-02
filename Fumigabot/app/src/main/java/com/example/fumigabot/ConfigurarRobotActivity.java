@@ -37,7 +37,7 @@ public class ConfigurarRobotActivity extends AppCompatActivity {
 
         robot = (Robot)getIntent().getSerializableExtra("robot");
 
-        firebaseDatabase = MyFirebase.getInstance();
+        firebaseDatabase = MyFirebase.getDatabaseInstance();
         referenceRobot = firebaseDatabase.getReference("robots/" + robot.getRobotId());
         referenceRobot.keepSynced(true);
 

@@ -57,7 +57,7 @@ public class QuimicosFragment extends Fragment {
         robot = (Robot)getArguments().getSerializable("RobotVinculado");
 
         //Instancia y referencia de la BD en Firebase
-        firebaseDatabase = MyFirebase.getInstance();
+        firebaseDatabase = MyFirebase.getDatabaseInstance();
         reference = firebaseDatabase.getReference("robots/" + robot.getRobotId());
         //Para que se mantenga sincronizado offline
         reference.keepSynced(true);
