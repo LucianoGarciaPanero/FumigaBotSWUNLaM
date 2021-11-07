@@ -17,15 +17,10 @@ function configurarTasks() {
   const location = "us-central1";
   const queue = "programadasQueue";
 
-  // console.log("----- INIT -------");
-  // console.log("Project: " + project);
-
   queuePath = tasksClient.queuePath(project, location, queue);
-  // console.log("QueuePath: " + queuePath);
 
   url = `https://${location}-${project}.cloudfunctions.net/ejecutarProgramada`;
   // url = "https://localhost:5001/fumigabot/us-central1/ejecutarProgramada";
-  // console.log("URL: " + url);
 }
 
 exports.programadaNueva = functions.database
@@ -38,12 +33,9 @@ exports.programadaNueva = functions.database
       // verificarFumigacion retorna promesa:
       return verificarFumigacion(robotId, fumigacionId, timestamp)
           .then(() => {
-            // si la promesa sale bien, hacemos:
-            console.log("Se agregó la fumigación " + snapshot.key);
             // programar la ejecución de la fumigación
             return scheduleProgramada(robotId, fumigacionId,
                 cantArea, timestamp);
-            // return Promise.resolve("Ok");
           })
           .catch((error) => {
             console.log(error);
@@ -73,45 +65,24 @@ exports.programadaUpdate = functions.database
       // verificar la fumigacion
       return verificarFumigacion(robotId, fumigacionId, despues.timestampInicio)
           .then(() => {
-            console.log(" ---- FUMIGACION NUEVA:");
-            console.log(despues);
-            // ver si la fumigacion de before ya tenía creada una tarea:
-            if (antes.activa == "true") {
-              return tasksClient.deleteTask({name: antes.taskId})
-                  .then(()=>{
-                    if (despues.activa == "true") {
-                      return scheduleProgramada(robotId, fumigacionId,
-                          despues.cantidadQuimicoPorArea,
-                          despues.timestampInicio);
-                    }
-                  });
-            }
-
-            // si la promesa sale bien, hacemos:
-            console.log("Se actualizó la fumigación " + cambios.after.key);
-            // programar la ejecución de la fumigación
-            // return scheduleProgramada(robotId, fumigacionId,
-            // despues.timestampInicio);
-            // return Promise.resolve("Ok");
+            // ver si la fumigación de ANTES ya tenía creada una tarea:
+            // me falta setearle el campo "activa" así que hardcodeo
+            // if (antes.activa == "true") {
+            const antesTask = antes.taskId;
+            tasksClient.deleteTask({name: antesTask}).then(()=>{
+              // if (despues.activa == "true") {
+              return scheduleProgramada(robotId, fumigacionId,
+                  despues.cantidadQuimicoPorArea,
+                  despues.timestampInicio);
+              // }
+            });
+            // }
           })
           .catch((error) => {
             console.log(error);
             console.log("Nope, restablecemos after ref: " + cambios.after.ref);
             return cambios.after.ref.set(antes);
           });
-      /* return verificarFumigacion(robotId, fumigacionId,
-      despues.timestampInicio)
-          .then(() => {
-            // si la promesa sale bien, hacemos:
-            console.log("Se actualizó la fumigación " + cambios.after.key);
-            return Promise.resolve();
-            // o ver si retornar nulo porque no tenemos que esperar a nada más
-          })
-          .catch((error) => {
-            console.log(error);
-            console.log("Nope, restablecemos after ref: " + cambios.after.ref);
-            return cambios.after.ref.set(antes);
-          });*/
     });
 
 
@@ -136,13 +107,12 @@ function verificarFumigacion(robotId, fumigacionId, tsInicio) {
             // comparo que sean diferentes ids
             const difFumi = fumigacionId !== fumigacion.key;
             if ( cmp && difFumi ) {
-              // Si son iguales, no puedo guardarla
               throw new functions.https.HttpsError("already-exists",
                   "Timestamp repetido");
             } else if (difFumi) {
               // si no son iguales, podemos verificar la brecha temporal
-              console.log("Analizando nueva (" + fumigacionId +
-                ") contra " + fumigacion.key + "...");
+              // console.log("Analizando nueva (" + fumigacionId +
+              // ") contra " + fumigacion.key + "...");
               const evaluacionBrecha =
               evaluarBrechaTemporal(tsInicio, tsFumigacion);
               if (evaluacionBrecha == false) {
@@ -174,6 +144,7 @@ function evaluarBrechaTemporal(tsNueva, tsExistente) {
 
 
 exports.evaluarInstantanea = functions.https.onCall((data, context) => {
+  // dejo esto escrito acá para que sea útil en un futuro:
   // data contiene la data que le pasemos cuando la llamamos desde la app
   // context tiene informacion de autenticacion del user
   // si queremos, podemos retornar un JSON
@@ -192,17 +163,14 @@ exports.evaluarInstantanea = functions.https.onCall((data, context) => {
  * @return {Promise} retorna promesa
  */
 function scheduleProgramada(robotId, fumigacionId, cantArea, timestamp) {
-  // const docPath = snapshot.ref.path
+  cantArea = obtenerValorNumerico(cantArea);
   const payload = {robotId: robotId,
     fumigacionId: fumigacionId,
-    cantArea: cantArea}; // { docPath }
-  // console.log("------------------");
-  console.log("PAYLOAD recien armado:");
-  console.log(payload);
-  // console.log("        ");
+    cantArea: cantArea};
   const ts = Number.parseInt(timestamp) / 1000;
 
-  // le decimos que a ese timestamp haga un post a nuestra funcion
+  // le decimos a la tarea que, en ese timestamp seteado,
+  // haga un post a nuestra función de "ejecutar programada (está en la URL)"
   const task = {
     httpRequest: {
       httpMethod: "POST",
@@ -215,69 +183,63 @@ function scheduleProgramada(robotId, fumigacionId, cantArea, timestamp) {
     },
   };
 
-  // encolamos la task en nuestra queue
-  // const [ response ] = await tasksClient
-  // .createTask({ parent: queuePath, task })
-
-  console.log("CREATE TASK");
+  // console.log("CREATE TASK");
   const request = {parent: queuePath, task: task};
-  console.log(request);
   return tasksClient.createTask(request).then( ([taskCreada], error) => {
-    // console.log("TASK CREADA");
-    // console.log(taskCreada);
     const taskId = taskCreada.name;
     // console.log("TaskID: " + taskId);
     return admin.database().ref("fumigaciones_programadas/" + robotId + "/" +
     fumigacionId).update({taskId: taskId});
-    // return Promise.resolve("Ok crear task");
-    // return ref.update({ taskId : taskId })
-    // .then(()=>{return Promise.resolve("Ok")});
   }).catch( (err) => {
     console.log("catch create task:");
     console.log(err);
     throw new functions.https.HttpsError("unknown", err);
-    // return Promise.reject(err);
   });
-  /* const taskId = response.name;
-  console.log("TASK ID: " + taskId); */
+}
+
+/** Retorna el valor numérico de la cadena que representa a la cantidad
+ * de químico por área.
+ * @param {String} cantArea es la cantidad de químico por área en formato texto.
+ * @return {Number} `1`: cantidad de químico baja.
+ * `2`: cantidad de químico media.
+ * `3`: cantidad de químico alta.
+*/
+function obtenerValorNumerico(cantArea) {
+  if (cantArea.includes("Baja")) {
+    return 1;
+  } else if (cantArea.includes("Media")) {
+    return 2;
+  }
+  return 3;
 }
 
 exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
   const {robotId, fumigacionId, cantArea} = req.body;
-  console.log("Robot ID: " + robotId + " | Fumigacion ID: " + fumigacionId +
-      "Cant x area: " + cantArea);
+  // console.log("Robot ID: " + robotId + " | Fumigacion ID: " + fumigacionId +
+  //    " Cant x area: " + cantArea);
   try {
-    /* await admin.database().ref(payload).update( {} );
-    // setear el robot en fumigando true
-    await admin.database().ref("robots/{robotId}")
-      .update( {fumigando: "true" });
-    // setear el taskid a la fumigación
-    // ...
-    // si no es recurrente, setear activa en false: podemos traerlo del payload
-    if(payload.recurrente == "false") {
-      await admin.database()
-        .ref("fumigaciones_programadas/{robotId}/{fumigacionId}")
-        .update( {activa: "false"} );
-    }*/
-    // probamos con esto a ver si hace algo
-    admin.database().ref("robots/" + robotId).update({fumigando: true})
-        .then(()=>{
-          admin.database().ref("fumigaciones_programadas/" + robotId + "/" +
-          fumigacionId).child("recurrente").once("value")
-              .then((valorRecurrente) => {
-                console.log("valor recurrente.val: " + valorRecurrente.val());
-                if (valorRecurrente.val() == "false") {
-                  console.log("Ref de valor recurrente:");
-                  console.log(valorRecurrente.ref);
-                  valorRecurrente.ref.update({activa: false});
-                }
-                res.status(200).send("OK!");
-              }).catch((err) => {
-                res.status(500).send(err);
-              });
-        }).catch((err) => {
-          res.status(500).send(err);
-        });
+    // primero ponemos en fumigando el robot y la cantidad por área
+    admin.database().ref("robots/" + robotId).update({fumigando: true,
+      cantidadQuimicoPorArea: cantArea}).then(()=>{
+      // vamos a ver si es recurrente o no
+      admin.database().ref("fumigaciones_programadas/" + robotId + "/" +
+      fumigacionId).once("value").then((fumigacion) => {
+        if (fumigacion.val().recurrente == true) {
+          res.status(200).send("OK!");
+        } else {
+          // si no es recurrente, la desactivamos
+          fumigacion.ref.update({activa: false}).then(()=>{
+            res.status(200).send("OK!");
+          }).catch((err)=>{
+            res.status(500).send(err);
+          });
+        }
+      }).catch((err) => {
+        res.status(500).send(err);
+      });
+    }).catch((err) => {
+      res.status(500).send(err);
+    });
   } catch (err) {
     console.log("ERROR ejecutar programada:");
     console.log(err);
