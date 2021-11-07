@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import com.example.fumigabot.firebase.Robot;
 import com.example.fumigabot.home.HistorialFragment;
 import com.example.fumigabot.home.InicioFragment;
+import com.example.fumigabot.home.PerfilFragment;
 import com.example.fumigabot.home.ProgramadasFragment;
 import com.example.fumigabot.home.QuimicosFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -23,6 +24,7 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
     private static final String HISTORIAL_FRAGMENTO = "historial_fragmento";
     private static final String QUIMICOS_FRAGMENTO = "quimicos_fragmento";
     private static final String PROGRAMADAS_FRAGMENTO = "programadas_fragmento";
+    private static final String PERFIL_FRAGMENTO = "perfil_fragmento";
 
 
     public RobotHomeActivity() {
@@ -68,6 +70,7 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
                         .add(R.id.fragment_container_view, HistorialFragment.class, bundle, HISTORIAL_FRAGMENTO)
                         .add(R.id.fragment_container_view, QuimicosFragment.class, bundle, QUIMICOS_FRAGMENTO)
                         .add(R.id.fragment_container_view, ProgramadasFragment.class, bundle, PROGRAMADAS_FRAGMENTO)
+                        .add(R.id.fragment_container_view, PerfilFragment.class, bundle, PERFIL_FRAGMENTO)
                         //.addToBackStack(null)
                         .commitNow();
 
@@ -76,6 +79,7 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
                         .hide(fragmentManager.findFragmentByTag(HISTORIAL_FRAGMENTO))
                         .hide(fragmentManager.findFragmentByTag(QUIMICOS_FRAGMENTO))
                         .hide(fragmentManager.findFragmentByTag(PROGRAMADAS_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(PERFIL_FRAGMENTO))
                         .commitNow();
             } catch (Exception e) {
                 //Log.i("FILTRO", "CATCH: " + e.getMessage());
@@ -93,6 +97,7 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
                         .hide(fragmentManager.findFragmentByTag(HISTORIAL_FRAGMENTO))
                         .hide(fragmentManager.findFragmentByTag(QUIMICOS_FRAGMENTO))
                         .hide(fragmentManager.findFragmentByTag(PROGRAMADAS_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(PERFIL_FRAGMENTO))
                         .show(fragmentManager.findFragmentByTag(INICIO_FRAGMENTO)).commitNow();
                 return true;
 
@@ -102,6 +107,7 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
                         .hide(fragmentManager.findFragmentByTag(INICIO_FRAGMENTO))
                         .hide(fragmentManager.findFragmentByTag(QUIMICOS_FRAGMENTO))
                         .hide(fragmentManager.findFragmentByTag(PROGRAMADAS_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(PERFIL_FRAGMENTO))
                         .show(fragmentManager.findFragmentByTag(HISTORIAL_FRAGMENTO)).commitNow();
                 return true;
 
@@ -111,6 +117,7 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
                         .hide(fragmentManager.findFragmentByTag(INICIO_FRAGMENTO))
                         .hide(fragmentManager.findFragmentByTag(HISTORIAL_FRAGMENTO))
                         .hide(fragmentManager.findFragmentByTag(PROGRAMADAS_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(PERFIL_FRAGMENTO))
                         .show(fragmentManager.findFragmentByTag(QUIMICOS_FRAGMENTO)).commitNow();
                 return true;
 
@@ -120,7 +127,19 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
                         .hide(fragmentManager.findFragmentByTag(INICIO_FRAGMENTO))
                         .hide(fragmentManager.findFragmentByTag(HISTORIAL_FRAGMENTO))
                         .hide(fragmentManager.findFragmentByTag(QUIMICOS_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(PERFIL_FRAGMENTO))
                         .show(fragmentManager.findFragmentByTag(PROGRAMADAS_FRAGMENTO)).commitNow();
+                return true;
+
+            case R.id.pagePerfil:
+                //Seleccionar el fragmento de los químicos
+                fragmentManager.beginTransaction()
+                        .hide(fragmentManager.findFragmentByTag(INICIO_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(HISTORIAL_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(QUIMICOS_FRAGMENTO))
+                        .hide(fragmentManager.findFragmentByTag(PROGRAMADAS_FRAGMENTO))
+                        .show(fragmentManager.findFragmentByTag(PERFIL_FRAGMENTO))
+                        .commitNow();
                 return true;
         }
         return false;
