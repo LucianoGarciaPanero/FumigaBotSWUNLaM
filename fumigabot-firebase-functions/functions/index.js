@@ -1,6 +1,9 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const {CloudTasksClient} = require("@google-cloud/tasks");
+// --- Constantes para verificar recursos ---
+const MINIMO_BATERIA = 5;
+const MINIMO_QUIMICO = 5;
 // --- Configurar Tasks ---
 const tasksClient = new CloudTasksClient();
 let queuePath = "";
@@ -30,11 +33,12 @@ exports.programadaNueva = functions.database
       const fumigacionId = context.params.fumigacionId;
       const timestamp = snapshot.val().timestampInicio;
       const cantArea = snapshot.val().cantidadQuimicoPorArea;
+      const quimicoFumigacion = snapshot.val().quimicoUtilizado;
       // verificarFumigacion retorna promesa:
       return verificarFumigacion(robotId, fumigacionId, timestamp)
           .then(() => {
-            // programar la ejecución de la fumigación
-            return scheduleProgramada(robotId, fumigacionId,
+          // programar la ejecución de la fumigación
+            return scheduleProgramada(robotId, fumigacionId, quimicoFumigacion,
                 cantArea, timestamp);
           })
           .catch((error) => {
@@ -55,9 +59,9 @@ exports.programadaUpdate = functions.database
       const despues = cambios.after.val();
       // hacemos la comparación para que no haga el loop infinito del update:
       if (antes.timestampInicio === despues.timestampInicio &&
-        antes.cantidadQuimicoPorArea === despues.cantidadQuimicoPorArea &&
-        antes.quimicoUtilizado === despues.quimicoUtilizado &&
-        antes.recurrente === despues.recurrente) {
+      antes.cantidadQuimicoPorArea === despues.cantidadQuimicoPorArea &&
+      antes.quimicoUtilizado === despues.quimicoUtilizado &&
+      antes.recurrente === despues.recurrente) {
         // retornamos nulo porque no tenemos más trabajo que hacer
         // console.log("ES LA MISMA");
         return null;
@@ -69,7 +73,7 @@ exports.programadaUpdate = functions.database
             // me falta setearle el campo "activa" así que hardcodeo
             // if (antes.activa == "true") {
             const antesTask = antes.taskId;
-            tasksClient.deleteTask({name: antesTask}).then(()=>{
+            tasksClient.deleteTask({name: antesTask}).then(() => {
               // if (despues.activa == "true") {
               return scheduleProgramada(robotId, fumigacionId,
                   despues.cantidadQuimicoPorArea,
@@ -95,24 +99,24 @@ exports.programadaUpdate = functions.database
  */
 function verificarFumigacion(robotId, fumigacionId, tsInicio) {
   return admin.database().ref("fumigaciones_programadas/" + robotId + "/")
-      .once("value").then( (snap) => {
-        snap.forEach( (fumigacion) => {
+      .once("value").then((snap) => {
+        snap.forEach((fumigacion) => {
           const tsFumigacion = fumigacion.val().timestampInicio;
           // comparo con las programadas que sean de hoy (-12hs) en adelante
           // (12 * cant min en 1 hr * cant seg en 1 min * cant ms en 1 seg)
           const hoy = new Date(Date.now() - (12 * 60 * 60 * 1000));
           if (tsFumigacion >= hoy) {
-            // comparo a ver si es el mismo timestamp
+          // comparo a ver si es el mismo timestamp
             const cmp = tsFumigacion === tsInicio;
             // comparo que sean diferentes ids
             const difFumi = fumigacionId !== fumigacion.key;
-            if ( cmp && difFumi ) {
+            if (cmp && difFumi) {
               throw new functions.https.HttpsError("already-exists",
                   "Timestamp repetido");
             } else if (difFumi) {
-              // si no son iguales, podemos verificar la brecha temporal
-              // console.log("Analizando nueva (" + fumigacionId +
-              // ") contra " + fumigacion.key + "...");
+            // si no son iguales, podemos verificar la brecha temporal
+            // console.log("Analizando nueva (" + fumigacionId +
+            // ") contra " + fumigacion.key + "...");
               const evaluacionBrecha =
               evaluarBrechaTemporal(tsInicio, tsFumigacion);
               if (evaluacionBrecha == false) {
@@ -158,14 +162,18 @@ exports.evaluarInstantanea = functions.https.onCall((data, context) => {
 /** Crea las tareas para la ejecución de las fumigaciones programadas.
  * @param {String} robotId ID del robot que comienza a fumigar
  * @param {String} fumigacionId ID de la fumigación programada a comenzar
+ * @param {String} quimicoFumigacion químico seteado en la fumigación programada
  * @param {String} cantArea cantidad de químico por área de la fumigación
  * @param {String} timestamp timestamp de dicha fumigación
  * @return {Promise} retorna promesa
  */
-function scheduleProgramada(robotId, fumigacionId, cantArea, timestamp) {
+function scheduleProgramada(robotId, fumigacionId, quimicoFumigacion,
+    cantArea, timestamp) {
   cantArea = obtenerValorNumerico(cantArea);
-  const payload = {robotId: robotId,
+  const payload = {
+    robotId: robotId,
     fumigacionId: fumigacionId,
+    quimicoFumigacion: quimicoFumigacion,
     cantArea: cantArea};
   const ts = Number.parseInt(timestamp) / 1000;
 
@@ -185,12 +193,12 @@ function scheduleProgramada(robotId, fumigacionId, cantArea, timestamp) {
 
   // console.log("CREATE TASK");
   const request = {parent: queuePath, task: task};
-  return tasksClient.createTask(request).then( ([taskCreada], error) => {
+  return tasksClient.createTask(request).then(([taskCreada], error) => {
     const taskId = taskCreada.name;
     // console.log("TaskID: " + taskId);
     return admin.database().ref("fumigaciones_programadas/" + robotId + "/" +
-    fumigacionId).update({taskId: taskId});
-  }).catch( (err) => {
+      fumigacionId).update({taskId: taskId});
+  }).catch((err) => {
     console.log("catch create task:");
     console.log(err);
     throw new functions.https.HttpsError("unknown", err);
@@ -214,35 +222,99 @@ function obtenerValorNumerico(cantArea) {
 }
 
 exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
-  const {robotId, fumigacionId, cantArea} = req.body;
+  const {robotId, fumigacionId, quimicoUtilizado, cantArea} = req.body;
   // console.log("Robot ID: " + robotId + " | Fumigacion ID: " + fumigacionId +
   //    " Cant x area: " + cantArea);
-  try {
+  verificarRecursos(robotId, quimicoUtilizado).then(() => {
     // primero ponemos en fumigando el robot y la cantidad por área
-    admin.database().ref("robots/" + robotId).update({fumigando: true,
-      cantidadQuimicoPorArea: cantArea}).then(()=>{
-      // vamos a ver si es recurrente o no
-      admin.database().ref("fumigaciones_programadas/" + robotId + "/" +
-      fumigacionId).once("value").then((fumigacion) => {
-        if (fumigacion.val().recurrente == true) {
-          res.status(200).send("OK!");
-        } else {
-          // si no es recurrente, la desactivamos
-          fumigacion.ref.update({activa: false}).then(()=>{
+    admin.database().ref("robots/" + robotId).update({
+      fumigando: true, cantidadQuimicoPorArea: cantArea})
+        .then(() => {
+        // vamos a ver si es recurrente o no
+          admin.database().ref("fumigaciones_programadas/" +
+          robotId + "/" + fumigacionId).once("value").then((fumigacion) => {
+            if (fumigacion.val().recurrente == false) {
+            // si no es recurrente, la desactivamos
+              fumigacion.ref.update({activa: false}).then(() => {
+                res.status(200).send("OK!");
+              }).catch((err) => {
+                throw new Error(err);
+              });
+            }
             res.status(200).send("OK!");
-          }).catch((err)=>{
+          }).catch((err) => {
             res.status(500).send(err);
           });
-        }
-      }).catch((err) => {
-        res.status(500).send(err);
-      });
-    }).catch((err) => {
-      res.status(500).send(err);
-    });
-  } catch (err) {
+        }).catch((err) => {
+          console.log(err);
+          res.status(500).send(err);
+        });
+  }).catch((err) => {
+    // este es el de la verificacion de los recursos
     console.log("ERROR ejecutar programada:");
     console.log(err);
+    // 1. eliminar la tarea de la cola
+    // 2. hacer la entrada en el historial diciendo el por qué?
+    eliminarTarea(robotId, fumigacionId);
     res.status(500).send(err);
-  }
+  });
 });
+
+
+/** Elimina la tarea de la cola en caso de ser necesario.
+ * @param {String} robotId ID del robot que va a fumigar.
+ * @param {String} fumigacionId ID de la fumigación a eliminar su tarea.
+ * @return {Promise} retorna promesa
+*/
+function eliminarTarea(robotId, fumigacionId) {
+  return admin.database().ref("fumigaciones_programadas/" + robotId +
+  "/" + fumigacionId).once("value").then((fumigacion) => {
+    const taskId = fumigacion.val().taskId;
+    tasksClient.deleteTask({name: taskId}).then(() => {
+      return Promise.resolve("OK");
+    });
+  });
+}
+
+
+/** Chequea antes de empezar una fumigación si se cuentan con los
+ * recursos mínimos.
+ * @param {String} robotId ID del robot a consultar sus recursos.
+ * @param {String} quimicoFumigacion químico a usar en la fumigación.
+ * @return {Promise} retorna promesa con los detalles correspondientes.
+ * */
+function verificarRecursos(robotId, quimicoFumigacion) {
+  return admin.database().ref("robots/" + robotId).once("value")
+      .then((robot) => {
+        const bateria = robot.val().bateria;
+        const quimico = robot.val().nivelQuimico;
+        const fumigando = robot.val().fumigando;
+        const encendido = robot.val().encendido;
+        const ultimoQuimico = robot.val().ultimoQuimico;
+
+        /* if (bateria > MINIMO_BATERIA && quimico > MINIMO_QUIMICO &&
+          fumigando == false && encendido == true) {
+          resultado = true;
+        }
+        resultado = false;*/
+        if (bateria <= MINIMO_BATERIA) {
+          throw new functions.https.HttpsError("out-of-range",
+              "No hay suficiente batería");
+        } else if (quimico <= MINIMO_QUIMICO) {
+          throw new functions.https.HttpsError("out-of-range",
+              "No hay suficiente químico");
+        } else if (fumigando == true) {
+          throw new functions.https.HttpsError("unavailable",
+              "El robot ya se encuentra fumigando");
+        } else if (encendido == false) {
+          throw new functions.https.HttpsError("unavailable",
+              "El robot está apagado");
+        } else if (ultimoQuimico != quimicoFumigacion) {
+          throw new functions.https.HttpsError("invalid-argument",
+              "El último químico utilizado no coincide con el de " +
+            "la fumigación programada");
+        } else {
+          return Promise.resolve("Ok");
+        }
+      });
+}
