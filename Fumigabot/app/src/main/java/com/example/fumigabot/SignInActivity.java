@@ -26,6 +26,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SignInActivity extends AppCompatActivity {
 
     private FirebaseAuth firebaseAuth;
@@ -36,27 +39,27 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setContentView(R.layout.activity_sign_in);
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_sign_in);
+
 
         firebaseAuth = FirebaseAuth.getInstance();
         btnGoogleSignIn = findViewById(R.id.btnGoogleSignIn);
         btnGoogleSignIn.setOnClickListener(googleSignInListener);
     }
 
-    /**
-     * Obtiene los datos de sesión (por ahora solo email) de la cuenta Gmail con la que
-     * ingresamos anteriormente a la app.
-     *
-     * @return el email de la cuenta Gmail con la que ingresamos a la app. Puede ser null
-     * si no hay una sesión guardada.
-     */
-    private String getDatosDeSesion() {
+    private Map<String, String> getDatosDeSesion() {
+        Map<String, String> datosDeSesion = new HashMap<>();
+
         SharedPreferences sp =
             getSharedPreferences(String.valueOf(R.string.sp_datos_de_sesion), Context.MODE_PRIVATE);
-        String datos = sp.getString("userEmail", null);
 
-        return datos;
+        String userEmail = sp.getString("userEmail", null);
+        String userName = sp.getString("userName", null);
+        datosDeSesion.put("userEmail", userEmail);
+        datosDeSesion.put("userName", userName);
+
+        return datosDeSesion;
     }
 
     private View.OnClickListener googleSignInListener = new View.OnClickListener() {
@@ -92,10 +95,6 @@ public class SignInActivity extends AppCompatActivity {
                 }
             } catch (ApiException e) {
                 // Google Sign In fallido, informamos del error
-                runOnUiThread(Toast.makeText(
-                    getApplicationContext(),
-                    "Hubo un error en el login",
-                    Toast.LENGTH_SHORT)::show);
                 Log.w("WTF", "Google sign in failed", e);
             }
         }
@@ -117,7 +116,7 @@ public class SignInActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()) {
-                        guardarDatosDeSesion(account.getEmail());
+                        guardarDatosDeSesion(account.getEmail(), account.getDisplayName());
                         goToVincularDispositivoActivity();
                     }
                     else {
@@ -133,23 +132,18 @@ public class SignInActivity extends AppCompatActivity {
             });
     }
 
-    /**
-     * Guarda los datos de sesión (por ahora solo email) de la cuenta Gmail con la que ingresamos,
-     * para recuperarlos en un próximo inicio de la app.
-     *
-     * @param userEmail el email de la cuenta Gmail con la que iniciamos sesión. No puede ser null.
-     */
-    private void guardarDatosDeSesion(String userEmail) {
+    private void guardarDatosDeSesion(String userEmail, String userName) {
         SharedPreferences sp =
                 getSharedPreferences(String.valueOf(R.string.sp_datos_de_sesion), Context.MODE_PRIVATE);
         SharedPreferences.Editor spEditor = sp.edit();
+
         spEditor.putString("userEmail", userEmail);
+        spEditor.putString("userName", userName);
         spEditor.apply();
     }
 
     private void goToVincularDispositivoActivity() {
         Intent i = new Intent(getApplicationContext(), SplashActivity.class);
-        i.putExtra("userEmail", getDatosDeSesion());
         startActivity(i);
         finish();
     }

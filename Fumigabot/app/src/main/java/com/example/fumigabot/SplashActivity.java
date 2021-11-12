@@ -22,6 +22,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -45,7 +48,7 @@ public class SplashActivity extends AppCompatActivity {
         anim_robot = findViewById(R.id.logoCompleto);
 
         // Vemos si existe una sesión iniciada
-        userEmail = getDatosDeSesion();
+        userEmail = getDatosDeSesion().get("userEmail");
 
         if(userEmail == null) {
             goToSignInActivity();
@@ -63,19 +66,18 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Obtiene los datos de sesión (por ahora solo email) de la cuenta Gmail con la que
-     * ingresamos anteriormente a la app.
-     *
-     * @return el email de la cuenta Gmail con la que ingresamos a la app. Puede ser null
-     * si no hay una sesión guardada.
-     */
-    private String getDatosDeSesion() {
-        SharedPreferences sp =
-            getApplicationContext().getSharedPreferences(String.valueOf(R.string.sp_datos_de_sesion), Context.MODE_PRIVATE);
-        String datos = sp.getString("userEmail", null);
+    private Map<String, String> getDatosDeSesion() {
+        Map<String, String> datosDeSesion = new HashMap<>();
 
-        return datos;
+        SharedPreferences sp =
+            getSharedPreferences(String.valueOf(R.string.sp_datos_de_sesion), Context.MODE_PRIVATE);
+
+        String userEmail = sp.getString("userEmail", null);
+        String userName = sp.getString("userName", null);
+        datosDeSesion.put("userEmail", userEmail);
+        datosDeSesion.put("userName", userName);
+
+        return datosDeSesion;
     }
 
     private void goToSignInActivity() {

@@ -22,6 +22,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.transition.MaterialFadeThrough;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -29,6 +32,7 @@ public class PerfilFragment extends Fragment {
 
     private FirebaseAuth firebaseAuth;
     private TextView textUserEmail;
+    private TextView textUserName;
     private Button btnCerrarSesion;
     private MaterialAlertDialogBuilder alertDialogBuilder;
     private AlertDialog alertDialog;
@@ -60,25 +64,26 @@ public class PerfilFragment extends Fragment {
         firebaseAuth = FirebaseAuth.getInstance();
 
         View vista = getView();
-        textUserEmail= vista.findViewById(R.id.textUserEmail);
-        textUserEmail.setText(getDatosDeSesion());
+        textUserEmail = vista.findViewById(R.id.textUserEmail);
+        textUserName = vista.findViewById(R.id.textUserName);
+        textUserEmail.setText(getDatosDeSesion().get("userEmail"));
+        textUserName.setText(getDatosDeSesion().get("userName"));
         btnCerrarSesion = vista.findViewById(R.id.btnCerrarSesion);
         btnCerrarSesion.setOnClickListener(btnCerrarSesionListener);
     }
 
-    /**
-     * Obtiene los datos de sesión (por ahora solo email) de la cuenta Gmail con la que
-     * ingresamos anteriormente a la app.
-     *
-     * @return el email de la cuenta Gmail con la que ingresamos a la app. Puede ser null
-     * si no hay una sesión guardada.
-     */
-    private String getDatosDeSesion() {
-        SharedPreferences sp = getActivity().getSharedPreferences(
-            String.valueOf(R.string.sp_datos_de_sesion), Context.MODE_PRIVATE);
+    private Map<String, String> getDatosDeSesion() {
+        Map<String, String> datosDeSesion = new HashMap<>();
 
-        String datos = sp.getString("userEmail", null);
-        return datos;
+        SharedPreferences sp = getActivity()
+            .getSharedPreferences(String.valueOf(R.string.sp_datos_de_sesion), Context.MODE_PRIVATE);
+
+        String userEmail = sp.getString("userEmail", null);
+        String userName = sp.getString("userName", null);
+        datosDeSesion.put("userEmail", userEmail);
+        datosDeSesion.put("userName", userName);
+
+        return datosDeSesion;
     }
 
     private View.OnClickListener btnCerrarSesionListener = new View.OnClickListener() {
@@ -119,10 +124,6 @@ public class PerfilFragment extends Fragment {
         getActivity().finish();
     }
 
-    /**
-     * Borra los datos de sesión (por ahora solo email) de la cuenta Gmail con la que
-     * ingresamos anteriormente a la app.
-     */
     private void borrarDatosDeSesion() {
         SharedPreferences sp = getActivity().getSharedPreferences(
             String.valueOf(R.string.sp_datos_de_sesion), Context.MODE_PRIVATE);
