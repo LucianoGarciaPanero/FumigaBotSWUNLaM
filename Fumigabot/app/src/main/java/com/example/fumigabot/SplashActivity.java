@@ -22,6 +22,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -29,6 +32,7 @@ public class SplashActivity extends AppCompatActivity {
     private DatabaseReference reference;
     private Robot robot;
     private String robotId = "";
+    private String userEmail = "";
     private ImageView anim_robot;
 
 
@@ -41,28 +45,86 @@ public class SplashActivity extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         setContentView(R.layout.activity_splash);
 
-
         anim_robot = findViewById(R.id.logoCompleto);
 
-        //Vemos si tiene vinculado algo
-        robotId = getIdRobotSP();
+        // Vemos si existe una sesión iniciada
+        userEmail = getDatosDeSesion().get("userEmail");
 
-        //Instancia y referencia de la BD en Firebase
-        firebaseDatabase = MyFirebase.getDatabaseInstance();
-        reference = firebaseDatabase.getReference("robots");
-        reference.addValueEventListener(robotValueEventListener);
+        if(userEmail == null) {
+            goToSignInActivity();
+        } else {
+            // Hay una sesión iniciada. Vemos si hay un robot vinculado.
+            robotId = getIdRobotSP();
 
-        if(robotId.isEmpty())
-            obtenerRobot();
+            //Instancia y referencia de la BD en Firebase
+            firebaseDatabase = MyFirebase.getDatabaseInstance();
+            reference = firebaseDatabase.getReference("robots");
+            reference.addValueEventListener(robotValueEventListener);
+
+            if(robotId.isEmpty())
+                obtenerRobot();
+        }
+    }
+
+    private Map<String, String> getDatosDeSesion() {
+        Map<String, String> datosDeSesion = new HashMap<>();
+
+        SharedPreferences sp =
+            getSharedPreferences(String.valueOf(R.string.sp_datos_de_sesion), Context.MODE_PRIVATE);
+
+        String userEmail = sp.getString("userEmail", null);
+        String userName = sp.getString("userName", null);
+        datosDeSesion.put("userEmail", userEmail);
+        datosDeSesion.put("userName", userName);
+
+        return datosDeSesion;
+    }
+
+    private void goToSignInActivity() {
+        Intent i = new Intent(getApplicationContext(), SignInActivity.class);
+        startActivity(i);
+        finish();
+    }
+
+    /**
+     * Borra los datos de sesión (por ahora solo email) de la cuenta Gmail con la que
+     * ingresamos anteriormente a la app.
+     */
+    private void borrarDatosDeSesion() {
+        SharedPreferences sp =
+            getSharedPreferences(String.valueOf(R.string.sp_datos_de_sesion), Context.MODE_PRIVATE);
+        SharedPreferences.Editor spEditor = sp.edit();
+        spEditor.clear();
+        spEditor.apply();
     }
 
     private String getIdRobotSP() {
-        //Leemos de Shared Preferences
-        SharedPreferences preferences = this.getSharedPreferences("Fumigabot_Pin_Dev", Context.MODE_PRIVATE);
-        String res = preferences.getString("robotId", "");
+        SharedPreferences sp =
+            getSharedPreferences(String.valueOf(R.string.sp_robot_vinculado), Context.MODE_PRIVATE);
+        String datos = sp.getString("robotId", "");
 
-        return res;
+        return datos;
     }
+
+    private ValueEventListener robotValueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            //Si detecta algo, lo trae
+            if (robotId.isEmpty()) {
+                return;
+            }
+            robot = dataSnapshot.child(robotId).getValue(Robot.class);
+            obtenerRobot();
+            robotId = "";
+            return;
+        }
+
+        @Override
+        public void onCancelled(DatabaseError error) {
+            // Failed to read value
+            Log.w("WTF", "Failed to read value.", error.toException());
+        }
+    };
 
     private void obtenerRobot() {
         if(robotId != "") { //quiere decir que tiene algo, puedo ir a buscar a la base de datos
@@ -77,23 +139,4 @@ public class SplashActivity extends AppCompatActivity {
         }
         finish();
     }
-
-    private ValueEventListener robotValueEventListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-            //Si detecta algo, lo trae
-            if(robotId.isEmpty())
-                return;
-            robot = dataSnapshot.child(robotId).getValue(Robot.class);
-            obtenerRobot();
-            robotId = "";
-            return;
-        }
-
-        @Override
-        public void onCancelled(DatabaseError error) {
-            // Failed to read value
-            Log.w("WTF", "Failed to read value.", error.toException());
-        }
-    };
 }

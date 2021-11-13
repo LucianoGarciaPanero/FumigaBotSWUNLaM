@@ -20,4 +20,9 @@
         android:enabled="true"
         android:icon="@drawable/ic_event_black_24dp"
         android:title="Programadas" />
+    <item
+        android:id="@+id/pagePerfil"
+        android:enabled="true"
+        android:icon="@drawable/ic_person_24"
+        android:title="Perfil" />
 </menu>

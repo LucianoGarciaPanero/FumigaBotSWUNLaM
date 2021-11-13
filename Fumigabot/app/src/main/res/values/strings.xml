@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Defy</string>
+    <string name="sp_datos_de_sesion">SP_DATOS_DE_SESION</string>
+    <string name="sp_robot_vinculado">SP_ROBOT_VINCULADO</string>
     <string name="errorSeleccionQuimico">Se debe seleccionar un químico</string>
     <string name="errorSeleccionCantidadArea">Se debe seleccionar una opción</string>
 

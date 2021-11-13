@@ -37,11 +37,9 @@ public class VincularDispositivoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vincular_dispositivo);
 
-
         //Instancia y referencia de la BD en Firebase
         firebaseDatabase = MyFirebase.getDatabaseInstance();
         reference = firebaseDatabase.getReference("robots");
-
 
         configurarControles();
     }
@@ -94,7 +92,8 @@ public class VincularDispositivoActivity extends AppCompatActivity {
 
     private void guardarPinSP(String pin) {
         //Guardamos en SharedPreferences el PIN
-        SharedPreferences sp = getApplicationContext().getSharedPreferences("Fumigabot_Pin_Dev", Context.MODE_PRIVATE);
+        SharedPreferences sp =
+            getSharedPreferences(String.valueOf(R.string.sp_robot_vinculado), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("robotId", pin);
         editor.apply();
