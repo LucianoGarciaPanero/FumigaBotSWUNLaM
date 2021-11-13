@@ -318,3 +318,91 @@ function verificarRecursos(robotId, quimicoFumigacion) {
         }
       });
 }
+
+
+// ------- Robot -------
+
+/** Envía notificaciones con el título y mensaje correspondiente.
+ * @param {String} titulo Título de la notificación.
+ * @param {String} mensaje Mensaje a mostrar.
+ * @return {Promise} retorna promesa.
+ */
+function enviarNotificacion(titulo, mensaje) {
+  let token;
+  return admin.database().ref("robots/0/").once("value").then((robot) => {
+    token = robot.val().token;
+    console.log("Token: " + token);
+
+    const payload = {
+      token: token,
+      notification: {
+        title: titulo,
+        body: mensaje,
+      },
+      data: {body: mensaje},
+    };
+
+    return admin.messaging().send(payload).then((res) => {
+      console.log("MENSAJE OK, ID MENSAJE: " + res);
+    }).catch((err) => {
+      console.log("ERROR MENSAJE");
+      console.log(err);
+    });
+  });
+}
+
+/** Evalúa las razones por la cual se detuvo el robot
+ * y la envía en una notificación a la app del usuario.
+ * @param {String} razon Razón por la cual se detuvo el robot.
+ * @return {Promesa} retorna promesa.
+*/
+function evaluarDetencionAutomatica(razon) {
+  let mensaje = "";
+  console.log("Razon: " + razon);
+
+  if (razon == "ok") {
+    mensaje = "El robot terminó de fumigar";
+  } else if (razon == "fdq") {
+    mensaje = "El robot se detuvo por falta de químico";
+  } else if (razon == "fdb") {
+    mensaje = "El robot se detuvo por falta de batería";
+  }
+
+  return enviarNotificacion("Defy", mensaje);
+}
+
+exports.notificarRobot = functions.database
+    .ref("robots/{robotId}").onUpdate((cambios, context) => {
+      const antes = cambios.before.val();
+      const despues = cambios.after.val();
+
+      // si está en false, se supone que lo para la app
+      const detAuto = // antes.detencionAutomatica == false &&
+        despues.detencionAutomatica == true;
+
+      if (detAuto == false) {
+        return null;
+      }
+
+      const stopFumigando = antes.fumigando == true &&
+        despues.fumigando == false;
+      const notificar = stopFumigando && detAuto;
+
+      /* const quimico = despues.nivelQuimico;
+      const bateria = despues.bateria;
+      const stopQuimico = quimico < MINIMO_QUIMICO;
+      const stopBat = bateria < MINIMO_BATERIA;
+
+      if (stopQuimico) {
+        return evaluarDetencionAutomatica("fdq");
+      } else if (stopBat) {
+        return evaluarDetencionAutomatica("fdb");
+      }*/
+      if (notificar) {
+        // return evaluarDetencionAutomatica("ok");
+        const razon = despues.razonFinalizacion;
+        console.log("Razon de detención: " + razon);
+        return evaluarDetencionAutomatica(razon);
+      }
+    });
+
