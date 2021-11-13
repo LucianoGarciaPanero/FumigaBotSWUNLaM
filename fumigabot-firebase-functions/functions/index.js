@@ -44,7 +44,11 @@ exports.programadaNueva = functions.database
           .catch((error) => {
             console.log(error);
             console.log("Nope, borramos snapshot ref: " + snapshot.ref);
-            return snapshot.ref.remove();
+            snapshot.ref.remove().then(() => {
+              // return Promise.reject("Fumigación borrada");
+              throw new functions.https.HttpsError("aborted",
+                  "Fumigación borrada");
+            });
           });
     });
 
@@ -155,7 +159,11 @@ exports.evaluarInstantanea = functions.https.onCall((data, context) => {
   const robotId = data.robotId;
   const fumigacionId = data.fumigacionId;
   const tsInicio = data.tsInicio;
-  return verificarFumigacion(robotId, fumigacionId, tsInicio);
+  const quimicoUtilizado = data.quimicoUtilizado;
+  console.log("Quimico utilizado: " + quimicoUtilizado);
+  return verificarFumigacion(robotId, fumigacionId, tsInicio).then(() => {
+    return verificarRecursos(robotId, quimicoUtilizado);
+  });
 });
 
 
@@ -223,8 +231,7 @@ function obtenerValorNumerico(cantArea) {
 
 exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
   const {robotId, fumigacionId, quimicoUtilizado, cantArea} = req.body;
-  // console.log("Robot ID: " + robotId + " | Fumigacion ID: " + fumigacionId +
-  //    " Cant x area: " + cantArea);
+
   verificarRecursos(robotId, quimicoUtilizado).then(() => {
     // primero ponemos en fumigando el robot y la cantidad por área
     admin.database().ref("robots/" + robotId).update({
@@ -252,11 +259,14 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
   }).catch((err) => {
     // este es el de la verificacion de los recursos
     console.log("ERROR ejecutar programada:");
-    console.log(err);
+    console.log(err.message);
     // 1. eliminar la tarea de la cola
     // 2. hacer la entrada en el historial diciendo el por qué?
     eliminarTarea(robotId, fumigacionId);
-    res.status(500).send(err);
+    const titulo = "Fumigación programada cancelada";
+    enviarNotificacion(titulo, err.message).then(() => {
+      res.status(500).send(err);
+    });
   });
 });
 
@@ -297,36 +307,36 @@ function verificarRecursos(robotId, quimicoFumigacion) {
           resultado = true;
         }
         resultado = false;*/
-        let mensaje = "ok";
-        const titulo = "Fumigación programada cancelada";
+        // let mensaje = "ok";
         if (bateria <= MINIMO_BATERIA) {
-          mensaje = "No hay suficiente batería";
-          // throw new functions.https.HttpsError("out-of-range",
-          //    "No hay suficiente batería");
+          // mensaje = "No hay suficiente batería";
+          throw new functions.https.HttpsError("out-of-range",
+              "No hay suficiente batería");
         } else if (quimico <= MINIMO_QUIMICO) {
-          mensaje = "No hay suficiente químico";
-          // throw new functions.https.HttpsError("out-of-range",
-          //    "No hay suficiente químico");
+          // mensaje = "No hay suficiente químico";
+          throw new functions.https.HttpsError("out-of-range",
+              "No hay suficiente químico");
         } else if (fumigando == true) {
-          mensaje = "El robot ya se encuentra fumigando";
-          // throw new functions.https.HttpsError("unavailable",
-          //    "El robot ya se encuentra fumigando");
+          // mensaje = "El robot ya se encuentra fumigando";
+          throw new functions.https.HttpsError("unavailable",
+              "El robot ya se encuentra fumigando");
         } else if (encendido == false) {
-          mensaje = "El robot está apagado";
-          // throw new functions.https.HttpsError("unavailable",
-          //    "El robot está apagado");
+          // mensaje = "El robot está apagado";
+          throw new functions.https.HttpsError("unavailable",
+              "El robot está apagado");
         } else if (ultimoQuimico != quimicoFumigacion) {
-          mensaje = "El último químico utilizado no coincide con el de " +
-            "la fumigación programada";
-          // throw new functions.https.HttpsError("invalid-argument",
-          //    "El último químico utilizado no coincide con el de " +
-          //  "la fumigación programada");
+          // mensaje = "El último químico utilizado no coincide con el de " +
+          //  "la fumigación programada";
+          throw new functions.https.HttpsError("invalid-argument",
+              "El último químico utilizado no coincide con el de " +
+            "la fumigación programada");
         }
-        if (mensaje == "ok") {
+        return Promise.resolve("ok");
+        /* if (mensaje == "ok") {
           return Promise.resolve("Ok");
         } else {
           return enviarNotificacion(titulo, mensaje);
-        }
+        }*/
       });
 }
 
