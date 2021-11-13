@@ -297,24 +297,35 @@ function verificarRecursos(robotId, quimicoFumigacion) {
           resultado = true;
         }
         resultado = false;*/
+        let mensaje = "ok";
+        const titulo = "Fumigación programada cancelada";
         if (bateria <= MINIMO_BATERIA) {
-          throw new functions.https.HttpsError("out-of-range",
-              "No hay suficiente batería");
+          mensaje = "No hay suficiente batería";
+          // throw new functions.https.HttpsError("out-of-range",
+          //    "No hay suficiente batería");
         } else if (quimico <= MINIMO_QUIMICO) {
-          throw new functions.https.HttpsError("out-of-range",
-              "No hay suficiente químico");
+          mensaje = "No hay suficiente químico";
+          // throw new functions.https.HttpsError("out-of-range",
+          //    "No hay suficiente químico");
         } else if (fumigando == true) {
-          throw new functions.https.HttpsError("unavailable",
-              "El robot ya se encuentra fumigando");
+          mensaje = "El robot ya se encuentra fumigando";
+          // throw new functions.https.HttpsError("unavailable",
+          //    "El robot ya se encuentra fumigando");
         } else if (encendido == false) {
-          throw new functions.https.HttpsError("unavailable",
-              "El robot está apagado");
+          mensaje = "El robot está apagado";
+          // throw new functions.https.HttpsError("unavailable",
+          //    "El robot está apagado");
         } else if (ultimoQuimico != quimicoFumigacion) {
-          throw new functions.https.HttpsError("invalid-argument",
-              "El último químico utilizado no coincide con el de " +
-            "la fumigación programada");
-        } else {
+          mensaje = "El último químico utilizado no coincide con el de " +
+            "la fumigación programada";
+          // throw new functions.https.HttpsError("invalid-argument",
+          //    "El último químico utilizado no coincide con el de " +
+          //  "la fumigación programada");
+        }
+        if (mensaje == "ok") {
           return Promise.resolve("Ok");
+        } else {
+          return enviarNotificacion(titulo, mensaje);
         }
       });
 }
