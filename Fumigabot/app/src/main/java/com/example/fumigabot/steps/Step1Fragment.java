@@ -17,6 +17,8 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.fumigabot.ItemViewModel;
 import com.example.fumigabot.R;
 import com.google.android.material.transition.MaterialSharedAxis;
+
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -31,6 +33,8 @@ public class Step1Fragment extends Fragment {
     private ConstraintLayout layoutProgramar;
     private Date fecha;
     private ItemViewModel viewModelHorario;
+    private boolean fumigando;
+    private ConstraintLayout panelMensaje;
 
     public Step1Fragment() {
         // Required empty public constructor
@@ -44,6 +48,18 @@ public class Step1Fragment extends Fragment {
         //Transiciones en los cambios de fragmento
         setEnterTransition(new MaterialSharedAxis(MaterialSharedAxis.X, true));
         setReturnTransition(new MaterialSharedAxis(MaterialSharedAxis.X, false));
+
+        fumigando =  getArguments().getBoolean("fumigando");
+    }
+
+    private void mostrarAlertaFumigando(boolean comenzarAhora){
+        if(comenzarAhora) {
+            if (fumigando == true) {
+                panelMensaje.setVisibility(View.VISIBLE);
+            }
+        } else {
+            panelMensaje.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -76,6 +92,9 @@ public class Step1Fragment extends Fragment {
         viewModelHorario.setInstantanea(true);
         viewModelHorario.seleccionarHorario(fecha);
         viewModelHorario.setRepetirDiariamente(false);
+
+        panelMensaje = vista.findViewById(R.id.panelMensajeFumigando);
+        mostrarAlertaFumigando(true);
     }
 
     private CalendarView.OnDateChangeListener calendarioListener = new CalendarView.OnDateChangeListener() {
@@ -92,6 +111,7 @@ public class Step1Fragment extends Fragment {
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             viewModelHorario.setInstantanea(isChecked);
             habilitarProgramacion(!isChecked);
+            mostrarAlertaFumigando(isChecked);
         }
     };
 

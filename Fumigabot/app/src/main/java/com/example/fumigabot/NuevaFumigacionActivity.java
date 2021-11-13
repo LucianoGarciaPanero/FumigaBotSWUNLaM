@@ -56,6 +56,7 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
     private DatabaseReference referenceProgramadas;
     private boolean habilitarStepQuimico = false;
     private boolean habilitarStepCantidad = false;
+    private boolean habilitarStepFecha = false;
 
     private static final String STEP_1 = "step_1";
     private static final String STEP_2 = "step_2";
@@ -77,6 +78,9 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
         //Obtenemos el Id y los químicos disponibles para el robot
         quimicosDisponibles = (ArrayList<String>) getIntent().getSerializableExtra("robot_quimicos");
         robot = (Robot)getIntent().getSerializableExtra("robot");
+        if(robot.isFumigando() == false){
+            habilitarStepFecha = true;
+        }
 
         //Instancia de las Functions en Firebase
         firebaseFunctions = MyFirebase.getFunctionsInstance();
@@ -109,12 +113,15 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
             //El "intent" entre fragments
             Bundle bundleQuimicos = new Bundle();
             bundleQuimicos.putSerializable("quimicos", quimicosDisponibles);
-            bundleQuimicos.putString("quimicoRobot", "unQuimicoJeje");
+            bundleQuimicos.putString("quimicoRobot", robot.getUltimoQuimico());
+
+            Bundle bundleFumigando = new Bundle();
+            bundleFumigando.putBoolean("fumigando", robot.isFumigando());
 
             try {
                 fragmentManager.beginTransaction()
                         .setReorderingAllowed(true)
-                        .add(R.id.frame_stepper, Step1Fragment.class, null, STEP_1)
+                        .add(R.id.frame_stepper, Step1Fragment.class, bundleFumigando, STEP_1)
                         .add(R.id.frame_stepper, Step2Fragment.class, bundleQuimicos, STEP_2)
                         .add(R.id.frame_stepper, Step3Fragment.class, null, STEP_3)
                         .add(R.id.frame_stepper, Step4Fragment.class, null, STEP_4)
@@ -231,6 +238,7 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
         hashMap.put("robotId", robot.getRobotId());
         hashMap.put("fumigacionId", "instantanea");
         hashMap.put("tsInicio", fumigacion.getTimestampInicio());
+        hashMap.put("quimicoUtilizado", fumigacion.getQuimicoUtilizado());
 
         validarFumigacionInstantanea(hashMap).addOnCompleteListener(new OnCompleteListener<String>() {
             @Override
@@ -243,6 +251,7 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
                         resultado = task.getResult();
                         //Si todo sale bien, tomamos el resultado de si podemos o no iniciar la fumigación ahora
                         if (resultado.equalsIgnoreCase("Ok")) {
+                            resultado = "Se inició la fumigación";
                             //tenemos que pasarle la fumigacion al home/main host:
                             setResult(RESULT_OK, new Intent().putExtra("fumigacion_nueva", fumigacion));
                             finish();
@@ -299,7 +308,7 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
             }
         });
 
-        Toast.makeText(this, "SE GUARDÓ PROGRAMADA!", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Se guardó programada", Toast.LENGTH_LONG).show();
         setResult(RESULT_CANCELED);
         finish();
     }
@@ -321,6 +330,7 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
                         .show(fragmentManager.findFragmentByTag(STEP_1)).commitNow();
 
                 anterior.setEnabled(false);
+                siguiente.setEnabled(habilitarStepFecha);
                 return;
 
             case 1:
