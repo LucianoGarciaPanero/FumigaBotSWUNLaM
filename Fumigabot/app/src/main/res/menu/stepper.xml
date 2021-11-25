@@ -2,13 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item android:id="@+id/step_1"
-        android:title="Químico" />
+        android:title="Cuándo" />
 
     <item android:id="@+id/step_2"
-        android:title="Cantidad" />
+        android:title="Químico" />
 
     <item android:id="@+id/step_3"
-        android:title="Día y hora" />
+        android:title="Cantidad" />
 
     <item android:id="@+id/step_4"
         android:title="Confirmación" />
