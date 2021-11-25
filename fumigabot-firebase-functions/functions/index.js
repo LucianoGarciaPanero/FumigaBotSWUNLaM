@@ -379,7 +379,6 @@ function enviarNotificacion(titulo, mensaje) {
 */
 function evaluarDetencionAutomatica(razon) {
   let mensaje = "";
-  console.log("Razon: " + razon);
 
   if (razon == "ok") {
     mensaje = "El robot terminó de fumigar";
@@ -389,25 +388,37 @@ function evaluarDetencionAutomatica(razon) {
     mensaje = "El robot se detuvo por falta de batería";
   }
 
-  return enviarNotificacion("Defy", mensaje);
+  return enviarNotificacion("Fumigación finalizada", mensaje);
 }
 
 exports.notificarRobot = functions.database
-    .ref("robots/{robotId}").onUpdate((cambios, context) => {
+    .ref("robots/{robotId}/detencionAutomatica")
+    .onUpdate((cambios, context) => {
+      const robotId = context.params.robotId;
       const antes = cambios.before.val();
       const despues = cambios.after.val();
 
       // si está en false, se supone que lo para la app
-      const detAuto = // antes.detencionAutomatica == false &&
-        despues.detencionAutomatica == true;
+      const detAuto = antes == false && despues == true;
+      // antes.detencionAutomatica == false &&
+      // despues.detencionAutomatica == true;
 
       if (detAuto == false) {
         return null;
       }
 
-      const stopFumigando = antes.fumigando == true &&
+      admin.database().ref("robots/" + robotId).once("value").then((robot) => {
+        const fumigando = robot.val().fumigando;
+        const razon = robot.val().razonFinalizacion;
+
+        if (fumigando == false) {
+          console.log("Razon de detención: " + razon);
+          return evaluarDetencionAutomatica(razon);
+        }
+      });
+      /* const stopFumigando = antes.fumigando == true &&
         despues.fumigando == false;
-      const notificar = stopFumigando && detAuto;
+      const notificar = stopFumigando && detAuto;*/
 
       /* const quimico = despues.nivelQuimico;
       const bateria = despues.bateria;
@@ -419,11 +430,11 @@ exports.notificarRobot = functions.database
       } else if (stopBat) {
         return evaluarDetencionAutomatica("fdb");
       }*/
-      if (notificar) {
+      /* if (notificar) {
         // return evaluarDetencionAutomatica("ok");
         const razon = despues.razonFinalizacion;
         console.log("Razon de detención: " + razon);
         return evaluarDetencionAutomatica(razon);
-      }
+      }*/
     });
 
