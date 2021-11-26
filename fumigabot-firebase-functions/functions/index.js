@@ -413,7 +413,7 @@ exports.notificarRobot = functions.database
 
         if (fumigando == false) {
           console.log("Razon de detención: " + razon);
-          return evaluarDetencionAutomatica(razon);
+          return evaluarDetencionAutomatica(razon.toLowerCase());
         }
       });
       /* const stopFumigando = antes.fumigando == true &&
