@@ -24,7 +24,6 @@ import androidx.fragment.app.Fragment;
 import com.example.fumigabot.ConfigurarRobotActivity;
 import com.example.fumigabot.NuevaFumigacionActivity;
 import com.example.fumigabot.R;
-import com.example.fumigabot.alarmasProgramadas.Alarma;
 import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
@@ -79,7 +78,6 @@ public class InicioFragment extends Fragment {
     private Fumigacion fumigacion;
     private Fumigacion programada;
     private ArrayList<Fumigacion> fumigacionesProgramadas = new ArrayList<>();
-    private Timer timerProgramadas;
     private Button detenerFumigacion;
     private ActivityResultLauncher<Intent> activityResultLauncher;
     private Button btnMas;
@@ -110,7 +108,6 @@ public class InicioFragment extends Fragment {
 
         //Recibimos los datos pasados en el bundle
         robot = (Robot)getArguments().getSerializable("RobotVinculado");
-        //fumigacionesProgramadas = (ArrayList<Fumigacion>) getArguments().getSerializable("fumigaciones_programadas");
         //Instancia de la BD en Firebase
         firebaseDatabase = MyFirebase.getDatabaseInstance();
         //referencia de los robots
@@ -126,14 +123,9 @@ public class InicioFragment extends Fragment {
         referenceFumigacion.keepSynced(true);
 
 
-        refProgramadas = firebaseDatabase.getReference("fumigaciones_programadas/" + robot.getRobotId());
+        /*refProgramadas = firebaseDatabase.getReference("fumigaciones_programadas/" + robot.getRobotId());
         refProgramadas.keepSynced(true);
-        refProgramadas.addValueEventListener(fumigacionesEventListener);
-
-
-        //Timer para capturar las fumigaciones programadas
-        //timerProgramadas = new Timer(); --> AL FINAL USAMOS ALARMAS
-        //programarEjecucionFumigaciones();
+        refProgramadas.addValueEventListener(fumigacionesEventListener);*/
 
 
         //Register para tomar los datos del fragmento de la nueva fumigación
@@ -253,10 +245,10 @@ public class InicioFragment extends Fragment {
             statusBateria = verificarBateria(bateria);
             statusNivelQuimico = verificarNivelQuimico(nivelQuimico);
 
-            if(statusBateria && statusNivelQuimico) //esto debería ser para la instantánea
+            /*if(statusBateria && statusNivelQuimico) //esto debería ser para la instantánea
                 habilitarFumigacion(true);
             else
-                habilitarFumigacion(false);
+                habilitarFumigacion(false);*/
 
 
             if(bateria == -1)
@@ -271,12 +263,10 @@ public class InicioFragment extends Fragment {
 
 
             if(robot.isFumigando()) {
-                //btnIniciarFumigacion.setText("DETENER FUMIGACIÓN");
                 fumigando = View.VISIBLE;
                 definirEstadoRobot(ROBOT_OCUPADO, "Fumigando...");
             }
             else {
-                //btnIniciarFumigacion.setText("FUMIGAR");
                 fumigando = View.INVISIBLE;
                 definirEstadoRobot(ROBOT_ENCENDIDO, "Encendido");
             }
@@ -474,34 +464,10 @@ public class InicioFragment extends Fragment {
             }
         });
     }
-
-
-   /* public void programarEjecucionFumigaciones(Fumigacion fumigacion){
-        //for(Fumigacion fumigacion : fumigacionesProgramadas){
-           Long fechaInicio = Long.parseLong(fumigacion.getTimestampInicio());
-            //Horrible pero es para probar
-            //this.fumigacion = fumigacion;
-
-            //Se le dice al timer que ejecute la Task (método run) en la fecha y hora determinada
-            timerProgramadas.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            iniciarFumigacion(fumigacion);
-                            //Log.i("TIMER SCHEDULE", fumigacion.getFumigacionId());
-                        }
-                    });
-                }
-            }, new Date(fechaInicio));
-        //}
-    }*/
-
+/*
     private ValueEventListener fumigacionesEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
-            //fumigacionesProgramadas.clear();
 
             Long ahora = System.currentTimeMillis();
 
@@ -516,7 +482,7 @@ public class InicioFragment extends Fragment {
                         fumigacionesProgramadas.add(programada);
                         //Log.i("TIMER | ADD LISTA", programada.getFumigacionId());
                         //programarEjecucionFumigaciones(programada);
-                        Alarma.empezarAlarma(getContext(), programada);
+                        //Alarma.empezarAlarma(getContext(), programada);
                     }
                 }
             }
@@ -527,5 +493,5 @@ public class InicioFragment extends Fragment {
             // Failed to read value
             Log.w("WTF", "Failed to read value.", error.toException());
         }
-    };
+    };*/
 }

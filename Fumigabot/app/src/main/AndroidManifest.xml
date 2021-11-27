@@ -25,9 +25,6 @@
         </activity>
         <activity android:name=".VincularDispositivoActivity" />
 
-        <receiver android:name=".alarmasProgramadas.AlarmaReceiver" />
-
-
         <service
             android:name=".firebase.MessagingService"
             android:exported="false">
