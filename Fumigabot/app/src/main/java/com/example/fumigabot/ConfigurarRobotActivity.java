@@ -1,5 +1,6 @@
 package com.example.fumigabot;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -14,8 +15,11 @@ import android.widget.Toast;
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class ConfigurarRobotActivity extends AppCompatActivity {
 
@@ -25,6 +29,8 @@ public class ConfigurarRobotActivity extends AppCompatActivity {
     private Robot robot;
     private TextView porcBateria;
     private TextView porcQuimico;
+    private TextView txtInfoBateria;
+    private TextView txtInfoQuimico;
     private Button btnCambiarQuimico;
     private MaterialAlertDialogBuilder builder;
     private AlertDialog alertDialog;
@@ -38,16 +44,35 @@ public class ConfigurarRobotActivity extends AppCompatActivity {
         robot = (Robot)getIntent().getSerializableExtra("robot");
 
         firebaseDatabase = MyFirebase.getDatabaseInstance();
-        referenceRobot = firebaseDatabase.getReference("robots/" + robot.getRobotId());
+        referenceRobot = firebaseDatabase.getReference("robots");
         referenceRobot.keepSynced(true);
 
         inicializarComponentes();
         cargarDatos();
+
+        referenceRobot.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                robot = dataSnapshot.child(String.valueOf(robot.getRobotId())).getValue(Robot.class);
+                cargarDatos();
+
+                return;
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w("WTF", "Failed to read value.", error.toException());
+            }
+        });
+
     }
 
     private void inicializarComponentes(){
         porcBateria = findViewById(R.id.porcBateria);
         porcQuimico = findViewById(R.id.porcQuimico);
+        txtInfoBateria = findViewById(R.id.txtInfoBateriaConfig);
+        txtInfoQuimico = findViewById(R.id.txtInfoQuimicoConfig);
         btnCambiarQuimico = findViewById(R.id.btnCambiarQuimico);
         btnCambiarQuimico.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -86,15 +111,18 @@ public class ConfigurarRobotActivity extends AppCompatActivity {
     }
 
     private void cambiarQuimico(){
-        Toast.makeText(this, "sel: " + quimicoNuevo, Toast.LENGTH_LONG).show();
-        referenceRobot.child("ultimoQuimico").setValue(quimicoNuevo);
+        //Toast.makeText(this, "sel: " + quimicoNuevo, Toast.LENGTH_LONG).show();
+        referenceRobot.child(String.valueOf(robot.getRobotId())).child("ultimoQuimico").setValue(quimicoNuevo);
     }
 
+
+
     private void cargarDatos(){
-        if(robot==null)
+        if(robot == null)
             return;
 
         porcBateria.setText(robot.getBateria() + "%");
         porcQuimico.setText(robot.getNivelQuimico() + "%");
+        txtInfoQuimico.setText("Actualmente el robot contiene " + robot.getUltimoQuimico());
     }
 }
