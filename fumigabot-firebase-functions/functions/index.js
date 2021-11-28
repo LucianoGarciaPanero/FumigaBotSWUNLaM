@@ -34,6 +34,7 @@ exports.programadaNueva = functions.database
       const timestamp = snapshot.val().timestampInicio;
       const cantArea = snapshot.val().cantidadQuimicoPorArea;
       const quimicoFumigacion = snapshot.val().quimicoUtilizado;
+
       // verificarFumigacion retorna promesa:
       return verificarFumigacion(robotId, fumigacionId, timestamp)
           .then(() => {
@@ -66,6 +67,7 @@ exports.programadaUpdate = functions.database
       antes.cantidadQuimicoPorArea === despues.cantidadQuimicoPorArea &&
       antes.quimicoUtilizado === despues.quimicoUtilizado &&
       antes.recurrente === despues.recurrente) {
+        // && antes.taskId === despues.taskId) {
         // retornamos nulo porque no tenemos más trabajo que hacer
         // console.log("ES LA MISMA");
         return null;
@@ -80,6 +82,7 @@ exports.programadaUpdate = functions.database
             tasksClient.deleteTask({name: antesTask}).then(() => {
               // if (despues.activa == "true") {
               return scheduleProgramada(robotId, fumigacionId,
+                  despues.quimicoUtilizado,
                   despues.cantidadQuimicoPorArea,
                   despues.timestampInicio);
               // }
@@ -121,12 +124,13 @@ function verificarFumigacion(robotId, fumigacionId, tsInicio) {
             // si no son iguales, podemos verificar la brecha temporal
             // console.log("Analizando nueva (" + fumigacionId +
             // ") contra " + fumigacion.key + "...");
-              const evaluacionBrecha =
               evaluarBrechaTemporal(tsInicio, tsFumigacion);
-              if (evaluacionBrecha == false) {
+              /* const evaluacionBrecha =
+              evaluarBrechaTemporal(tsInicio, tsFumigacion);
+               if (evaluacionBrecha == false) {
                 throw new functions.https.HttpsError("out-of-range",
                     "Conflicto con las brechas temporales");
-              }
+              }*/
             }
           }
         });
@@ -178,6 +182,8 @@ exports.evaluarInstantanea = functions.https.onCall((data, context) => {
 function scheduleProgramada(robotId, fumigacionId, quimicoFumigacion,
     cantArea, timestamp) {
   cantArea = obtenerValorNumerico(cantArea);
+  console.log("Schedule programada - Quimico:");
+  console.log(quimicoFumigacion);
   const payload = {
     robotId: robotId,
     fumigacionId: fumigacionId,
@@ -230,9 +236,9 @@ function obtenerValorNumerico(cantArea) {
 }
 
 exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
-  const {robotId, fumigacionId, quimicoUtilizado, cantArea} = req.body;
+  const {robotId, fumigacionId, quimicoFumigacion, cantArea} = req.body;
 
-  verificarRecursos(robotId, quimicoUtilizado).then(() => {
+  verificarRecursos(robotId, quimicoFumigacion).then(() => {
     // primero ponemos en fumigando el robot y la cantidad por área
     admin.database().ref("robots/" + robotId).update({
       fumigando: true, cantidadQuimicoPorArea: cantArea})
@@ -242,13 +248,26 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
           robotId + "/" + fumigacionId).once("value").then((fumigacion) => {
             if (fumigacion.val().recurrente == false) {
             // si no es recurrente, la desactivamos
+              console.log("entra a recurrente = false");
               fumigacion.ref.update({activa: false}).then(() => {
-                res.status(200).send("OK!");
+                // res.status(200).send("OK!");
               }).catch((err) => {
                 throw new Error(err);
               });
+            } else {
+              // robar los días de recurrencia para agregarlos
+              // a fumigacionActual
+              // diasRecurrencia = algo;
+              console.log("recurrente != false");
             }
-            res.status(200).send("OK!");
+            console.log("Previo iniciarFumigacion");
+            admin.database().ref("robots/" + robotId).once("value")
+                .then((robot) => {
+                  iniciarFumigacion(robotId, robot.val(), fumigacion.val())
+                      .then(() => {
+                        res.status(200).send("OK!");
+                      });
+                });
           }).catch((err) => {
             res.status(500).send(err);
           });
@@ -269,6 +288,28 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
     });
   });
 });
+
+
+/** Crea la estructura para fumigacionActual
+ * @param {String} robotId ID del robot
+ * @param {Object} robot Robot completo
+ * @param {Object} fumigacion nodo completo de la fumigación (programada)
+ * @return {Promise} retorna promesa
+*/
+function iniciarFumigacion(robotId, robot, fumigacion) {
+  console.log(robot);
+  console.log("------");
+  console.log(fumigacion);
+  return admin.database().ref("robots/" + robotId + "/fumigacionActual")
+      .set({
+        timestampInicio: fumigacion.timestampInicio,
+        quimicoUtilizado: fumigacion.quimicoUtilizado,
+        cantidadQuimicoPorArea:
+          obtenerValorNumerico(fumigacion.cantidadQuimicoPorArea),
+        nivelQuimicoInicial: robot.nivelQuimico,
+        nivelBateriaInicial: robot.bateria,
+      });
+}
 
 
 /** Elimina la tarea de la cola en caso de ser necesario.
@@ -408,12 +449,14 @@ exports.notificarRobot = functions.database
       }
 
       admin.database().ref("robots/" + robotId).once("value").then((robot) => {
-        const fumigando = robot.val().fumigando;
+        const fumigando = robot.val().fumigando; // podría no ir
         const razon = robot.val().razonFinalizacion;
 
         if (fumigando == false) {
           console.log("Razon de detención: " + razon);
-          return evaluarDetencionAutomatica(razon.toLowerCase());
+          detenerFumigacion(robotId).then(()=>{
+            return evaluarDetencionAutomatica(razon.toLowerCase());
+          });
         }
       });
       /* const stopFumigando = antes.fumigando == true &&
@@ -438,3 +481,81 @@ exports.notificarRobot = functions.database
       }*/
     });
 
+
+/** Tenemos que pasarle:
+     *  - idRobot
+     *
+    */
+exports.detenerFumigacion = functions.https.onCall((data, context) => {
+  const robotId = data.robotId;
+  console.log("ROBOT ID: " + robotId);
+
+  return detenerFumigacion(robotId);
+});
+
+/** Detiene la fumigación actual
+ * @param {String} robotId ID del robot a detener
+ * @return {Promise} retorna promesa
+ */
+function detenerFumigacion(robotId) {
+  // tenemos que:
+  /*
+    - Dejar de fumigar
+    - Tomar valor bateria
+    - Tomar valor quimico
+    - Tomar fecha hora actual (timestamp fin)
+    - Pasar fumigacionActual a Historial
+  */
+  const timestampFin = Date.now().toString();
+  let fumigacionActual;
+  let bateria;
+  let nivelQuimico;
+  let idHistorial = 1;
+
+  const ref = admin.database().ref("fumigaciones_historial/" + robotId);
+
+  return admin.database().ref("robots/" + robotId)
+      .update({fumigando: false}).then(() => {
+        admin.database().ref("robots/" + robotId).once("value")
+            .then((robot) => {
+              fumigacionActual = robot.val().fumigacionActual;
+              bateria = robot.val().bateria;
+              nivelQuimico = robot.val().nivelQuimico;
+
+              ref.once("value").then((snap) => {
+                snap.forEach((fh) => {
+                  idHistorial++;
+                });
+
+                console.log("ID HISTORIAL");
+                console.log(idHistorial);
+
+                ref.child("fh" + idHistorial).set({
+                  timestampInicio: fumigacionActual.timestampInicio,
+                  timestampFin: timestampFin,
+                  quimicoUtilizado: fumigacionActual.quimicoUtilizado,
+                  cantidadQuimicoPorArea:
+                    obtenerStringCantidadPorArea(
+                        fumigacionActual.cantidadQuimicoPorArea),
+                  nivelQuimicoInicial: fumigacionActual.nivelQuimicoInicial,
+                  nivelQuimicoFinal: nivelQuimico,
+                  nivelBateriaInicial: fumigacionActual.nivelBateriaInicial,
+                  nivelBateriaFinal: bateria,
+                });
+              });
+            });
+      });
+}
+
+/** Obtener cadena de cantidad de texto por área.
+ * @param {Number} cantArea numerito del robot
+ * @return {String} cadena con nombre completo
+ * */
+function obtenerStringCantidadPorArea(cantArea) {
+  if (cantArea == 1) {
+    return "Baja - Ráfaga de 0,5 segundos";
+  } else if (cantArea == 2) {
+    return "Media - Ráfaga de 1 segundo";
+  }
+  return "Alta - Ráfaga de 2 segundos";
+}
