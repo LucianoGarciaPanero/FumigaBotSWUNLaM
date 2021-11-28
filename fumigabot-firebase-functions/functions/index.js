@@ -32,15 +32,16 @@ exports.programadaNueva = functions.database
       const robotId = context.params.robotId;
       const fumigacionId = context.params.fumigacionId;
       const timestamp = snapshot.val().timestampInicio;
-      const cantArea = snapshot.val().cantidadQuimicoPorArea;
-      const quimicoFumigacion = snapshot.val().quimicoUtilizado;
+      // const cantArea = snapshot.val().cantidadQuimicoPorArea;
+      // const quimicoUtilizado = snapshot.val().quimicoUtilizado;
 
       // verificarFumigacion retorna promesa:
       return verificarFumigacion(robotId, fumigacionId, timestamp)
           .then(() => {
           // programar la ejecución de la fumigación
-            return scheduleProgramada(robotId, fumigacionId, quimicoFumigacion,
-                cantArea, timestamp);
+            return scheduleProgramada(robotId, fumigacionId, snapshot.val());
+            // fumigacionId, quimicoUtilizado,
+            // cantArea, timestamp);
           })
           .catch((error) => {
             console.log(error);
@@ -82,9 +83,7 @@ exports.programadaUpdate = functions.database
             tasksClient.deleteTask({name: antesTask}).then(() => {
               // if (despues.activa == "true") {
               return scheduleProgramada(robotId, fumigacionId,
-                  despues.quimicoUtilizado,
-                  despues.cantidadQuimicoPorArea,
-                  despues.timestampInicio);
+                  despues);
               // }
             });
             // }
@@ -173,23 +172,23 @@ exports.evaluarInstantanea = functions.https.onCall((data, context) => {
 
 /** Crea las tareas para la ejecución de las fumigaciones programadas.
  * @param {String} robotId ID del robot que comienza a fumigar
- * @param {String} fumigacionId ID de la fumigación programada a comenzar
- * @param {String} quimicoFumigacion químico seteado en la fumigación programada
- * @param {String} cantArea cantidad de químico por área de la fumigación
- * @param {String} timestamp timestamp de dicha fumigación
+ * @param {String} fumigacionId ID de la fumigación programada
+ * @param {Object} fumigacion Fumigación programada a comenzar
  * @return {Promise} retorna promesa
  */
-function scheduleProgramada(robotId, fumigacionId, quimicoFumigacion,
-    cantArea, timestamp) {
-  cantArea = obtenerValorNumerico(cantArea);
-  console.log("Schedule programada - Quimico:");
-  console.log(quimicoFumigacion);
+function scheduleProgramada(robotId, fumigacionId, fumigacion) {
+  // fumigacionId, quimicoUtilizado,
+  //  cantArea, timestamp) {
+  const cantArea = obtenerValorNumerico(fumigacion.cantidadQuimicoPorArea);
   const payload = {
     robotId: robotId,
     fumigacionId: fumigacionId,
-    quimicoFumigacion: quimicoFumigacion,
-    cantArea: cantArea};
-  const ts = Number.parseInt(timestamp) / 1000;
+    quimicoUtilizado: fumigacion.quimicoUtilizado,
+    cantArea: cantArea,
+    timestampInicio: fumigacion.timestampInicio,
+    recurrente: fumigacion.recurrente,
+  };
+  const ts = Number.parseInt(fumigacion.timestampInicio) / 1000;
 
   // le decimos a la tarea que, en ese timestamp seteado,
   // haga un post a nuestra función de "ejecutar programada (está en la URL)"
@@ -236,9 +235,18 @@ function obtenerValorNumerico(cantArea) {
 }
 
 exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
-  const {robotId, fumigacionId, quimicoFumigacion, cantArea} = req.body;
+  const {robotId, fumigacionId, quimicoUtilizado,
+    cantArea, recurrente} = req.body;
 
-  verificarRecursos(robotId, quimicoFumigacion).then(() => {
+  /* 1. si es recurrente, crear la de la próxima semana o recurrencia
+     2. independientemente del punto 1, ejecutar la actual (el código original)
+  */
+
+  if (recurrente == true) {
+    crearProximaFumigacionRecurrente(robotId, req.body);
+  }
+
+  verificarRecursos(robotId, quimicoUtilizado).then(() => {
     // primero ponemos en fumigando el robot y la cantidad por área
     admin.database().ref("robots/" + robotId).update({
       fumigando: true, cantidadQuimicoPorArea: cantArea})
@@ -290,6 +298,41 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
 });
 
 
+/** Crea la próxima fumigación programada 7 días después de la actual
+ * @param {String} robotId ID del robot
+ * @param {Object} data Toda la data que necesitamos
+ * (body de ejecutarProgramada)
+*/
+function crearProximaFumigacionRecurrente(robotId, data) {
+  const {quimicoUtilizado, cantArea,
+    timestampInicio} = data;
+
+  console.log("crear proxima fumigacion recurrente");
+  console.log(robotId);
+
+  let idProgramada = 1;
+  const timestampInicioNueva = parseInt(timestampInicio) +
+    (7 * 24 * 60 * 60 * 1000);
+
+  admin.database().ref("fumigaciones_programadas/" + robotId)
+      .once("value").then((snap) => {
+        snap.forEach((fp) => {
+          idProgramada++;
+        });
+        console.log("Id programada");
+        console.log(idProgramada);
+        // crear el nodo de la programada
+        admin.database().ref("fumigaciones_programadas/" + robotId)
+            .child("fp" + idProgramada).set({
+              activa: true,
+              cantidadQuimicoPorArea: obtenerStringCantidadPorArea(cantArea),
+              quimicoUtilizado: quimicoUtilizado,
+              recurrente: true,
+              timestampInicio: timestampInicioNueva.toString(),
+            });
+      });
+}
+
 /** Crea la estructura para fumigacionActual
  * @param {String} robotId ID del robot
  * @param {Object} robot Robot completo
@@ -331,10 +374,10 @@ function eliminarTarea(robotId, fumigacionId) {
 /** Chequea antes de empezar una fumigación si se cuentan con los
  * recursos mínimos.
  * @param {String} robotId ID del robot a consultar sus recursos.
- * @param {String} quimicoFumigacion químico a usar en la fumigación.
+ * @param {String} quimicoUtilizado químico a usar en la fumigación.
  * @return {Promise} retorna promesa con los detalles correspondientes.
  * */
-function verificarRecursos(robotId, quimicoFumigacion) {
+function verificarRecursos(robotId, quimicoUtilizado) {
   return admin.database().ref("robots/" + robotId).once("value")
       .then((robot) => {
         const bateria = robot.val().bateria;
@@ -365,7 +408,7 @@ function verificarRecursos(robotId, quimicoFumigacion) {
           // mensaje = "El robot está apagado";
           throw new functions.https.HttpsError("unavailable",
               "El robot está apagado");
-        } else if (ultimoQuimico != quimicoFumigacion) {
+        } else if (ultimoQuimico != quimicoUtilizado) {
           // mensaje = "El último químico utilizado no coincide con el de " +
           //  "la fumigación programada";
           throw new functions.https.HttpsError("invalid-argument",
@@ -506,7 +549,6 @@ function detenerFumigacion(robotId) {
     - Tomar fecha hora actual (timestamp fin)
     - Pasar fumigacionActual a Historial
   */
-  const timestampFin = Date.now().toString();
   let fumigacionActual;
   let bateria;
   let nivelQuimico;
@@ -529,7 +571,7 @@ function detenerFumigacion(robotId) {
 
                 console.log("ID HISTORIAL");
                 console.log(idHistorial);
-
+                const timestampFin = Date.now().toString();
                 ref.child("fh" + idHistorial).set({
                   timestampInicio: fumigacionActual.timestampInicio,
                   timestampFin: timestampFin,
