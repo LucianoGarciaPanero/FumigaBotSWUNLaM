@@ -246,6 +246,13 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
     crearProximaFumigacionRecurrente(robotId, req.body);
   }
 
+  admin.database().ref("fumigaciones_programadas/" +
+    robotId + "/" + fumigacionId).once("value").then((fp) => {
+    if (fp.val().activa == false) {
+      res.status(200).send("OK!");
+    }
+  });
+
   verificarRecursos(robotId, quimicoUtilizado).then(() => {
     // primero ponemos en fumigando el robot y la cantidad por área
     admin.database().ref("robots/" + robotId).update({
@@ -268,7 +275,6 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
               // diasRecurrencia = algo;
               console.log("recurrente != false");
             }
-            console.log("Previo iniciarFumigacion");
             admin.database().ref("robots/" + robotId).once("value")
                 .then((robot) => {
                   iniciarFumigacion(robotId, robot.val(), fumigacion.val())
