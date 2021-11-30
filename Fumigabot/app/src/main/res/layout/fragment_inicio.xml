@@ -204,14 +204,19 @@
 
                 <TextView
                     android:id="@+id/infoBateria"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center|center_horizontal|center_vertical"
-                    android:layout_marginStart="@dimen/card_content_padding"
-                    android:gravity="center"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:gravity="center_vertical"
                     android:minHeight="40dp"
                     android:text="La batería presenta problemas"
-                    app:layout_constraintStart_toEndOf="@+id/imgEstadoBateria" />
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toEndOf="@+id/imgEstadoBateria"
+                    app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -250,14 +255,19 @@
 
                 <TextView
                     android:id="@+id/infoNivelQuimico"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center|center_horizontal|center_vertical"
-                    android:layout_marginStart="@dimen/card_content_padding"
-                    android:gravity="center"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:gravity="center_vertical"
                     android:minHeight="40dp"
                     android:text="El químico se acabará pronto"
-                    app:layout_constraintStart_toEndOf="@+id/imgEstadoQuimico" />
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toEndOf="@+id/imgEstadoQuimico"
+                    app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

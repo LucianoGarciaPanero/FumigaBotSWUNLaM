@@ -82,14 +82,7 @@ public class Robot implements Serializable {
         this.ultimoQuimico = ultimoQuimico;
     }
 
-    public void convertirCantidadQuimicoPorArea(String cantidadQuimicoPorArea){
-        if(cantidadQuimicoPorArea.startsWith("Baja"))
-            setCantidadQuimicoPorArea(1);
-        else if(cantidadQuimicoPorArea.startsWith("Media"))
-            setCantidadQuimicoPorArea(2);
-        else if(cantidadQuimicoPorArea.startsWith("Alta"))
-            setCantidadQuimicoPorArea(3);
-    }
+
 
     @Exclude
     public Map<String, Object> toMap() {

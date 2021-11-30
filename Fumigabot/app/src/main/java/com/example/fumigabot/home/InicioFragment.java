@@ -13,6 +13,8 @@ import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -27,6 +29,8 @@ import com.example.fumigabot.R;
 import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -37,10 +41,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.functions.FirebaseFunctions;
+import com.google.firebase.functions.FirebaseFunctionsException;
+import com.google.firebase.functions.HttpsCallableResult;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
 import static android.app.Activity.RESULT_OK;
 
 
@@ -51,6 +58,7 @@ public class InicioFragment extends Fragment {
 
     public static InicioFragment Instance;
 
+    private FirebaseFunctions firebaseFunctions;
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference referenceRobot;
     private DatabaseReference referenceFumigacion;
@@ -76,8 +84,6 @@ public class InicioFragment extends Fragment {
     private AlertDialog alertDialog;
     private Robot robot;
     private Fumigacion fumigacion;
-    private Fumigacion programada;
-    private ArrayList<Fumigacion> fumigacionesProgramadas = new ArrayList<>();
     private Button detenerFumigacion;
     private ActivityResultLauncher<Intent> activityResultLauncher;
     private Button btnMas;
@@ -108,6 +114,7 @@ public class InicioFragment extends Fragment {
 
         //Recibimos los datos pasados en el bundle
         robot = (Robot)getArguments().getSerializable("RobotVinculado");
+        firebaseFunctions = MyFirebase.getFunctionsInstance();
         //Instancia de la BD en Firebase
         firebaseDatabase = MyFirebase.getDatabaseInstance();
         //referencia de los robots
@@ -420,7 +427,7 @@ public class InicioFragment extends Fragment {
     };
 
     public void iniciarFumigacion(Fumigacion fumigacion){
-        //Horrible pero para que ande
+        /*//Horrible pero para que ande
         this.fumigacion = fumigacion;
         robot.setFumigando(true);
         robot.convertirCantidadQuimicoPorArea(this.fumigacion.getCantidadQuimicoPorArea());
@@ -428,23 +435,107 @@ public class InicioFragment extends Fragment {
         //Actualizamos la hora a ahora
         this.fumigacion.setTimestampInicio(Long.toString(System.currentTimeMillis()));
         cronometro.start();
+        updateRobot(robot);*/
+
+
+        //UPDATE: apenas se crea la instantánea, crearla en FB en el nodo "fumigacionActual"
+        //Horrible pero para que ande
+        this.fumigacion = fumigacion;
+        robot.setFumigando(true);
+        //robot.convertirCantidadQuimicoPorArea(this.fumigacion.getCantidadQuimicoPorArea());
+        this.fumigacion.setNivelBateriaInicial(robot.getBateria());
+        this.fumigacion.setNivelQuimicoInicial(robot.getNivelQuimico());
+        cronometro.setBase(SystemClock.elapsedRealtime());
+        //Actualizamos la hora a ahora
+        this.fumigacion.setTimestampInicio(Long.toString(System.currentTimeMillis()));
+
+        //aca deberia crear en firebase
+        referenceRobot.child(Integer.toString(robot.getRobotId())).child("fumigacionActual").updateChildren(this.fumigacion.toMap());
+
+        cronometro.start();
         updateRobot(robot);
     }
 
     public void detenerFumigacion(){
-        cronometro.stop();
+       /* cronometro.stop();
         fumigacion.setTimestampFin(Long.toString(System.currentTimeMillis()));
         //Long tiempoTranscurrido = SystemClock.elapsedRealtime() - cronometro.getBase();
         //fumigacion.setTimestampFin(Long.toString(tiempoTranscurrido));
         robot.setFumigando(false);
         updateRobot(robot);
-        updateFumigacion();//(fumigacion);
+        updateFumigacion();//(fumigacion);*/
+
+       //UPDATE: nodo fumigacionActual
+        /*cronometro.stop();
+        fumigacion.setTimestampFin(Long.toString(System.currentTimeMillis()));
+        robot.setFumigando(false);
+        updateRobot(robot);
+
+        this.fumigacion.setNivelBateriaFinal(String.valueOf(robot.getBateria()));
+        this.fumigacion.setNivelQuimicoFinal(String.valueOf(robot.getNivelQuimico()));
+
+        updateFumigacion();//(fumigacion);*/
+
+        //update con funcion de detener fumigacion
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("robotId", robot.getRobotId());
+        funcDetenerFumigacion(params).addOnCompleteListener(new OnCompleteListener<String>() {
+            @Override
+            public void onComplete(@NonNull Task<String> task) {
+                String resultado = "";
+
+                if(task.isComplete()) {
+
+                    if (task.isSuccessful()) {
+                        resultado = task.getResult();
+                        /*if (resultado.equalsIgnoreCase("Ok")) {
+                            resultado = "Se inició la fumigación";
+                        }*/
+                    } else {
+                        Exception e = task.getException();
+                        if (e instanceof FirebaseFunctionsException) {
+                            FirebaseFunctionsException ffe = (FirebaseFunctionsException) e;
+                            FirebaseFunctionsException.Code code = ffe.getCode();
+                            Object details = ffe.getDetails();
+                            Log.i("test", "Firebase Functions Exception: Code " + code);
+
+                        }
+                        resultado = e.getMessage();
+
+                    }
+                    //cambiar la forma en que informa al user que no lo hizo
+                    //runOnUiThread(Toast.makeText(getApplicationContext(), resultado, Toast.LENGTH_SHORT)::show);
+                    Log.i("test", "task no es successful, resultado: " + resultado);
+                    cronometro.stop();
+                    //fumigacion.setTimestampFin(Long.toString(System.currentTimeMillis()));
+                    robot.setFumigando(false);
+                    updateRobot(robot);
+                }
+            }
+        });
+    }
+
+    private Task<String> funcDetenerFumigacion(Map<String, Object> params){
+        //invocamos a la Function
+        return firebaseFunctions.getHttpsCallable("detenerFumigacion")
+                .call(params)
+                .continueWith(new Continuation<HttpsCallableResult, String>() {
+                    @Override
+                    public String then(@NonNull Task<HttpsCallableResult> task) throws Exception {
+                        //esta continuacion se ejecuta en caso de éxito o falla, pero si la Task
+                        //falla, entonces gtResult() va a arrojar una excepción la cual se va a propagar
+                        String resultado = (String) task.getResult().getData();
+                        Log.i("test", "Task detener fumigacion retorna resultado: " + resultado);
+                        return resultado;
+                    }
+                });
     }
 
     public void updateRobot(Robot robot) {
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("fumigando", robot.isFumigando());
         childUpdates.put("cantidadQuimicoPorArea", robot.getCantidadQuimicoPorArea());
+        childUpdates.put("detencionAutomatica", false); //jaj
         referenceRobot.child(Integer.toString(robot.getRobotId())).updateChildren(childUpdates);
     }
 
@@ -460,7 +551,7 @@ public class InicioFragment extends Fragment {
                 cant = (int) snapshot.getChildrenCount();
 
                 fumigacion.setFumigacionId("fh" + (cant + 1));
-                referenceFumigacion.child(fumigacion.getFumigacionId()).setValue(fumigacion.toMap());
+                referenceFumigacion.child(fumigacion.getFumigacionId()).setValue(fumigacion.toMapHistorial());
             }
         });
     }
