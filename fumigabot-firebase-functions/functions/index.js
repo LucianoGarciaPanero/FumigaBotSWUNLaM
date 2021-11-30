@@ -96,6 +96,16 @@ exports.programadaUpdate = functions.database
     });
 
 
+exports.programadaDelete = functions.https.onCall((data, context) => {
+  const fumigacionId = data.fumigacionId;
+  const robotId = data.robotId;
+
+  return eliminarTarea(robotId, fumigacionId).then((res) => {
+    return admin.database().ref("fumigaciones_programadas/" +
+    robotId + "/" + fumigacionId).update({eliminada: true});
+  });
+});
+
 /** Verifica que no se creen dos fumigaciones para la
  * misma fecha y hora.
  * @param {string} robotId ID del robot
@@ -210,7 +220,10 @@ function scheduleProgramada(robotId, fumigacionId, fumigacion) {
     const taskId = taskCreada.name;
     // console.log("TaskID: " + taskId);
     return admin.database().ref("fumigaciones_programadas/" + robotId + "/" +
-      fumigacionId).update({taskId: taskId});
+      fumigacionId).update({taskId: taskId}).catch((error) => {
+      console.log("Error update taskId");
+      console.log(error);
+    });
   }).catch((err) => {
     console.log("catch create task:");
     console.log(err);
@@ -236,52 +249,45 @@ function obtenerValorNumerico(cantArea) {
 
 exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
   const {robotId, fumigacionId, quimicoUtilizado,
-    cantArea, recurrente} = req.body;
+    cantArea} = req.body;
 
   /* 1. si es recurrente, crear la de la próxima semana o recurrencia
      2. independientemente del punto 1, ejecutar la actual (el código original)
   */
 
-  if (recurrente == true) {
-    crearProximaFumigacionRecurrente(robotId, req.body);
-  }
+  let activa;
 
   admin.database().ref("fumigaciones_programadas/" +
     robotId + "/" + fumigacionId).once("value").then((fp) => {
+    activa = fp.val().activa;
+    crearProximaFumigacionRecurrente(robotId, req.body, activa);
+
     if (fp.val().activa == false) {
       res.status(200).send("OK!");
     }
   });
 
+  /* if (recurrente == true) { // ver si tmb se tiene que consultar en DB
+    crearProximaFumigacionRecurrente(robotId, req.body, activa);
+  }*/
+
   verificarRecursos(robotId, quimicoUtilizado).then(() => {
     // primero ponemos en fumigando el robot y la cantidad por área
     admin.database().ref("robots/" + robotId).update({
-      fumigando: true, cantidadQuimicoPorArea: cantArea})
+      fumigando: true, cantidadQuimicoPorArea: cantArea,
+      detencionAutomatica: false})
         .then(() => {
-        // vamos a ver si es recurrente o no
           admin.database().ref("fumigaciones_programadas/" +
           robotId + "/" + fumigacionId).once("value").then((fumigacion) => {
-            if (fumigacion.val().recurrente == false) {
-            // si no es recurrente, la desactivamos
-              console.log("entra a recurrente = false");
-              fumigacion.ref.update({activa: false}).then(() => {
-                // res.status(200).send("OK!");
-              }).catch((err) => {
-                throw new Error(err);
-              });
-            } else {
-              // robar los días de recurrencia para agregarlos
-              // a fumigacionActual
-              // diasRecurrencia = algo;
-              console.log("recurrente != false");
-            }
-            admin.database().ref("robots/" + robotId).once("value")
-                .then((robot) => {
-                  iniciarFumigacion(robotId, robot.val(), fumigacion.val())
-                      .then(() => {
-                        res.status(200).send("OK!");
-                      });
-                });
+            fumigacion.ref.update({eliminada: true}).then(() => {
+              admin.database().ref("robots/" + robotId).once("value")
+                  .then((robot) => {
+                    iniciarFumigacion(robotId, robot.val(), fumigacion.val())
+                        .then(() => {
+                          res.status(200).send("OK!");
+                        });
+                  });
+            });
           }).catch((err) => {
             res.status(500).send(err);
           });
@@ -307,14 +313,11 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
 /** Crea la próxima fumigación programada 7 días después de la actual
  * @param {String} robotId ID del robot
  * @param {Object} data Toda la data que necesitamos
- * (body de ejecutarProgramada)
+ * @param {boolean} activa Si la fumigación programada original está activa o no
 */
-function crearProximaFumigacionRecurrente(robotId, data) {
+function crearProximaFumigacionRecurrente(robotId, data, activa) {
   const {quimicoUtilizado, cantArea,
     timestampInicio} = data;
-
-  console.log("crear proxima fumigacion recurrente");
-  console.log(robotId);
 
   let idProgramada = 1;
   const timestampInicioNueva = parseInt(timestampInicio) +
@@ -330,11 +333,12 @@ function crearProximaFumigacionRecurrente(robotId, data) {
         // crear el nodo de la programada
         admin.database().ref("fumigaciones_programadas/" + robotId)
             .child("fp" + idProgramada).set({
-              activa: true,
+              activa: activa,
               cantidadQuimicoPorArea: obtenerStringCantidadPorArea(cantArea),
               quimicoUtilizado: quimicoUtilizado,
               recurrente: true,
               timestampInicio: timestampInicioNueva.toString(),
+              eliminada: false,
             });
       });
 }
@@ -372,6 +376,9 @@ function eliminarTarea(robotId, fumigacionId) {
     const taskId = fumigacion.val().taskId;
     tasksClient.deleteTask({name: taskId}).then(() => {
       return Promise.resolve("OK");
+    }).catch((error)=>{
+      console.log("catch delete task");
+      console.log(error);
     });
   });
 }
