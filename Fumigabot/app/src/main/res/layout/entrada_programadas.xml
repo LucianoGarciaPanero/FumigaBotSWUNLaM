@@ -14,6 +14,81 @@
         android:layout_height="match_parent"
         android:maxHeight="65dp">
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layoutDiasRecurrencia"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/switchAlarma"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/txtDomingo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:text="D"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/txtLunes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:text="L"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/txtMartes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:text="M"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/txtMiercoles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:text="X"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/txtJueves"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:text="J"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/txtViernes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:text="V"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/txtSabado"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:text="S"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <TextView
             android:id="@+id/fechaFumigacion"
             android:layout_width="wrap_content"
@@ -41,7 +116,7 @@
             android:layout_marginBottom="16dp"
             android:gravity="bottom"
             android:maxHeight="20dp"
-            android:text="A las 14:30, Amonio cuaternario"
+            android:text="14:30, Amonio cuaternario"
             android:textAlignment="viewStart"
             android:textSize="13sp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -57,6 +132,7 @@
             android:layout_height="1dp"
             android:layout_gravity="bottom"
             android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:background="@color/colorDivider"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -64,6 +140,50 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="1.0" />
+
+        <Switch
+            android:id="@+id/switchAlarma"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/imgBorrarProgramada"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/imgBorrarProgramada"
+            android:layout_width="35dp"
+            android:layout_height="33dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:tint="?attr/colorError"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_delete_black_24dp" />
+
+        <TextView
+            android:id="@+id/textView14"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="D L M X J V S"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/switchAlarma"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -97,7 +97,7 @@ public class ProgramadasFragment extends Fragment {
 
     private void cargarVista() {
         Collections.sort(listaProgramadas);
-        adapter = new EntradaProgramadaAdapter(getContext(), listaProgramadas);
+        adapter = new EntradaProgramadaAdapter(getContext(), robot.getRobotId(), listaProgramadas);
         listadoProgramadas.setAdapter(adapter);
         //acá podemos agregar un listener para on item click
         listadoProgramadas.setOnItemClickListener(entradaListener);
@@ -121,8 +121,10 @@ public class ProgramadasFragment extends Fragment {
             // Buscamos las fumigaciones programadas en Firebase
             for(DataSnapshot item : dataSnapshot.getChildren()) {
                 fumigacionProgramada = item.getValue(Fumigacion.class);
-                fumigacionProgramada.setFumigacionId(item.getKey());
-                listaProgramadas.add(fumigacionProgramada);
+                if(!fumigacionProgramada.isEliminada()){
+                    fumigacionProgramada.setFumigacionId(item.getKey());
+                    listaProgramadas.add(fumigacionProgramada);
+                }
             }
 
             if(listaProgramadas.size() > 0){

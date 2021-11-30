@@ -14,9 +14,17 @@ public class Fumigacion implements Comparable, Serializable {
     private String timestampFin;
     private String quimicoUtilizado;
     private String cantidadQuimicoPorArea;
+    private int convCantidadQuimicoPorArea;
     private String observaciones;
+    private int nivelBateriaInicial;
+    private int nivelBateriaFinal;
+    private int nivelQuimicoInicial;
+    private int nivelQuimicoFinal;
+    private String idProgramada;
+    private boolean activa;
     private boolean programada;
     private boolean recurrente;
+    private boolean eliminada;
 
     private final int SEGUNDOS_MILIS = 1000;
     private final int MINUTOS_MILIS = SEGUNDOS_MILIS * 60;
@@ -47,11 +55,36 @@ public class Fumigacion implements Comparable, Serializable {
 
     public void setCantidadQuimicoPorArea(String cantidadQuimicoPorArea) {
         this.cantidadQuimicoPorArea = cantidadQuimicoPorArea;
+        convertirCantidadQuimicoPorArea();
     }
 
     public String getObservaciones() { return observaciones; }
 
     public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
+
+    public int getNivelBateriaInicial() { return nivelBateriaInicial; }
+
+    public void setNivelBateriaInicial(int nivel) { this.nivelBateriaInicial = nivel; }
+
+    public int getNivelBateriaFinal() { return nivelBateriaFinal; }
+
+    public void setNivelBateriaFinal(int nivel) { this.nivelBateriaFinal = nivel; }
+
+    public int getNivelQuimicoInicial() { return nivelQuimicoInicial; }
+
+    public void setNivelQuimicoInicial(int nivel) { this.nivelQuimicoInicial = nivel; }
+
+    public int getNivelQuimicoFinal() { return nivelQuimicoFinal; }
+
+    public void setNivelQuimicoFinal(int nivel) { this.nivelQuimicoFinal = nivel; }
+
+    public String getIdProgramada() { return idProgramada; }
+
+    public void setIdProgramada(String idProgramada) { this.idProgramada = idProgramada; }
+
+    public boolean isActiva() { return activa; }
+
+    public void setActiva(boolean valor) { this.activa = valor; }
 
     public boolean isProgramada() { return programada; }
 
@@ -61,8 +94,28 @@ public class Fumigacion implements Comparable, Serializable {
 
     public void setRecurrente(boolean recurrente) { this.recurrente = recurrente; }
 
+    public boolean isEliminada() { return eliminada; }
+
+    public void setEliminada(boolean valor) { this.eliminada = valor; }
+
+    public void convertirCantidadQuimicoPorArea(){
+        if(this.cantidadQuimicoPorArea.startsWith("Baja"))
+            this.convCantidadQuimicoPorArea = 1;
+        else if(this.cantidadQuimicoPorArea.startsWith("Media"))
+            this.convCantidadQuimicoPorArea = 2;
+        else if(this.cantidadQuimicoPorArea.startsWith("Alta"))
+            this.convCantidadQuimicoPorArea = 3;
+    }
+
     public String darFormatoFechaInicio() {
         SimpleDateFormat formateador = new SimpleDateFormat("dd MMMM yyyy");
+        Date fechaHoraInicio = new Date(Long.parseLong(timestampInicio));
+        String fechaHoraInicioFormateada = formateador.format(fechaHoraInicio);
+        return fechaHoraInicioFormateada;
+    }
+
+    public String formatoFechaInicioOneTime() {
+        SimpleDateFormat formateador = new SimpleDateFormat("E, dd MMMM yyyy");
         Date fechaHoraInicio = new Date(Long.parseLong(timestampInicio));
         String fechaHoraInicioFormateada = formateador.format(fechaHoraInicio);
         return fechaHoraInicioFormateada;
@@ -125,21 +178,52 @@ public class Fumigacion implements Comparable, Serializable {
                 ((Fumigacion)obj).getTimestampInicio().equals(this.timestampInicio);
     }
 
+
+    /**Para crear la fumigación actual (en curso) en el nodo fumigacionActual del robot
+     * */
     public Map<String, Object> toMap() {
         HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("timestampInicio", timestampInicio);
         hashMap.put("timestampFin", timestampFin);
         hashMap.put("quimicoUtilizado", quimicoUtilizado);
-        hashMap.put("cantidadQuimicoPorArea", cantidadQuimicoPorArea);
+        hashMap.put("cantidadQuimicoPorArea", convCantidadQuimicoPorArea);
+        hashMap.put("nivelBateriaInicial", nivelBateriaInicial);
+        hashMap.put("nivelBateriaFinal", nivelBateriaFinal);
+        hashMap.put("nivelQuimicoInicial", nivelQuimicoInicial);
+        hashMap.put("nivelQuimicoFinal", nivelQuimicoFinal);
 
-        Boolean esProgramada = programada;
-        if(esProgramada != null)
-            hashMap.put("programada", programada);
-        if(observaciones != null)
+        if(observaciones != null && observaciones != "")
             hashMap.put("observaciones", observaciones);
+
         return hashMap;
     }
 
+
+    /** Para crear una instancia de historial en fumigaciones_historial
+     * */
+    public Map<String, Object> toMapHistorial() {
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("timestampInicio", timestampInicio);
+        hashMap.put("timestampFin", timestampFin);
+        hashMap.put("quimicoUtilizado", quimicoUtilizado);
+        hashMap.put("cantidadQuimicoPorArea", cantidadQuimicoPorArea);
+        hashMap.put("nivelBateriaInicial", nivelBateriaInicial);
+        hashMap.put("nivelBateriaFinal", nivelBateriaFinal);
+        hashMap.put("nivelQuimicoInicial", nivelQuimicoInicial);
+        hashMap.put("nivelQuimicoFinal", nivelQuimicoFinal);
+        hashMap.put("idProgramada", idProgramada);
+        hashMap.put("programada", programada);
+        hashMap.put("recurrente", recurrente);
+        //agregar días de recurrencia
+
+        if(observaciones != null && observaciones != "")
+            hashMap.put("observaciones", observaciones);
+
+        return hashMap;
+    }
+
+    /** Para crear una fumigación programada en el nodo de fumigaciones_programadas
+     * */
     public Map<String, Object> toMapProgramada() {
         //Crear programadas
         HashMap<String, Object> hashMap = new HashMap<>();
@@ -147,6 +231,9 @@ public class Fumigacion implements Comparable, Serializable {
         hashMap.put("quimicoUtilizado", quimicoUtilizado);
         hashMap.put("cantidadQuimicoPorArea", cantidadQuimicoPorArea);
         hashMap.put("recurrente", recurrente);
+        hashMap.put("activa", activa);
+        hashMap.put("eliminada", false);
+        //agregar la ¿recurrencia?
         return hashMap;
     }
 }
