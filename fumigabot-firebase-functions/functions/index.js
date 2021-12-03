@@ -32,22 +32,17 @@ exports.programadaNueva = functions.database
       const robotId = context.params.robotId;
       const fumigacionId = context.params.fumigacionId;
       const timestamp = snapshot.val().timestampInicio;
-      // const cantArea = snapshot.val().cantidadQuimicoPorArea;
-      // const quimicoUtilizado = snapshot.val().quimicoUtilizado;
 
       // verificarFumigacion retorna promesa:
       return verificarFumigacion(robotId, fumigacionId, timestamp)
           .then(() => {
           // programar la ejecución de la fumigación
             return scheduleProgramada(robotId, fumigacionId, snapshot.val());
-            // fumigacionId, quimicoUtilizado,
-            // cantArea, timestamp);
           })
           .catch((error) => {
             console.log(error);
             console.log("Nope, borramos snapshot ref: " + snapshot.ref);
             snapshot.ref.remove().then(() => {
-              // return Promise.reject("Fumigación borrada");
               throw new functions.https.HttpsError("aborted",
                   "Fumigación borrada");
             });
@@ -70,7 +65,6 @@ exports.programadaUpdate = functions.database
       antes.recurrente === despues.recurrente) {
         // && antes.taskId === despues.taskId) {
         // retornamos nulo porque no tenemos más trabajo que hacer
-        // console.log("ES LA MISMA");
         return null;
       }
       // verificar la fumigacion
@@ -100,7 +94,7 @@ exports.programadaDelete = functions.https.onCall((data, context) => {
   const fumigacionId = data.fumigacionId;
   const robotId = data.robotId;
 
-  return eliminarTarea(robotId, fumigacionId).then((res) => {
+  return eliminarTarea(robotId, fumigacionId).then(() => {
     return admin.database().ref("fumigaciones_programadas/" +
     robotId + "/" + fumigacionId).update({eliminada: true});
   });
@@ -158,22 +152,18 @@ function evaluarBrechaTemporal(tsNueva, tsExistente) {
   const brecha = 15 * 60 * 1000;
   const superior = new Date(parseInt(tsNueva) + brecha);
   const inferior = new Date(parseInt(tsNueva) - brecha);
-  // comparamos y verificamos brecha
   const cmpBrecha = (existente < inferior || existente > superior);
   return cmpBrecha;
 }
 
 
 exports.evaluarInstantanea = functions.https.onCall((data, context) => {
-  // dejo esto escrito acá para que sea útil en un futuro:
-  // data contiene la data que le pasemos cuando la llamamos desde la app
   // context tiene informacion de autenticacion del user
   // si queremos, podemos retornar un JSON
   const robotId = data.robotId;
   const fumigacionId = data.fumigacionId;
   const tsInicio = data.tsInicio;
   const quimicoUtilizado = data.quimicoUtilizado;
-  console.log("Quimico utilizado: " + quimicoUtilizado);
   return verificarFumigacion(robotId, fumigacionId, tsInicio).then(() => {
     return verificarRecursos(robotId, quimicoUtilizado);
   });
@@ -187,8 +177,6 @@ exports.evaluarInstantanea = functions.https.onCall((data, context) => {
  * @return {Promise} retorna promesa
  */
 function scheduleProgramada(robotId, fumigacionId, fumigacion) {
-  // fumigacionId, quimicoUtilizado,
-  //  cantArea, timestamp) {
   const cantArea = obtenerValorNumerico(fumigacion.cantidadQuimicoPorArea);
   const payload = {
     robotId: robotId,
@@ -214,7 +202,6 @@ function scheduleProgramada(robotId, fumigacionId, fumigacion) {
     },
   };
 
-  // console.log("CREATE TASK");
   const request = {parent: queuePath, task: task};
   return tasksClient.createTask(request).then(([taskCreada], error) => {
     const taskId = taskCreada.name;
@@ -255,46 +242,47 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
      2. independientemente del punto 1, ejecutar la actual (el código original)
   */
 
+  const refFumigacion = admin.database().ref("fumigaciones_programadas/" +
+      robotId + "/" + fumigacionId);
+
   let activa;
 
-  admin.database().ref("fumigaciones_programadas/" +
-    robotId + "/" + fumigacionId).once("value").then((fp) => {
+  refFumigacion.once("value").then((fp) => {
     activa = fp.val().activa;
     crearProximaFumigacionRecurrente(robotId, req.body, activa);
 
-    if (fp.val().activa == false) {
+    refFumigacion.update({eliminada: true});
+
+    if (activa == false) {
+      console.log("Ejecutar programada: fumigación desactivada");
       res.status(200).send("OK!");
-    }
-  });
-
-  /* if (recurrente == true) { // ver si tmb se tiene que consultar en DB
-    crearProximaFumigacionRecurrente(robotId, req.body, activa);
-  }*/
-
-  verificarRecursos(robotId, quimicoUtilizado).then(() => {
-    // primero ponemos en fumigando el robot y la cantidad por área
-    admin.database().ref("robots/" + robotId).update({
-      fumigando: true, cantidadQuimicoPorArea: cantArea,
-      detencionAutomatica: false})
-        .then(() => {
-          admin.database().ref("fumigaciones_programadas/" +
-          robotId + "/" + fumigacionId).once("value").then((fumigacion) => {
-            fumigacion.ref.update({eliminada: true}).then(() => {
-              admin.database().ref("robots/" + robotId).once("value")
-                  .then((robot) => {
-                    iniciarFumigacion(robotId, robot.val(), fumigacion.val())
-                        .then(() => {
-                          res.status(200).send("OK!");
-                        });
-                  });
-            });
-          }).catch((err) => {
-            res.status(500).send(err);
-          });
+    } else {
+      verificarRecursos(robotId, quimicoUtilizado).then(() => {
+        // primero ponemos en fumigando el robot y la cantidad por área
+        admin.database().ref("robots/" + robotId).update({
+          fumigando: true,
+          cantidadQuimicoPorArea: cantArea,
+          detencionAutomatica: false}).then(() => {
+          admin.database().ref("robots/" + robotId).once("value")
+              .then((robot) => {
+                refFumigacion.once("value").then((fumigacion) => {
+                  iniciarFumigacion(robotId, robot.val(), fumigacion.val())
+                      .then(() => {
+                        res.status(200).send("OK!");
+                      });
+                });
+              });
         }).catch((err) => {
-          console.log(err);
           res.status(500).send(err);
         });
+      }).catch((err) => {
+        console.log(err);
+        // acá insertar la observacion de la fumigacion
+        // insertar el nodo de fumigacion actual en el historial
+        // con este detalle
+        res.status(500).send(err);
+      });
+    }
   }).catch((err) => {
     // este es el de la verificacion de los recursos
     console.log("ERROR ejecutar programada:");
@@ -350,9 +338,6 @@ function crearProximaFumigacionRecurrente(robotId, data, activa) {
  * @return {Promise} retorna promesa
 */
 function iniciarFumigacion(robotId, robot, fumigacion) {
-  console.log(robot);
-  console.log("------");
-  console.log(fumigacion);
   return admin.database().ref("robots/" + robotId + "/fumigacionActual")
       .set({
         timestampInicio: fumigacion.timestampInicio,
