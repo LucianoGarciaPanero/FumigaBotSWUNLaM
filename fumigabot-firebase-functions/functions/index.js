@@ -243,13 +243,15 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
 
   let activa;
   let timestampInicio;
+  let recurrente;
 
   refFumigacion.once("value").then((fp) => {
     // console.log("DAME TODO");
     // console.log(fp.val());
     activa = fp.val().activa;
-    // es usado para la creación de la entrada al historial (en caso de fallar)
+    // son usados para la creación de la entrada al historial
     timestampInicio = fp.val().timestampInicio;
+    recurrente = fp.val().recurrente;
     crearProximaFumigacionRecurrente(robotId, req.body, activa);
 
     refFumigacion.update({eliminada: true});
@@ -288,6 +290,7 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
           timestampInicio: timestampInicio,
           cantidadQuimicoPorArea: cantArea,
           quimicoUtilizado: quimicoUtilizado,
+          recurrente: recurrente,
           observaciones: err.message,
         };
 
@@ -351,6 +354,11 @@ function crearProximaFumigacionRecurrente(robotId, data, activa) {
  * @return {Promise} retorna promesa
 */
 function iniciarFumigacion(robotId, robot, fumigacion) {
+  let recurrente = fumigacion.recurrente;
+  if (recurrente == undefined) {
+    recurrente = null;
+  }
+
   return admin.database().ref("robots/" + robotId + "/fumigacionActual")
       .set({
         timestampInicio: fumigacion.timestampInicio,
@@ -359,6 +367,7 @@ function iniciarFumigacion(robotId, robot, fumigacion) {
           obtenerValorNumerico(fumigacion.cantidadQuimicoPorArea),
         nivelQuimicoInicial: robot.nivelQuimico,
         nivelBateriaInicial: robot.bateria,
+        recurrente: recurrente,
       });
 }
 
@@ -415,6 +424,7 @@ function crearEntradaHistorial(robotId, fumigacion) {
       nivelBateriaInicial: nivelBateriaInicial,
       nivelBateriaFinal: nivelBateriaFinal,
       observaciones: fumigacion.observaciones,
+      recurrente: fumigacion.recurrente,
     });
   });
 }
@@ -616,6 +626,7 @@ function detenerFumigacion(robotId, observaciones) {
   let fumigacionActual;
   let bateria;
   let nivelQuimico;
+  let recurrente;
   // let idHistorial = 1;
 
   // const ref = admin.database().ref("fumigaciones_historial/" + robotId);
@@ -628,6 +639,11 @@ function detenerFumigacion(robotId, observaciones) {
               bateria = robot.val().bateria;
               nivelQuimico = robot.val().nivelQuimico;
 
+              recurrente = fumigacionActual.recurrente;
+              if (recurrente == undefined) {
+                recurrente = null;
+              }
+
               const dataHistorial = {
                 timestampInicio: fumigacionActual.timestampInicio,
                 timestampFin: Date.now().toString(),
@@ -638,6 +654,7 @@ function detenerFumigacion(robotId, observaciones) {
                 nivelBateriaInicial: fumigacionActual.nivelBateriaInicial,
                 nivelBateriaFinal: bateria,
                 observaciones: observaciones,
+                recurrente: recurrente,
               };
 
               crearEntradaHistorial(robotId, dataHistorial);
