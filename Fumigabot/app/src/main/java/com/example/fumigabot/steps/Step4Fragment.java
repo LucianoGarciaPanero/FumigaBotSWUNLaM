@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +27,8 @@ public class Step4Fragment extends Fragment {
     private TextView quimicoSeleccionado;
     private TextView cantidadSeleccionada;
     private TextView horarioSeleccionado;
+    private TextView diasRecurrencia;
+    private ImageView imgRecurrencia;
 
     public Step4Fragment() {
         // Required empty public constructor
@@ -58,6 +61,8 @@ public class Step4Fragment extends Fragment {
         quimicoSeleccionado = vista.findViewById(R.id.quimicoSeleccionado);
         cantidadSeleccionada = vista.findViewById(R.id.cantidadSeleccionada);
         horarioSeleccionado = vista.findViewById(R.id.horarioSeleccionado);
+        diasRecurrencia = vista.findViewById(R.id.txtRecurrencia);
+        imgRecurrencia = vista.findViewById(R.id.imgRecurrencia);
         viewModelResumen = new ViewModelProvider(requireActivity()).get(ItemViewModel.class);
         viewModelResumen.isDisponible().observe(requireActivity(), item -> {
             if(item != null && item.booleanValue())
@@ -71,8 +76,11 @@ public class Step4Fragment extends Fragment {
 
         quimicoSeleccionado.setText(viewModelResumen.getQuimicoSeleccionado().getValue());
         cantidadSeleccionada.setText(viewModelResumen.getCantidadSeleccionada().getValue().getText());
-        if(viewModelResumen.isInstantanea().getValue())
+        if(viewModelResumen.isInstantanea().getValue()){
             horarioSeleccionado.setText("Inicia ahora");
+            diasRecurrencia.setVisibility(View.GONE);
+            imgRecurrencia.setVisibility(View.GONE);
+        }
         else {
             horarios = new SimpleDateFormat("dd MMMM YYYY", Locale.getDefault())
                     .format(fechaHora);
@@ -80,9 +88,14 @@ public class Step4Fragment extends Fragment {
             horarios += " a las " + new SimpleDateFormat("HH:mm")
                     .format(fechaHora);
 
-            if(viewModelResumen.getRepetirDiariamente().getValue().booleanValue())
-                horarios += "\n\nRepetir cada "
-                        + getDiaSemana(fechaHora);
+            if(viewModelResumen.getRepetirDiariamente().getValue().booleanValue()){
+                diasRecurrencia.setText("Cada " + getDiaSemana(fechaHora) + " a la misma hora");
+                diasRecurrencia.setVisibility(View.VISIBLE);
+                imgRecurrencia.setVisibility(View.VISIBLE);
+            } else{
+                diasRecurrencia.setVisibility(View.GONE);
+                imgRecurrencia.setVisibility(View.GONE);
+            }
 
             horarioSeleccionado.setText(horarios);
         }
