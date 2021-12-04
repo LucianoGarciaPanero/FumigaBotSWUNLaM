@@ -28,13 +28,14 @@ public class MessagingService extends FirebaseMessagingService {
 
         // Check if message contains a notification payload.
         if (remoteMessage.getNotification() != null) {
+            String titulo = remoteMessage.getNotification().getTitle();
             String mensaje = remoteMessage.getNotification().getBody();
             Log.i("FCM servicio", "Message Notification Body: " + mensaje);
-            sendNotification(mensaje);
+            sendNotification(titulo, mensaje);
         }
     }
 
-    private void sendNotification(String messageBody) {
+    private void sendNotification(String titulo, String messageBody) {
         Intent intent = new Intent(this, SplashActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -44,23 +45,19 @@ public class MessagingService extends FirebaseMessagingService {
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
-                        .setSmallIcon(R.drawable.ic_logo)
-                        .setContentTitle("Defy")//getString(R.string.fcm_message))
+                        .setSmallIcon(R.mipmap.ic_fumigabot_launcher) //drawable.ic_logo)
+                        .setContentTitle(titulo)//getString(R.string.fcm_message))
                         .setContentText(messageBody)
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
+                        //.setDefaults(NotificationCompat.DEFAULT_ALL)
+                        .setPriority(NotificationCompat.PRIORITY_MAX)
                         .setContentIntent(pendingIntent);
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // Since android Oreo notification channel is needed.
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channelId,
-                    "DEFY",
-                    NotificationManager.IMPORTANCE_DEFAULT);
-            notificationManager.createNotificationChannel(channel);
-        }*/
+
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
     }
