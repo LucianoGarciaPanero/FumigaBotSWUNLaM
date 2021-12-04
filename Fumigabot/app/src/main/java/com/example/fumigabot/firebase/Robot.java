@@ -13,7 +13,6 @@ public class Robot implements Serializable {
     private int bateria;
     private int nivelQuimico;
     private ArrayList<String> quimicosDisponibles = new ArrayList<>();
-    private int cantidadQuimicoPorArea;
     private String ultimoQuimico;
 
     public Robot(){
@@ -68,20 +67,11 @@ public class Robot implements Serializable {
         this.quimicosDisponibles = quimicosDisponibles;
     }
 
-    public int getCantidadQuimicoPorArea() {
-        return cantidadQuimicoPorArea;
-    }
-
-    public void setCantidadQuimicoPorArea(int cantidadQuimicoPorArea) {
-        this.cantidadQuimicoPorArea = cantidadQuimicoPorArea;
-    }
-
     public String getUltimoQuimico(){ return ultimoQuimico; }
 
     public void setUltimoQuimico(String ultimoQuimico) {
         this.ultimoQuimico = ultimoQuimico;
     }
-
 
 
     @Exclude

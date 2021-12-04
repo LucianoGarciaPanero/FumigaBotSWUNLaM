@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.example.fumigabot.firebase.Fumigacion;
 
@@ -49,6 +50,9 @@ public class EntradaHistorialAdapter extends BaseAdapter {
         TextView duracion = convertView.findViewById(R.id.duracion);
         TextView horaYQuimico = convertView.findViewById(R.id.horaQuimico);
 
+        ImageView alerta = convertView.findViewById(R.id.alerta);
+        ImageView alertaMaxima = convertView.findViewById(R.id.alertaMaxima);
+
         //Agregamos toda la data
         final Fumigacion item = (Fumigacion)getItem(position);
 
@@ -57,10 +61,6 @@ public class EntradaHistorialAdapter extends BaseAdapter {
         String horaInicio = item.getHoraInicio();
         String horaFin = item.getHoraFin();
 
-        fechaFumigacion.setText(fechaInicio);
-        duracion.setText(item.calcularDuracion().trim());
-
-        //Fila2:
         String quimico;
         if(item.getQuimicoUtilizado() == null)
             quimico = "No especificado";
@@ -68,7 +68,28 @@ public class EntradaHistorialAdapter extends BaseAdapter {
             quimico = item.getQuimicoUtilizado().trim();
 
         String hora_quimico = horaInicio + " a " + horaFin + ", " + quimico;
+
+        if(item.getObservaciones().equals("ok")){
+            //si es ok, está todo bien
+            duracion.setText(item.calcularDuracion().trim());
+            alerta.setVisibility(View.GONE);
+        }
+        else if(item.getTimestampFin().equals("0")){
+            //mostrar solamente !!!!!!
+            duracion.setVisibility(View.GONE);
+            alerta.setVisibility(View.GONE);
+            alertaMaxima.setVisibility(View.VISIBLE);
+            hora_quimico = horaInicio + ", " + quimico;
+        } else {
+            //mostrar duracion + !!
+            alerta.setVisibility(View.VISIBLE);
+            duracion.setVisibility(View.VISIBLE);
+            alertaMaxima.setVisibility(View.GONE);
+            duracion.setText(item.calcularDuracion().trim());
+        }
+
         horaYQuimico.setText(hora_quimico.trim());
+        fechaFumigacion.setText(fechaInicio);
 
         return convertView;
     }

@@ -23,7 +23,7 @@ public class Fumigacion implements Comparable, Serializable {
     private String idProgramada;
     private boolean activa;
     private boolean programada;
-    private boolean recurrente;
+    private Boolean recurrente;
     private boolean eliminada;
 
     private final int SEGUNDOS_MILIS = 1000;
@@ -90,9 +90,9 @@ public class Fumigacion implements Comparable, Serializable {
 
     public void setProgramada(boolean programada) { this.programada = programada; }
 
-    public boolean isRecurrente() { return recurrente; }
+    public Boolean isRecurrente() { return recurrente; }
 
-    public void setRecurrente(boolean recurrente) { this.recurrente = recurrente; }
+    public void setRecurrente(Boolean recurrente) { this.recurrente = recurrente; }
 
     public boolean isEliminada() { return eliminada; }
 
@@ -133,6 +133,41 @@ public class Fumigacion implements Comparable, Serializable {
         Date horaFin = new Date(Long.parseLong(timestampFin));
         String horaFinFormateada = formateador.format(horaFin);
         return horaFinFormateada;
+    }
+
+    public String normalizarObservaciones() {
+        String mensaje = "";
+        switch (this.observaciones) {
+            case "fdb":
+                mensaje = "El robot detuvo su ejecución debido a que se quedó sin batería.";
+                break;
+            case "fdq":
+                mensaje = "El robot detuvo su ejecución debido a que se quedó sin químico.";
+                break;
+            case "bnd":
+                mensaje = "La fumigación programada no se realizó porque el robot no tenía " +
+                        "batería suficiente.";
+                break;
+            case "qnd":
+                mensaje = "La fumigación programada no se realizó porque el robot no tenía " +
+                        "químico suficiente.";
+                break;
+            case "qnc":
+                mensaje = "La fumigación programada no se realizó porque el químico que " +
+                        "contiene el robot no coincide con el indicado.";
+                break;
+            case "rf":
+                mensaje = "La fumigación programada no se realizó porque el robot se encontraba " +
+                        "realizando otra fumigación.";
+                break;
+            case "ra":
+                mensaje = "La fumigación programada no se realizó porque el robot estaba apagado.";
+                break;
+            default:
+                mensaje = "ok";
+                break;
+        }
+        return mensaje;
     }
 
     public String calcularDuracion() {
