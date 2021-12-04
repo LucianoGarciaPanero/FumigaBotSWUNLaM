@@ -26,6 +26,9 @@ function configurarTasks() {
   // url = "https://localhost:5001/fumigabot/us-central1/ejecutarProgramada";
 }
 
+
+// ---------------- Triggers ----------------
+
 exports.programadaNueva = functions.database
     .ref("fumigaciones_programadas/{robotId}/{fumigacionId}")
     .onCreate((snapshot, context) => {
@@ -90,74 +93,69 @@ exports.programadaUpdate = functions.database
     });
 
 
-exports.programadaDelete = functions.https.onCall((data, context) => {
-  const fumigacionId = data.fumigacionId;
-  const robotId = data.robotId;
+exports.notificarRobot = functions.database
+    .ref("robots/{robotId}/detencionAutomatica")
+    .onUpdate((cambios, context) => {
+      const robotId = context.params.robotId;
+      const antes = cambios.before.val();
+      const despues = cambios.after.val();
 
-  return eliminarTarea(robotId, fumigacionId).then(() => {
-    return admin.database().ref("fumigaciones_programadas/" +
-    robotId + "/" + fumigacionId).update({eliminada: true}).then(()=>{
-      return "ok";
-    });
-  });
-});
+      // si está en false, se supone que lo para la app
+      const detAuto = antes == false && despues == true;
 
-/** Verifica que no se creen dos fumigaciones para la
- * misma fecha y hora.
- * @param {string} robotId ID del robot
- * @param {string} fumigacionId ID de la fumigación nueva
- * @param {string} tsInicio Fecha y hora de la nueva
- * @return {Promise} retorna promesa
- */
-function verificarFumigacion(robotId, fumigacionId, tsInicio) {
-  return admin.database().ref("fumigaciones_programadas/" + robotId + "/")
-      .once("value").then((snap) => {
-        snap.forEach((fumigacion) => {
-          const tsFumigacion = fumigacion.val().timestampInicio;
-          // comparo con las programadas que sean de hoy (-12hs) en adelante
-          // (12 * cant min en 1 hr * cant seg en 1 min * cant ms en 1 seg)
-          const hoy = new Date(Date.now() - (12 * 60 * 60 * 1000));
-          if (tsFumigacion >= hoy) {
-          // comparo a ver si es el mismo timestamp
-            const cmp = tsFumigacion === tsInicio;
-            // comparo que sean diferentes ids
-            const difFumi = fumigacionId !== fumigacion.key;
-            if (cmp && difFumi) {
-              throw new functions.https.HttpsError("already-exists",
-                  "Timestamp repetido");
-            } else if (difFumi) {
-            // si no son iguales, podemos verificar la brecha temporal
-            // console.log("Analizando nueva (" + fumigacionId +
-            // ") contra " + fumigacion.key + "...");
-              evaluarBrechaTemporal(tsInicio, tsFumigacion);
-              /* const evaluacionBrecha =
-              evaluarBrechaTemporal(tsInicio, tsFumigacion);
-               if (evaluacionBrecha == false) {
-                throw new functions.https.HttpsError("out-of-range",
-                    "Conflicto con las brechas temporales");
-              }*/
-            }
-          }
-        });
-        return Promise.resolve("Ok");
+      if (detAuto == false) {
+        return null;
+      }
+
+      admin.database().ref("robots/" + robotId).once("value").then((robot) => {
+        const fumigando = robot.val().fumigando; // ""podría"" no ir
+        // lo hacemos xq somo re kpos ;);)
+        const razon = robot.val().razonFinalizacion;
+
+        if (fumigando == false) {
+          console.log("Razon de detención: " + razon);
+          const mensajeFinalizacion = evaluarRazonFinalizacion(razon);
+
+          detenerFumigacion(robotId, razon).then(()=>{
+            return enviarNotificacion("Fumigación finalizada",
+                mensajeFinalizacion);
+          });
+        }
       });
-}
+      /* const stopFumigando = antes.fumigando == true &&
+        despues.fumigando == false;
+      const notificar = stopFumigando && detAuto;*/
 
-/** Evalúa una brecha temporal mínima entre las fumigaciones
- @param {string} tsNueva Timestamp de la fumigación a insertar
- @param {string} tsExistente Timestamp de la fumigación contra la que se compara
- @return {Boolean} retorna `true` si está todo ok, caso contrario, `false`
- */
-function evaluarBrechaTemporal(tsNueva, tsExistente) {
-  const existente = new Date(parseInt(tsExistente));
-  // la brecha es de 15 minutos
-  const brecha = 15 * 60 * 1000;
-  const superior = new Date(parseInt(tsNueva) + brecha);
-  const inferior = new Date(parseInt(tsNueva) - brecha);
-  const cmpBrecha = (existente < inferior || existente > superior);
-  return cmpBrecha;
-}
+      /* const quimico = despues.nivelQuimico;
+      const bateria = despues.bateria;
+      const stopQuimico = quimico < MINIMO_QUIMICO;
+      const stopBat = bateria < MINIMO_BATERIA;
 
+      if (stopQuimico) {
+        return evaluarDetencionAutomatica("fdq");
+      } else if (stopBat) {
+        return evaluarDetencionAutomatica("fdb");
+      }*/
+      /* if (notificar) {
+        // return evaluarDetencionAutomatica("ok");
+        const razon = despues.razonFinalizacion;
+        console.log("Razon de detención: " + razon);
+        return evaluarDetencionAutomatica(razon);
+      }*/
+    });
+
+
+// -----------------------------------------
+
+// ---------------- On call ----------------
+
+
+exports.detenerFumigacion = functions.https.onCall((data, context) => {
+  const robotId = data.robotId;
+  console.log("ROBOT ID: " + robotId);
+
+  return detenerFumigacion(robotId, "ok");
+});
 
 exports.evaluarInstantanea = functions.https.onCall((data, context) => {
   // context tiene informacion de autenticacion del user
@@ -171,70 +169,21 @@ exports.evaluarInstantanea = functions.https.onCall((data, context) => {
   });
 });
 
+exports.programadaDelete = functions.https.onCall((data, context) => {
+  const fumigacionId = data.fumigacionId;
+  const robotId = data.robotId;
 
-/** Crea las tareas para la ejecución de las fumigaciones programadas.
- * @param {String} robotId ID del robot que comienza a fumigar
- * @param {String} fumigacionId ID de la fumigación programada
- * @param {Object} fumigacion Fumigación programada a comenzar
- * @return {Promise} retorna promesa
- */
-function scheduleProgramada(robotId, fumigacionId, fumigacion) {
-  const cantArea = obtenerValorNumerico(fumigacion.cantidadQuimicoPorArea);
-  const payload = {
-    robotId: robotId,
-    fumigacionId: fumigacionId,
-    quimicoUtilizado: fumigacion.quimicoUtilizado,
-    cantArea: cantArea,
-    timestampInicio: fumigacion.timestampInicio,
-    recurrente: fumigacion.recurrente,
-  };
-  const ts = Number.parseInt(fumigacion.timestampInicio) / 1000;
-
-  // le decimos a la tarea que, en ese timestamp seteado,
-  // haga un post a nuestra función de "ejecutar programada (está en la URL)"
-  const task = {
-    httpRequest: {
-      httpMethod: "POST",
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: Buffer.from(JSON.stringify(payload)).toString("base64"),
-    },
-    scheduleTime: {
-      seconds: ts, // acá poner timestamp de fumigación
-    },
-  };
-
-  const request = {parent: queuePath, task: task};
-  return tasksClient.createTask(request).then(([taskCreada], error) => {
-    const taskId = taskCreada.name;
-    // console.log("TaskID: " + taskId);
-    return admin.database().ref("fumigaciones_programadas/" + robotId + "/" +
-      fumigacionId).update({taskId: taskId}).catch((error) => {
-      console.log("Error update taskId");
-      console.log(error);
+  return eliminarTarea(robotId, fumigacionId).then(() => {
+    return admin.database().ref("fumigaciones_programadas/" +
+    robotId + "/" + fumigacionId).update({eliminada: true}).then(()=>{
+      return "ok";
     });
-  }).catch((err) => {
-    console.log("catch create task:");
-    console.log(err);
-    throw new functions.https.HttpsError("unknown", err);
   });
-}
+});
 
-/** Retorna el valor numérico de la cadena que representa a la cantidad
- * de químico por área.
- * @param {String} cantArea es la cantidad de químico por área en formato texto.
- * @return {Number} `1`: cantidad de químico baja.
- * `2`: cantidad de químico media.
- * `3`: cantidad de químico alta.
-*/
-function obtenerValorNumerico(cantArea) {
-  if (cantArea.includes("Baja")) {
-    return 1;
-  } else if (cantArea.includes("Media")) {
-    return 2;
-  }
-  return 3;
-}
+// -----------------------------------------
+
+// ---------------- On Request ----------------
 
 exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
   const {robotId, fumigacionId, quimicoUtilizado,
@@ -315,6 +264,12 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
   });
 });
 
+
+// -----------------------------------------
+
+// ---------------- Functions ----------------
+
+// ______ Fumigaciones ______
 
 /** Crea la próxima fumigación programada 7 días después de la actual
  * @param {String} robotId ID del robot
@@ -450,174 +405,54 @@ function eliminarTarea(robotId, fumigacionId) {
   });
 }
 
-
-/** Chequea antes de empezar una fumigación si se cuentan con los
- * recursos mínimos.
- * @param {String} robotId ID del robot a consultar sus recursos.
- * @param {String} quimicoUtilizado químico a usar en la fumigación.
- * @return {Promise} retorna promesa con los detalles correspondientes.
- * */
-function verificarRecursos(robotId, quimicoUtilizado) {
-  return admin.database().ref("robots/" + robotId).once("value")
-      .then((robot) => {
-        const bateria = robot.val().bateria;
-        const quimico = robot.val().nivelQuimico;
-        const fumigando = robot.val().fumigando;
-        const encendido = robot.val().encendido;
-        const ultimoQuimico = robot.val().ultimoQuimico;
-
-        if (bateria <= MINIMO_BATERIA) {
-          throw new functions.https.HttpsError("out-of-range",
-              "bnd");
-        } else if (quimico <= MINIMO_QUIMICO) {
-          throw new functions.https.HttpsError("out-of-range",
-              "qnd");
-        } else if (fumigando == true) {
-          throw new functions.https.HttpsError("unavailable",
-              "rf");
-        } else if (encendido == false) {
-          throw new functions.https.HttpsError("unavailable",
-              "ra");
-        } else if (ultimoQuimico != quimicoUtilizado) {
-          throw new functions.https.HttpsError("invalid-argument",
-              "qnc");
-        }
-        return Promise.resolve("ok");
-      });
-}
-
-
-// ------- Robot -------
-
-/** Envía notificaciones con el título y mensaje correspondiente.
- * @param {String} titulo Título de la notificación.
- * @param {String} mensaje Mensaje a mostrar.
- * @return {Promise} retorna promesa.
+/** Crea las tareas para la ejecución de las fumigaciones programadas.
+ * @param {String} robotId ID del robot que comienza a fumigar
+ * @param {String} fumigacionId ID de la fumigación programada
+ * @param {Object} fumigacion Fumigación programada a comenzar
+ * @return {Promise} retorna promesa
  */
-function enviarNotificacion(titulo, mensaje) {
-  let token;
-  return admin.database().ref("robots/0/").once("value").then((robot) => {
-    token = robot.val().token;
-    console.log("Token: " + token);
+function scheduleProgramada(robotId, fumigacionId, fumigacion) {
+  const cantArea = obtenerValorNumerico(fumigacion.cantidadQuimicoPorArea);
+  const payload = {
+    robotId: robotId,
+    fumigacionId: fumigacionId,
+    quimicoUtilizado: fumigacion.quimicoUtilizado,
+    cantArea: cantArea,
+    timestampInicio: fumigacion.timestampInicio,
+    recurrente: fumigacion.recurrente,
+  };
+  const ts = Number.parseInt(fumigacion.timestampInicio) / 1000;
 
-    const payload = {
-      token: token,
-      notification: {
-        title: titulo,
-        body: mensaje,
-      },
-      data: {body: mensaje},
-    };
+  // le decimos a la tarea que, en ese timestamp seteado,
+  // haga un post a nuestra función de "ejecutar programada (está en la URL)"
+  const task = {
+    httpRequest: {
+      httpMethod: "POST",
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: Buffer.from(JSON.stringify(payload)).toString("base64"),
+    },
+    scheduleTime: {
+      seconds: ts, // acá poner timestamp de fumigación
+    },
+  };
 
-    return admin.messaging().send(payload).then((res) => {
-      console.log("MENSAJE OK, ID MENSAJE: " + res);
-    }).catch((err) => {
-      console.log("ERROR MENSAJE");
-      console.log(err);
+  const request = {parent: queuePath, task: task};
+  return tasksClient.createTask(request).then(([taskCreada], error) => {
+    const taskId = taskCreada.name;
+    // console.log("TaskID: " + taskId);
+    return admin.database().ref("fumigaciones_programadas/" + robotId + "/" +
+      fumigacionId).update({taskId: taskId}).catch((error) => {
+      console.log("Error update taskId");
+      console.log(error);
     });
+  }).catch((err) => {
+    console.log("catch create task:");
+    console.log(err);
+    throw new functions.https.HttpsError("unknown", err);
   });
 }
 
-/** Evalúa las razones por la cual se detuvo el robot
- * y la envía en una notificación a la app del usuario.
- * @param {String} razon Razón por la cual se detuvo el robot.
- * @return {String} retorna la razón de finalización xd.
-*/
-function evaluarRazonFinalizacion(razon) {
-  let mensaje = "";
-
-  switch (razon.toLowerCase()) {
-    case "ok":
-      mensaje = "El robot terminó de fumigar";
-      break;
-    case "fdb":
-      mensaje = "El robot se detuvo por falta de batería";
-      break;
-    case "fdq":
-      mensaje = "El robot se detuvo por falta de químico";
-      break;
-    case "bnd": // batería no disponible
-      mensaje = "No hay suficiente batería para fumigar";
-      break;
-    case "qnd":
-      mensaje = "No hay suficiente químico para fumigar";
-      break;
-    case "qnc":
-      mensaje = "El químico que contiene el robot no coincide con el de " +
-      "la fumigación programada";
-      break;
-    case "rf":
-      mensaje = "El robot se encuentra ejecutando una fumigación previa";
-      break;
-    case "ra":
-      mensaje = "El robot está apagado";
-      break;
-    default:
-      break;
-  }
-
-  return mensaje;
-}
-
-
-exports.notificarRobot = functions.database
-    .ref("robots/{robotId}/detencionAutomatica")
-    .onUpdate((cambios, context) => {
-      const robotId = context.params.robotId;
-      const antes = cambios.before.val();
-      const despues = cambios.after.val();
-
-      // si está en false, se supone que lo para la app
-      const detAuto = antes == false && despues == true;
-
-      if (detAuto == false) {
-        return null;
-      }
-
-      admin.database().ref("robots/" + robotId).once("value").then((robot) => {
-        const fumigando = robot.val().fumigando; // ""podría"" no ir
-        // lo hacemos xq somo re kpos ;);)
-        const razon = robot.val().razonFinalizacion;
-
-        if (fumigando == false) {
-          console.log("Razon de detención: " + razon);
-          const mensajeFinalizacion = evaluarRazonFinalizacion(razon);
-
-          detenerFumigacion(robotId, razon).then(()=>{
-            return enviarNotificacion("Fumigación finalizada",
-                mensajeFinalizacion);
-          });
-        }
-      });
-      /* const stopFumigando = antes.fumigando == true &&
-        despues.fumigando == false;
-      const notificar = stopFumigando && detAuto;*/
-
-      /* const quimico = despues.nivelQuimico;
-      const bateria = despues.bateria;
-      const stopQuimico = quimico < MINIMO_QUIMICO;
-      const stopBat = bateria < MINIMO_BATERIA;
-
-      if (stopQuimico) {
-        return evaluarDetencionAutomatica("fdq");
-      } else if (stopBat) {
-        return evaluarDetencionAutomatica("fdb");
-      }*/
-      /* if (notificar) {
-        // return evaluarDetencionAutomatica("ok");
-        const razon = despues.razonFinalizacion;
-        console.log("Razon de detención: " + razon);
-        return evaluarDetencionAutomatica(razon);
-      }*/
-    });
-
-
-exports.detenerFumigacion = functions.https.onCall((data, context) => {
-  const robotId = data.robotId;
-  console.log("ROBOT ID: " + robotId);
-
-  return detenerFumigacion(robotId, "ok");
-});
 
 /** Detiene la fumigación actual
  * @param {String} robotId ID del robot a detener
@@ -686,6 +521,196 @@ function detenerFumigacion(robotId, observaciones) {
       });
 }
 
+
+// ______ Verificaciones ______
+
+/** Verifica que no se creen dos fumigaciones para la
+ * misma fecha y hora.
+ * @param {string} robotId ID del robot
+ * @param {string} fumigacionId ID de la fumigación nueva
+ * @param {string} tsInicio Fecha y hora de la nueva
+ * @return {Promise} retorna promesa
+ */
+function verificarFumigacion(robotId, fumigacionId, tsInicio) {
+  return admin.database().ref("fumigaciones_programadas/" + robotId + "/")
+      .once("value").then((snap) => {
+        snap.forEach((fumigacion) => {
+          const tsFumigacion = fumigacion.val().timestampInicio;
+          // comparo con las programadas que sean de hoy (-12hs) en adelante
+          // (12 * cant min en 1 hr * cant seg en 1 min * cant ms en 1 seg)
+          const hoy = new Date(Date.now() - (12 * 60 * 60 * 1000));
+          if (tsFumigacion >= hoy) {
+          // comparo a ver si es el mismo timestamp
+            const cmp = tsFumigacion === tsInicio;
+            // comparo que sean diferentes ids
+            const difFumi = fumigacionId !== fumigacion.key;
+            if (cmp && difFumi) {
+              throw new functions.https.HttpsError("already-exists",
+                  "Timestamp repetido");
+            } else if (difFumi) {
+            // si no son iguales, podemos verificar la brecha temporal
+            // console.log("Analizando nueva (" + fumigacionId +
+            // ") contra " + fumigacion.key + "...");
+              evaluarBrechaTemporal(tsInicio, tsFumigacion);
+              /* const evaluacionBrecha =
+              evaluarBrechaTemporal(tsInicio, tsFumigacion);
+               if (evaluacionBrecha == false) {
+                throw new functions.https.HttpsError("out-of-range",
+                    "Conflicto con las brechas temporales");
+              }*/
+            }
+          }
+        });
+        return Promise.resolve("Ok");
+      });
+}
+
+
+/** Evalúa una brecha temporal mínima entre las fumigaciones
+ @param {string} tsNueva Timestamp de la fumigación a insertar
+ @param {string} tsExistente Timestamp de la fumigación contra la que se compara
+ @return {Boolean} retorna `true` si está todo ok, caso contrario, `false`
+ */
+function evaluarBrechaTemporal(tsNueva, tsExistente) {
+  const existente = new Date(parseInt(tsExistente));
+  // la brecha es de 15 minutos
+  const brecha = 15 * 60 * 1000;
+  const superior = new Date(parseInt(tsNueva) + brecha);
+  const inferior = new Date(parseInt(tsNueva) - brecha);
+  const cmpBrecha = (existente < inferior || existente > superior);
+  return cmpBrecha;
+}
+
+
+/** Chequea antes de empezar una fumigación si se cuentan con los
+ * recursos mínimos.
+ * @param {String} robotId ID del robot a consultar sus recursos.
+ * @param {String} quimicoUtilizado químico a usar en la fumigación.
+ * @return {Promise} retorna promesa con los detalles correspondientes.
+ * */
+function verificarRecursos(robotId, quimicoUtilizado) {
+  return admin.database().ref("robots/" + robotId).once("value")
+      .then((robot) => {
+        const bateria = robot.val().bateria;
+        const quimico = robot.val().nivelQuimico;
+        const fumigando = robot.val().fumigando;
+        const encendido = robot.val().encendido;
+        const ultimoQuimico = robot.val().ultimoQuimico;
+
+        if (bateria <= MINIMO_BATERIA) {
+          throw new functions.https.HttpsError("out-of-range",
+              "bnd");
+        } else if (quimico <= MINIMO_QUIMICO) {
+          throw new functions.https.HttpsError("out-of-range",
+              "qnd");
+        } else if (fumigando == true) {
+          throw new functions.https.HttpsError("unavailable",
+              "rf");
+        } else if (encendido == false) {
+          throw new functions.https.HttpsError("unavailable",
+              "ra");
+        } else if (ultimoQuimico != quimicoUtilizado) {
+          throw new functions.https.HttpsError("invalid-argument",
+              "qnc");
+        }
+        return Promise.resolve("ok");
+      });
+}
+
+
+// _____ Notificaciones ______
+
+/** Envía notificaciones con el título y mensaje correspondiente.
+ * @param {String} titulo Título de la notificación.
+ * @param {String} mensaje Mensaje a mostrar.
+ * @return {Promise} retorna promesa.
+ */
+function enviarNotificacion(titulo, mensaje) {
+  let token;
+  return admin.database().ref("robots/0/").once("value").then((robot) => {
+    token = robot.val().token;
+    console.log("Token: " + token);
+
+    const payload = {
+      token: token,
+      notification: {
+        title: titulo,
+        body: mensaje,
+      },
+      data: {body: mensaje},
+    };
+
+    return admin.messaging().send(payload).then((res) => {
+      console.log("MENSAJE OK, ID MENSAJE: " + res);
+    }).catch((err) => {
+      console.log("ERROR MENSAJE");
+      console.log(err);
+    });
+  });
+}
+
+
+// _____ Utility ______
+
+/** Retorna el valor numérico de la cadena que representa a la cantidad
+ * de químico por área.
+ * @param {String} cantArea es la cantidad de químico por área en formato texto.
+ * @return {Number} `1`: cantidad de químico baja.
+ * `2`: cantidad de químico media.
+ * `3`: cantidad de químico alta.
+*/
+function obtenerValorNumerico(cantArea) {
+  if (cantArea.includes("Baja")) {
+    return 1;
+  } else if (cantArea.includes("Media")) {
+    return 2;
+  }
+  return 3;
+}
+
+
+/** Evalúa las razones por la cual se detuvo el robot
+ * y la envía en una notificación a la app del usuario.
+ * @param {String} razon Razón por la cual se detuvo el robot.
+ * @return {String} retorna la razón de finalización xd.
+*/
+function evaluarRazonFinalizacion(razon) {
+  let mensaje = "";
+
+  switch (razon.toLowerCase()) {
+    case "ok":
+      mensaje = "El robot terminó de fumigar";
+      break;
+    case "fdb":
+      mensaje = "El robot se detuvo por falta de batería";
+      break;
+    case "fdq":
+      mensaje = "El robot se detuvo por falta de químico";
+      break;
+    case "bnd": // batería no disponible
+      mensaje = "No hay suficiente batería para fumigar";
+      break;
+    case "qnd":
+      mensaje = "No hay suficiente químico para fumigar";
+      break;
+    case "qnc":
+      mensaje = "El químico que contiene el robot no coincide con el de " +
+      "la fumigación programada";
+      break;
+    case "rf":
+      mensaje = "El robot se encuentra ejecutando una fumigación previa";
+      break;
+    case "ra":
+      mensaje = "El robot está apagado";
+      break;
+    default:
+      break;
+  }
+
+  return mensaje;
+}
+
+
 /** Obtener cadena de cantidad de texto por área.
  * @param {Number} cantArea numerito del robot
  * @return {String} cadena con nombre completo
@@ -698,3 +723,35 @@ function obtenerStringCantidadPorArea(cantArea) {
   }
   return "Alta - Ráfaga de 2 segundos";
 }
+
+
+/*
+exports.borrarQuimico = functions.https.onCall((data, context) => {
+  const robotId = data.robotId;
+  const quimico = data.quimico;
+  // además de quitar el químico de la lista,
+  // hay que revisar todas las programadas que lo contengan
+  // y si este quimico que se está borrando es el que tiene el robot,
+  // hay que volver a setearle al robot un último químico utilizado
+
+  const refRobot = admin.database().ref("robots/" + robotId);
+  const refProgramadas = admin.database()
+      .ref("fumigaciones_programadas/" + robotId);
+
+  refRobot.once("value").then((robot)=>{
+    if (robot.val().ultimoQuimico == quimico) {
+      // tengo que setear otro random
+      // ver el tema de los ids con los que se guardan
+    }
+
+    refRobot.child("quimicosDisponibles").remove(quimico);
+
+    refProgramadas.once("value").then((snap) => {
+      snap.forEach((fp) => {
+        if (fp.val().quimicoUtilizado == quimico) {
+          fp.remove();
+        }
+      });
+    });
+  });
+});*/
