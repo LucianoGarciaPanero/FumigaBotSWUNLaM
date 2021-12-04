@@ -96,7 +96,9 @@ exports.programadaDelete = functions.https.onCall((data, context) => {
 
   return eliminarTarea(robotId, fumigacionId).then(() => {
     return admin.database().ref("fumigaciones_programadas/" +
-    robotId + "/" + fumigacionId).update({eliminada: true});
+    robotId + "/" + fumigacionId).update({eliminada: true}).then(()=>{
+      return "ok";
+    });
   });
 });
 

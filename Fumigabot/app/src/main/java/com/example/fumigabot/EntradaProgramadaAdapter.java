@@ -1,5 +1,6 @@
 package com.example.fumigabot;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.Log;
@@ -9,9 +10,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -86,12 +89,12 @@ public class EntradaProgramadaAdapter extends BaseAdapter {
             TextView txtViernes = convertView.findViewById(R.id.txtViernes);
             TextView txtSabado = convertView.findViewById(R.id.txtSabado);
             Switch switchActivada = convertView.findViewById(R.id.switchAlarma);
-            ImageView borrar = convertView.findViewById(R.id.imgBorrarProgramada);
+            ImageButton borrar = convertView.findViewById(R.id.imgBorrarProgramada);
 
             //Agregamos toda la data
             final Fumigacion item = (Fumigacion) getItem(position);
 
-            Log.i("test", "fumigacion: " + item);
+            //Log.i("test", "fumigacion: " + item);
 
 
             //Le damos el formato que queremos
@@ -99,7 +102,7 @@ public class EntradaProgramadaAdapter extends BaseAdapter {
             if(item.isRecurrente()){
                 fechaInicio = item.darFormatoFechaInicio();
                 Date fecha = new Date(Long.parseLong(item.getTimestampInicio()));
-                Log.i("test", "Numero del dia de timestamp inicio: " + fecha.getDay());
+                //Log.i("test", "Numero del dia de timestamp inicio: " + fecha.getDay());
                 int color = convertView.getResources().getColor(R.color.green_200);
                 switch(fecha.getDay()){
                     case 0:
@@ -151,13 +154,13 @@ public class EntradaProgramadaAdapter extends BaseAdapter {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if(isChecked) {
-                        Log.i("Adapter", "activar");
+                        //Log.i("Adapter", "activar");
                         //is activa = true
                         activar(item, true);
 
                     }
                     else {
-                        Log.i("Adapter", "desactivar");
+                        //Log.i("Adapter", "desactivar");
                         //is activa = false
                         activar(item, false);
                     }
@@ -196,9 +199,9 @@ public class EntradaProgramadaAdapter extends BaseAdapter {
 
                     if (task.isSuccessful()) {
                         resultado = task.getResult();
-                        /*if (resultado.equalsIgnoreCase("Ok")) {
-                            resultado = "Se inició la fumigación";
-                        }*/
+                        if (resultado.equalsIgnoreCase("Ok")) {
+                            resultado = "Se eliminó la fumigación";
+                        }
                     } else {
                         Exception e = task.getException();
                         if (e instanceof FirebaseFunctionsException) {
@@ -212,7 +215,8 @@ public class EntradaProgramadaAdapter extends BaseAdapter {
                     }
                     //cambiar la forma en que informa al user que no lo hizo
                     //runOnUiThread(Toast.makeText(getApplicationContext(), resultado, Toast.LENGTH_SHORT)::show);
-                    Log.i("test", "task no es successful, resultado: " + resultado);
+                    Log.i("test", "resultado: " + resultado);
+                    Toast.makeText(context, resultado, Toast.LENGTH_SHORT).show();
                 }
             }
         });
