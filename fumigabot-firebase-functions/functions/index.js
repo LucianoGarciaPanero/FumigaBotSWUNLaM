@@ -173,13 +173,56 @@ exports.programadaDelete = functions.https.onCall((data, context) => {
   const fumigacionId = data.fumigacionId;
   const robotId = data.robotId;
 
-  return eliminarTarea(robotId, fumigacionId).then(() => {
-    return admin.database().ref("fumigaciones_programadas/" +
-    robotId + "/" + fumigacionId).update({eliminada: true}).then(()=>{
-      return "ok";
+  return borrarProgramada(robotId, fumigacionId);
+});
+
+
+exports.borrarQuimico = functions.https.onCall((data, context) => {
+  const robotId = data.robotId;
+  const quimico = data.quimico;
+  // además de quitar el químico de la lista,
+  // hay que revisar todas las programadas que lo contengan
+  // y si este quimico que se está borrando es el que tiene el robot,
+  // hay que volver a setearle al robot un último químico utilizado
+
+  const refRobot = admin.database().ref("robots/" + robotId);
+  const refProgramadas = admin.database()
+      .ref("fumigaciones_programadas/" + robotId);
+
+  refRobot.once("value").then((robot)=>{
+    if (robot.val().ultimoQuimico == quimico) {
+      // tengo que setear otro random
+      // ver el tema de los ids con los que se guardan
+      refRobot.update({ultimoQuimico: "probando"});
+    }
+  });
+
+  return refRobot.child("quimicosDisponibles").once("value").then((nodo)=>{
+    nodo.forEach((q) => {
+      console.log(q.val() + " | " + q.key);
+      const cmp = q.val() == quimico;
+      console.log("Comparacion de químicos: " + cmp);
+      if (cmp) {
+        // borrar
+        refRobot.child("quimicosDisponibles").child(q.key).remove();
+      }
+    });
+
+    return refProgramadas.once("value").then((snap) => {
+      snap.forEach((fp) => {
+        const eliminada = fp.val().eliminada;
+        const cmpQuimico = fp.val().quimicoUtilizado == quimico;
+        if (eliminada == false && cmpQuimico == true) {
+          borrarProgramada(robotId, fp.key).then((res)=>{
+            return Promise.resolve(res);
+          });
+        }
+      });
+      return Promise.resolve("ok");
     });
   });
 });
+
 
 // -----------------------------------------
 
@@ -393,8 +436,10 @@ function crearEntradaHistorial(robotId, fumigacion) {
  * @return {Promise} retorna promesa
 */
 function eliminarTarea(robotId, fumigacionId) {
-  return admin.database().ref("fumigaciones_programadas/" + robotId +
-  "/" + fumigacionId).once("value").then((fumigacion) => {
+  const ref = admin.database().ref("fumigaciones_programadas/" + robotId +
+  "/" + fumigacionId);
+
+  return ref.once("value").then((fumigacion) => {
     const taskId = fumigacion.val().taskId;
     tasksClient.deleteTask({name: taskId}).then(() => {
       return Promise.resolve("OK");
@@ -519,6 +564,21 @@ function detenerFumigacion(robotId, observaciones) {
               });*/
             });
       });
+}
+
+/** Borra la tarea de la fumigación programada y le setea el
+ * atributo "eliminada" en `true`.
+ * @param {String} robotId ID del robot
+ * @param {String} fumigacionId ID de la fumigación programada a borrar
+ * @return {Promise} retorna promesa
+ */
+function borrarProgramada(robotId, fumigacionId) {
+  return eliminarTarea(robotId, fumigacionId).then(() => {
+    return admin.database().ref("fumigaciones_programadas/" +
+    robotId + "/" + fumigacionId).update({eliminada: true}).then(()=>{
+      return "ok";
+    });
+  });
 }
 
 
@@ -723,35 +783,3 @@ function obtenerStringCantidadPorArea(cantArea) {
   }
   return "Alta - Ráfaga de 2 segundos";
 }
-
-
-/*
-exports.borrarQuimico = functions.https.onCall((data, context) => {
-  const robotId = data.robotId;
-  const quimico = data.quimico;
-  // además de quitar el químico de la lista,
-  // hay que revisar todas las programadas que lo contengan
-  // y si este quimico que se está borrando es el que tiene el robot,
-  // hay que volver a setearle al robot un último químico utilizado
-
-  const refRobot = admin.database().ref("robots/" + robotId);
-  const refProgramadas = admin.database()
-      .ref("fumigaciones_programadas/" + robotId);
-
-  refRobot.once("value").then((robot)=>{
-    if (robot.val().ultimoQuimico == quimico) {
-      // tengo que setear otro random
-      // ver el tema de los ids con los que se guardan
-    }
-
-    refRobot.child("quimicosDisponibles").remove(quimico);
-
-    refProgramadas.once("value").then((snap) => {
-      snap.forEach((fp) => {
-        if (fp.val().quimicoUtilizado == quimico) {
-          fp.remove();
-        }
-      });
-    });
-  });
-});*/
