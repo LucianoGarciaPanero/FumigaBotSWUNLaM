@@ -75,10 +75,29 @@ public class QuimicosAdapter extends BaseAdapter {
         nombreQuimico.setText(item);
 
         btnBorrarQuimico.setOnClickListener(v -> {
-            borrarQuimicoAlertDialog(robot, item);
+            if(robot.getUltimoQuimico().equals(item)){
+                //no permitir borrar
+                alertaNoBorrar();
+            }else {
+                borrarQuimicoAlertDialog(robot, item);
+            }
         });
 
         return convertView;
+    }
+
+    private void alertaNoBorrar(){
+        builder = new MaterialAlertDialogBuilder(context);
+
+        builder.setMessage("No se pudo borrar el químico debido a que está siendo usado por el robot");
+
+        builder.setPositiveButton("aceptar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+            }
+        });
+
+        alertDialog = builder.create();
+        alertDialog.show();
     }
 
     private void borrarQuimicoAlertDialog(Robot robot, String quimico) {
