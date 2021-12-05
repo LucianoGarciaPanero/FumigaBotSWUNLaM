@@ -59,4 +59,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     implementation 'androidx.navigation:navigation-fragment:2.3.5'
     implementation 'androidx.navigation:navigation-ui:2.3.5'
+    //Picasso para fotos
+    implementation 'com.squareup.picasso:picasso:2.71828'
 }

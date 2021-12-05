@@ -11,14 +11,32 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <ImageView
+            android:id="@+id/userPhoto"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="80dp"
+            android:src="?attr/colorAccent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewTituloPerfil"
+            app:layout_constraintVertical_bias="0.0"
+            app:srcCompat="@drawable/ic_person_24" />
+
         <TextView
-            android:id="@+id/textView5"
-            android:layout_width="409dp"
+            android:id="@+id/textViewTituloPerfil"
+            style="?attr/textAppearanceHeadline6"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_span="4"
+            android:background="@drawable/recuadro_titulos"
+            android:elevation="1dp"
             android:gravity="center_horizontal"
-            android:padding="30dp"
-            android:text="MI PERFIL"
+            android:paddingTop="30dp"
+            android:paddingBottom="30dp"
+            android:text="Mi perfil"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -26,34 +44,43 @@
 
         <Button
             android:id="@+id/btnCerrarSesion"
-            android:layout_width="211dp"
-            android:layout_height="53dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="80dp"
             android:layout_marginBottom="30dp"
             android:text="CERRAR SESIÓN"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/listaEntradaQuimicos" />
+            app:layout_constraintTop_toBottomOf="@+id/textUserName"
+            app:layout_constraintVertical_bias="0.0" />
 
         <TextView
             android:id="@+id/textUserEmail"
+            style="?attr/textAppearanceBody1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="44dp"
+            android:layout_marginTop="8dp"
+            android:text="username@mail.com"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.502"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView5" />
+            app:layout_constraintTop_toBottomOf="@+id/textUserName" />
 
         <TextView
             android:id="@+id/textUserName"
+            style="?attr/textAppearanceHeadline6"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Nombre del usuario"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView5"
-            app:layout_constraintVertical_bias="0.502" />
+            app:layout_constraintTop_toBottomOf="@+id/userPhoto"
+            app:layout_constraintVertical_bias="0.0" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

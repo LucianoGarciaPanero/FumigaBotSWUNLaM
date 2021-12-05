@@ -4,10 +4,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,11 +18,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.fumigabot.R;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.transition.MaterialFadeThrough;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +35,7 @@ public class PerfilFragment extends Fragment {
     private FirebaseAuth firebaseAuth;
     private TextView textUserEmail;
     private TextView textUserName;
+    private ImageView userPhoto;
     private Button btnCerrarSesion;
     private MaterialAlertDialogBuilder alertDialogBuilder;
     private AlertDialog alertDialog;
@@ -62,8 +65,12 @@ public class PerfilFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        Log.i("test", "url de la foto: " + user.getPhotoUrl().toString());
 
         View vista = getView();
+        userPhoto = vista.findViewById(R.id.userPhoto);
+        Picasso.get().load(user.getPhotoUrl()).into(userPhoto);
         textUserEmail = vista.findViewById(R.id.textUserEmail);
         textUserName = vista.findViewById(R.id.textUserName);
         textUserEmail.setText(getDatosDeSesion().get("userEmail"));
