@@ -12,6 +12,25 @@
         android:layout_height="match_parent">
 
         <!-- TODO: Update blank fragment layout -->
+        <TextView
+            android:id="@+id/textView5"
+            style="?attr/textAppearanceHeadline6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_span="4"
+            android:background="@drawable/recuadro_titulos"
+            android:elevation="1dp"
+            android:gravity="center_horizontal"
+            android:paddingTop="30dp"
+            android:paddingBottom="30dp"
+            android:text="Fumigaciones programadas"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/layoutListaProgramadas"
             android:layout_width="match_parent"
@@ -20,25 +39,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView5"
             app:layout_constraintVertical_bias="0.0">
-
-            <TextView
-                android:id="@+id/textView5"
-                style="?attr/textAppearanceHeadline6"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_span="4"
-                android:background="@drawable/recuadro_titulos"
-                android:elevation="1dp"
-                android:gravity="center_horizontal"
-                android:paddingTop="30dp"
-                android:paddingBottom="30dp"
-                android:text="Fumigaciones programadas"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
 
             <ListView
                 android:id="@+id/listaFumigacionesProgramadas"
@@ -54,7 +56,8 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/textView5" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -66,8 +69,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/layoutListaProgramadas"
-            app:layout_constraintVertical_bias="0.40">
+            app:layout_constraintTop_toBottomOf="@+id/textView5"
+            app:layout_constraintVertical_bias="0.4">
 
             <ImageView
                 android:id="@+id/imageView6"
@@ -83,10 +86,23 @@
                 app:layout_constraintVertical_bias="0.0" />
 
             <TextView
+                android:id="@+id/textView15"
+                style="?attr/textAppearanceHeadline6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ups!"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/imageView6"
+                app:layout_constraintVertical_bias="0.0" />
+
+            <TextView
                 android:id="@+id/textSinFumigaciones"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="20dp"
+                android:layout_marginTop="8dp"
                 android:text="Aún no hay fumigaciones programadas"
                 android:textAlignment="center"
                 android:visibility="visible"
@@ -94,7 +110,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/imageView6"
+                app:layout_constraintTop_toBottomOf="@+id/textView15"
                 app:layout_constraintVertical_bias="0.0" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
