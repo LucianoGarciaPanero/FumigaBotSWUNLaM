@@ -534,7 +534,7 @@ public class InicioFragment extends Fragment {
     public void updateRobot(Robot robot) {
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("fumigando", robot.isFumigando());
-        childUpdates.put("cantidadQuimicoPorArea", robot.getCantidadQuimicoPorArea());
+        //childUpdates.put("cantidadQuimicoPorArea", robot.getCantidadQuimicoPorArea());
         childUpdates.put("detencionAutomatica", false); //jaj
         referenceRobot.child(Integer.toString(robot.getRobotId())).updateChildren(childUpdates);
     }
