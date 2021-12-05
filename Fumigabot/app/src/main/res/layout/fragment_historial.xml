@@ -12,52 +12,91 @@
         android:layout_height="match_parent">
 
         <!-- TODO: Update blank fragment layout -->
-        <TextView
-            android:id="@+id/textSinFumigaciones"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/recuadro_sin_fumigaciones"
-            android:padding="20dp"
-            android:text="Todavía no se realizaron fumigaciones"
-            android:textAlignment="center"
-            android:visibility="invisible"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layoutListaHistorial"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/textView5"
-            android:layout_width="409dp"
-            android:layout_height="wrap_content"
-            android:layout_span="4"
-            android:gravity="center_horizontal"
-            android:padding="30dp"
-            android:text="HISTORIAL DE FUMIGACIONES"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-        <!--
-            android:background="@color/colorPrimary"
-            android:textColor="@color/colorPrimaryDark" -->
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0">
 
+            <TextView
+                android:id="@+id/textViewTitulo"
+                style="?attr/textAppearanceHeadline6"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_span="4"
+                android:background="@drawable/recuadro_titulos"
+                android:elevation="1dp"
+                android:gravity="center_horizontal"
+                android:paddingTop="30dp"
+                android:paddingBottom="30dp"
+                android:text="Historial de fumigaciones"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <ListView
-            android:id="@+id/listaEntradaFumigaciones"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginBottom="1dp"
-            android:divider="@null"
-            android:dividerHeight="0dp"
-            android:gravity="center"
-            android:horizontalSpacing="3dp"
-            android:verticalSpacing="3dp"
+            <ListView
+                android:id="@+id/listaEntradaFumigaciones"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginBottom="1dp"
+                android:divider="@null"
+                android:dividerHeight="0dp"
+                android:gravity="center"
+                android:horizontalSpacing="3dp"
+                android:verticalSpacing="3dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/textViewTitulo" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layoutSinHistorial"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView5" />
+            app:layout_constraintTop_toBottomOf="@+id/layoutListaHistorial"
+            app:layout_constraintVertical_bias="0.40">
+
+            <ImageView
+                android:id="@+id/imageViewHistorial"
+                android:layout_width="292dp"
+                android:layout_height="223dp"
+                android:layout_marginTop="20dp"
+                android:src="@drawable/ic_back_programadas"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0" />
+
+            <TextView
+                android:id="@+id/textSinHistorial"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:text="Aún no hay registros en el historial de fumigaciones"
+                android:textAlignment="center"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/imageViewHistorial"
+                app:layout_constraintVertical_bias="0.0" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

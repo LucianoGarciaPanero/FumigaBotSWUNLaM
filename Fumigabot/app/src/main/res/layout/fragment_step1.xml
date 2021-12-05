@@ -88,8 +88,8 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/layoutProgramar"
-            android:layout_width="407dp"
-            android:layout_height="563dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -165,6 +165,7 @@
                 android:layout_marginBottom="8dp"
                 android:text="Repetir diariamente"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"

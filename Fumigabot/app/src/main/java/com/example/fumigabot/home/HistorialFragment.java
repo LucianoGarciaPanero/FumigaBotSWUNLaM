@@ -11,6 +11,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
 import com.example.fumigabot.DetalleEntradaHistorialActivity;
@@ -44,6 +45,8 @@ public class HistorialFragment extends Fragment {
     private TextView textSinFumigaciones;
     private ListView listadoHistorial;
     private EntradaHistorialAdapter adapter;
+    private ConstraintLayout layoutSinHistorial;
+    private ConstraintLayout layoutListaHistorial;
 
 
 /*    private final int SEGUNDOS_MILIS = 1000;
@@ -94,6 +97,8 @@ public class HistorialFragment extends Fragment {
 
         textSinFumigaciones = vista.findViewById(R.id.textSinFumigaciones); // View.INVISIBLE x default
         listadoHistorial = vista.findViewById(R.id.listaEntradaFumigaciones);
+        layoutListaHistorial = vista.findViewById(R.id.layoutListaHistorial);
+        layoutSinHistorial = vista.findViewById(R.id.layoutSinHistorial);
 
         cargarVista();
     }
@@ -131,10 +136,14 @@ public class HistorialFragment extends Fragment {
 
             if(listaFumigaciones.size() > 0){
                 cargarVista();
+                layoutSinHistorial.setVisibility(View.GONE);
+                layoutListaHistorial.setVisibility(View.VISIBLE);
             }
             else {
-                listadoHistorial.setVisibility(View.INVISIBLE);
-                textSinFumigaciones.setVisibility(View.VISIBLE);
+                //listadoHistorial.setVisibility(View.INVISIBLE);
+                //textSinFumigaciones.setVisibility(View.VISIBLE);
+                layoutSinHistorial.setVisibility(View.VISIBLE);
+                layoutListaHistorial.setVisibility(View.GONE);
             }
         }
 

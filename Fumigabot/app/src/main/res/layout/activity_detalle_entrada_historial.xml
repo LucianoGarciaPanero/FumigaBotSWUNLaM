@@ -26,7 +26,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="79dp"
+        android:layout_marginEnd="90dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -37,9 +37,9 @@
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/imgQuimicoUsado"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="80dp"
+        android:layout_width="47dp"
+        android:layout_height="47dp"
+        android:layout_marginStart="90dp"
         android:layout_marginTop="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -65,43 +65,42 @@
 
     <TextView
         android:id="@+id/duracionDetalle"
-        android:layout_width="wrap_content"
+        android:layout_width="60dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
-        android:text="20m 05s"
+        android:text="20m 33s"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.17"
+        app:layout_constraintHorizontal_bias="0.165"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imgDuracion"
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/quimicoUsado"
-        android:layout_width="86dp"
-        android:layout_height="36dp"
+        android:layout_width="92dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center|top"
-        android:maxWidth="86dp"
-        android:singleLine="false"
         android:text="Amonio Cuaternario"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.18"
+        app:layout_constraintHorizontal_bias="0.21"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imgQuimicoUsado"
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/cantidadUsada"
-        android:layout_width="wrap_content"
+        android:layout_width="48dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:gravity="center"
         android:text="Alta"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.77"
+        app:layout_constraintHorizontal_bias="0.754"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imgCantidad"
         app:layout_constraintVertical_bias="0.0" />
@@ -135,7 +134,7 @@
 
     <TextView
         android:id="@+id/txtConsumoQuimico"
-        android:layout_width="wrap_content"
+        android:layout_width="48dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
@@ -164,14 +163,14 @@
 
     <TextView
         android:id="@+id/txtConsumoBateria"
-        android:layout_width="wrap_content"
+        android:layout_width="48dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
         android:text="10%"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.81"
+        app:layout_constraintHorizontal_bias="0.823"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView4"
         app:layout_constraintVertical_bias="0.0" />
