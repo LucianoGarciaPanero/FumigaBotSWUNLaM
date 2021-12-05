@@ -9,6 +9,14 @@
     <color name="rosa_fuerte_transp">#9ED81B60</color>
 
 
+    <color name="main_defy">#FF5A5F</color>
+    <color name="dark_main_defy">#FD5F64</color>
+    <color name="main_variant_defy">#FF4046</color>
+    <color name="dark_main_variant_defy">#FC4349</color>
+    <color name="secondary_defy">#2DB39C</color>
+    <color name="secondary_variant_defy">#018786</color> <!--este es el que ya esta como 2do variante-->
+
+
     <color name="purple_200">#bb86fc</color> <!--Color primary (dark)-->
     <color name="purple_500">#6200ee</color> <!--Color primary (light)-->
     <color name="purple_600">#4b01d0</color> <!--Color primary variant (dark)-->

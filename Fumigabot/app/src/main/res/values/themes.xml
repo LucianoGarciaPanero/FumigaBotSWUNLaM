@@ -7,10 +7,14 @@
     <!-- Este es el tema que va a servir para light y dark theme -->
     <style name="Base.Theme.Defy" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Colores para light theme -->
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
-        <item name="colorSecondary">@color/green_200</item>
-        <item name="colorSecondaryVariant">@color/green_500</item>
+        <!--item name="colorPrimary">@color/purple_500</item-->
+        <item name="colorPrimary">@color/main_defy</item>
+        <!--item name="colorPrimaryVariant">@color/purple_700</item-->
+        <item name="colorPrimaryVariant">@color/main_variant_defy</item>
+        <!--item name="colorSecondary">@color/green_200</item-->
+        <item name="colorSecondary">@color/secondary_defy</item>
+        <!--item name="colorSecondaryVariant">@color/green_500</item-->
+        <item name="colorSecondaryVariant">@color/secondary_variant_defy</item>
 
         <item name="android:colorBackground">@color/white_50</item>
         <item name="colorSurface">@color/white_50</item>
