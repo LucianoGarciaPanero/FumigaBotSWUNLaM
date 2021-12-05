@@ -5,20 +5,23 @@
     android:id="@+id/entradaHistorialLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:maxHeight="65dp"
+    android:maxHeight="77dp"
     android:orientation="vertical">
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:maxHeight="65dp">
+        android:maxHeight="77dp"
+        android:descendantFocusability="blocksDescendants">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/layoutDiasRecurrencia"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/switchAlarma"
             app:layout_constraintHorizontal_bias="1.0"
@@ -112,7 +115,7 @@
             android:layout_width="wrap_content"
             android:layout_height="20dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="48dp"
+            android:layout_marginTop="2dp"
             android:layout_marginBottom="16dp"
             android:gravity="bottom"
             android:maxHeight="20dp"
@@ -123,8 +126,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.50" />
+            app:layout_constraintTop_toBottomOf="@+id/fechaFumigacion"
+            app:layout_constraintVertical_bias="0.0" />
 
         <View
             android:id="@+id/divider"
@@ -160,7 +163,7 @@
             android:layout_width="35dp"
             android:layout_height="33dp"
             android:layout_marginEnd="8dp"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:backgroundTint="@android:color/transparent"
             android:focusable="false"
             android:focusableInTouchMode="false"
@@ -173,19 +176,6 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_delete_black_24dp" />
 
-        <TextView
-            android:id="@+id/textView14"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="D L M X J V S"
-            android:textSize="12sp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/switchAlarma"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
