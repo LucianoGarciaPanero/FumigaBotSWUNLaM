@@ -189,14 +189,6 @@ exports.borrarQuimico = functions.https.onCall((data, context) => {
   const refProgramadas = admin.database()
       .ref("fumigaciones_programadas/" + robotId);
 
-  refRobot.once("value").then((robot)=>{
-    if (robot.val().ultimoQuimico == quimico) {
-      // tengo que setear otro random
-      // ver el tema de los ids con los que se guardan
-      refRobot.update({ultimoQuimico: "probando"});
-    }
-  });
-
   return refRobot.child("quimicosDisponibles").once("value").then((nodo)=>{
     nodo.forEach((q) => {
       console.log(q.val() + " | " + q.key);
