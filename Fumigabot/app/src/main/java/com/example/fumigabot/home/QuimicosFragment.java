@@ -87,7 +87,7 @@ public class QuimicosFragment extends Fragment {
     }
 
     private void cargarVista() {
-        adapter = new QuimicosAdapter(getContext(), listaQuimicos);
+        adapter = new QuimicosAdapter(getContext(), robot, listaQuimicos);
         listadoQuimicos.setAdapter(adapter);
         //acá podemos agregar un listener para on item click
     }
