@@ -1,6 +1,7 @@
 package com.example.fumigabot;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,12 +12,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.functions.FirebaseFunctionsException;
 import com.google.firebase.functions.HttpsCallableResult;
@@ -31,6 +34,8 @@ public class QuimicosAdapter extends BaseAdapter {
     private Robot robot;
     private List<String> quimicos;
     private FirebaseFunctions functions;
+    private MaterialAlertDialogBuilder builder;
+    private AlertDialog alertDialog;
 
     public QuimicosAdapter(Context context, Robot robot, List<String> quimicos) {
         this.context = context;
@@ -70,10 +75,31 @@ public class QuimicosAdapter extends BaseAdapter {
         nombreQuimico.setText(item);
 
         btnBorrarQuimico.setOnClickListener(v -> {
-            borrarQuimico(robot, item);
+            borrarQuimicoAlertDialog(robot, item);
         });
 
         return convertView;
+    }
+
+    private void borrarQuimicoAlertDialog(Robot robot, String quimico) {
+        builder = new MaterialAlertDialogBuilder(context);
+
+        builder.setMessage("Borrar un químico implica eliminar las fumigaciones programadas pendientes de ejecución que lo usen.\n\n¿Desea continuar?");
+
+        builder.setPositiveButton("continuar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                borrarQuimico(robot, quimico);
+            }
+        });
+
+        builder.setNegativeButton("cancelar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+            }
+        });
+
+        alertDialog = builder.create();
+        alertDialog.show();
     }
 
     private void borrarQuimico(Robot robot, String quimico){

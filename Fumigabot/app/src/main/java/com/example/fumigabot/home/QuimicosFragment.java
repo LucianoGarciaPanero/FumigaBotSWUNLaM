@@ -98,6 +98,12 @@ public class QuimicosFragment extends Fragment {
             Toast.makeText(getContext(), "Debe ingresar un químico", Toast.LENGTH_LONG).show();
         }
         else {
+            for(String q : robot.getQuimicosDisponibles()) {
+                if(q.toLowerCase().equals(nuevoQuimico.toLowerCase())){
+                    Toast.makeText(getContext(), "Ya existe el químico", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
             robot.getQuimicosDisponibles().add(nuevoQuimico);
             updateRobot(robot);
             txtNuevoQuimico.setText("");
