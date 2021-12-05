@@ -99,6 +99,7 @@ public class InicioFragment extends Fragment {
     private final int ROBOT_ENCENDIDO = 2;
     private final int ROBOT_OCUPADO = 3;
 
+
     public InicioFragment() {
         // Required empty public constructor
         super(R.layout.fragment_inicio);
@@ -445,13 +446,11 @@ public class InicioFragment extends Fragment {
         //robot.convertirCantidadQuimicoPorArea(this.fumigacion.getCantidadQuimicoPorArea());
         this.fumigacion.setNivelBateriaInicial(robot.getBateria());
         this.fumigacion.setNivelQuimicoInicial(robot.getNivelQuimico());
-        cronometro.setBase(SystemClock.elapsedRealtime());
         //Actualizamos la hora a ahora
         this.fumigacion.setTimestampInicio(Long.toString(System.currentTimeMillis()));
-
         //aca deberia crear en firebase
-        referenceRobot.child(Integer.toString(robot.getRobotId())).child("fumigacionActual").updateChildren(this.fumigacion.toMap());
-
+        referenceRobot.child(Integer.toString(robot.getRobotId())).child("fumigacionActual").setValue(this.fumigacion.toMap());
+        cronometro.setBase(SystemClock.elapsedRealtime());
         cronometro.start();
         updateRobot(robot);
     }
