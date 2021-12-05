@@ -16,7 +16,6 @@
             android:id="@+id/textSinQuimicos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/recuadro_sin_fumigaciones"
             android:padding="20dp"
             android:text="Todavía no se registraron químicos"
             android:visibility="invisible"
@@ -28,37 +27,40 @@
             android:textColor="@color/colorPrimary" -->
 
         <TextView
-            android:id="@+id/textView5"
-            android:layout_width="409dp"
+            android:id="@+id/textViewTituloQuimico"
+            style="?attr/textAppearanceHeadline6"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_span="4"
+            android:background="@drawable/recuadro_titulos"
+            android:elevation="1dp"
             android:gravity="center_horizontal"
-            android:padding="30dp"
-            android:text="MIS QUIMICOS"
+            android:paddingTop="30dp"
+            android:paddingBottom="30dp"
+            android:text="Mis químicos"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-        <!--
-            android:background="@color/colorPrimary"
-            android:textColor="@color/colorPrimaryDark" -->
 
 
         <ListView
             android:id="@+id/listaEntradaQuimicos"
             android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginBottom="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="1dp"
             android:divider="@null"
             android:dividerHeight="0dp"
             android:gravity="center"
             android:horizontalSpacing="3dp"
             android:verticalSpacing="3dp"
-            app:layout_constraintBottom_toBottomOf="@+id/btnAgregarQuimico"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView5">
+            app:layout_constraintTop_toBottomOf="@+id/textNuevoQuimico"
+            app:layout_constraintVertical_bias="0.0">
 
         </ListView>
 
@@ -66,29 +68,34 @@
             android:id="@+id/textNuevoQuimico"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginEnd="32dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="85dp"
             android:ems="10"
             android:hint="Ingresar un nuevo químico"
             android:inputType="textPersonName"
-            app:layout_constraintBottom_toTopOf="@+id/btnAgregarQuimico"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/listaEntradaQuimicos"
-            app:layout_constraintVertical_bias="0.59000003" />
-
-        <Button
-            android:id="@+id/btnAgregarQuimico"
-            android:layout_width="211dp"
-            android:layout_height="53dp"
-            android:layout_marginBottom="30dp"
-            android:text="Agregar químico"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/listaEntradaQuimicos" />
+            app:layout_constraintTop_toBottomOf="@+id/textViewTituloQuimico"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <ImageButton
+            android:id="@+id/btnAgregarQuimico"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="?attr/colorPrimary"
+            android:src="@drawable/ic_add_black_24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/textNuevoQuimico"
+            app:layout_constraintTop_toBottomOf="@+id/textViewTituloQuimico"
+            app:layout_constraintVertical_bias="0.0" />
 
         <!--android:numColumns="2"-->
 

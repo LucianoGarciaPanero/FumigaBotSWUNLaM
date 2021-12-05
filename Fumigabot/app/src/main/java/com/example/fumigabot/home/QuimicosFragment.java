@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,7 +40,7 @@ public class QuimicosFragment extends Fragment {
     private ListView listadoQuimicos;
     private QuimicosAdapter adapter;
     private EditText txtNuevoQuimico;
-    private Button btnAgregarQuimico;
+    private ImageButton btnAgregarQuimico;
 
     public QuimicosFragment(){
         // Required empty public constructor
