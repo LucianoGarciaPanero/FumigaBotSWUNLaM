@@ -101,7 +101,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="16dp"
                 android:text="Para realizar una fumigación instantánea, la misma se realizará con el químico actual que se encuentra en el contenedor del robot."
                 android:textColor="?attr/colorError"
                 app:layout_constraintBottom_toBottomOf="parent"
