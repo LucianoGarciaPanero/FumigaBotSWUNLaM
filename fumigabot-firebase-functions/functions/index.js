@@ -238,7 +238,9 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
     // son usados para la creación de la entrada al historial
     timestampInicio = fp.val().timestampInicio;
     recurrente = fp.val().recurrente;
-    crearProximaFumigacionRecurrente(robotId, req.body, activa);
+    if (recurrente == true) {
+      crearProximaFumigacionRecurrente(robotId, req.body, activa);
+    }
 
     refFumigacion.update({eliminada: true});
 
