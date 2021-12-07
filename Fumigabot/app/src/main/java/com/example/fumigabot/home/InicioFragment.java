@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -45,7 +44,8 @@ import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.functions.FirebaseFunctionsException;
 import com.google.firebase.functions.HttpsCallableResult;
 
-import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import static android.app.Activity.RESULT_OK;
@@ -61,6 +61,7 @@ public class InicioFragment extends Fragment {
     private FirebaseFunctions firebaseFunctions;
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference referenceRobot;
+    private DatabaseReference referenceFumigando;
     private DatabaseReference referenceFumigacion;
     private DatabaseReference refProgramadas;
     private MaterialCardView cardEstadoBateria;
@@ -98,6 +99,12 @@ public class InicioFragment extends Fragment {
     private final int ROBOT_APAGADO = 1;
     private final int ROBOT_ENCENDIDO = 2;
     private final int ROBOT_OCUPADO = 3;
+    private final int SEGUNDOS_MILIS = 1000;
+    private final int MINUTOS_MILIS = SEGUNDOS_MILIS * 60;
+    private final int HORAS_MILIS = MINUTOS_MILIS * 60;
+    private final int DIAS_MILIS = HORAS_MILIS * 24;
+
+    private boolean estadoFumigandoAnterior = false;
 
 
     public InicioFragment() {
@@ -253,11 +260,6 @@ public class InicioFragment extends Fragment {
             statusBateria = verificarBateria(bateria);
             statusNivelQuimico = verificarNivelQuimico(nivelQuimico);
 
-            /*if(statusBateria && statusNivelQuimico) //esto debería ser para la instantánea
-                habilitarFumigacion(true);
-            else
-                habilitarFumigacion(false);*/
-
 
             if(bateria == -1)
                 porcentajeBateria = "";
@@ -273,6 +275,7 @@ public class InicioFragment extends Fragment {
             if(robot.isFumigando()) {
                 fumigando = View.VISIBLE;
                 definirEstadoRobot(ROBOT_OCUPADO, "Fumigando...");
+                //OPCION 1: ver el cronometro
             }
             else {
                 fumigando = View.INVISIBLE;
@@ -296,9 +299,9 @@ public class InicioFragment extends Fragment {
         cronometro.setVisibility(fumigando);
     }
 
-    private void habilitarFumigacion(boolean valor){
+    /*private void habilitarFumigacion(boolean valor){
         //fab.setEnabled(valor);
-    }
+    }*/
 
     private void definirEstadoRobot(int estado, String desc){
         estadoRobot.setText(desc);
@@ -306,17 +309,17 @@ public class InicioFragment extends Fragment {
         switch (estado){
             case ROBOT_ENCENDIDO:
                 estadoRobot.setTextColor(getResources().getColor(R.color.devEncendido));
-                habilitarFumigacion(true);
+                //habilitarFumigacion(true);
                 return;
 
             case ROBOT_OCUPADO:
                 estadoRobot.setTextColor(getResources().getColor(R.color.devOcupado));
-                habilitarFumigacion(false);
+                //habilitarFumigacion(false);
                 return;
 
             case ROBOT_APAGADO:
                 estadoRobot.setTextColor(getResources().getColor(R.color.devApagado));
-                habilitarFumigacion(false);
+                //habilitarFumigacion(false);
                 return;
         }
     }
@@ -415,7 +418,30 @@ public class InicioFragment extends Fragment {
     private ValueEventListener robotValueEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
+
+            Log.i("test", "estado fumigando inicio: " + estadoFumigandoAnterior);
+
             robot = dataSnapshot.child(Integer.toString(robot.getRobotId())).getValue(Robot.class);
+            String tsInicio = (String)robot.getFumigacionActual().get("timestampInicio");
+
+            if(estadoFumigandoAnterior && robot.isFumigando()){
+                //toma el timestamp correcto
+                iniciarCronometro(tsInicio);
+                return;
+            }
+            if(estadoFumigandoAnterior == false && robot.isFumigando()){
+                //setear el cronometro
+                Log.i("test", "robot listener - arranca a fumigar");
+                Log.i("test", "robot listener - ts inicio: " + tsInicio);
+                iniciarCronometro(tsInicio);
+            } else if(estadoFumigandoAnterior && robot.isFumigando() == false){
+                //detener el cronometro
+                detenerCronometro();
+                Log.i("test", "robot listener - deja de fumigar");
+            }
+            estadoFumigandoAnterior = robot.isFumigando();
+
+            Log.i("test", "estado fumigando fin: " + estadoFumigandoAnterior);
             determinarEstadoRobot(robot);
             return;
         }
@@ -450,9 +476,22 @@ public class InicioFragment extends Fragment {
         this.fumigacion.setTimestampInicio(Long.toString(System.currentTimeMillis()));
         //aca deberia crear en firebase
         referenceRobot.child(Integer.toString(robot.getRobotId())).child("fumigacionActual").setValue(this.fumigacion.toMap());
-        cronometro.setBase(SystemClock.elapsedRealtime());
-        cronometro.start();
+
+        //Este cronómetro acá está bien porque es una instantánea, debe arrancar ahora
+        /*cronometro.setBase(SystemClock.elapsedRealtime());
+        cronometro.start();*/
         updateRobot(robot);
+    }
+
+    public void iniciarCronometro(String tsInicio) {
+        long diferencia = System.currentTimeMillis() - Long.parseLong(tsInicio);
+        diferencia = diferencia < 0 ? 0 : diferencia;
+        cronometro.setBase(SystemClock.elapsedRealtime() - diferencia);
+        cronometro.start();
+    }
+
+    private void detenerCronometro(){
+        cronometro.stop();
     }
 
     public void detenerFumigacion(){
@@ -505,7 +544,7 @@ public class InicioFragment extends Fragment {
                     //cambiar la forma en que informa al user que no lo hizo
                     //runOnUiThread(Toast.makeText(getApplicationContext(), resultado, Toast.LENGTH_SHORT)::show);
                     Log.i("test", "task no es successful, resultado: " + resultado);
-                    cronometro.stop();
+                    detenerCronometro();
                     //fumigacion.setTimestampFin(Long.toString(System.currentTimeMillis()));
                     robot.setFumigando(false);
                     updateRobot(robot);
@@ -538,7 +577,21 @@ public class InicioFragment extends Fragment {
         referenceRobot.child(Integer.toString(robot.getRobotId())).updateChildren(childUpdates);
     }
 
-    public void updateFumigacion(){//(Fumigacion fumigacion){
+
+    private ValueEventListener listenerFumigando = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot snapshot) {
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError error) {
+
+        }
+    };
+
+
+
+    /*public void updateFumigacion(){//(Fumigacion fumigacion){
         //Necesita hacer una task porque primero consulta la cantidad y necesita esperar a que termine
         Task<DataSnapshot> task = referenceFumigacion.get();
 
@@ -553,7 +606,7 @@ public class InicioFragment extends Fragment {
                 referenceFumigacion.child(fumigacion.getFumigacionId()).setValue(fumigacion.toMapHistorial());
             }
         });
-    }
+    }*/
 /*
     private ValueEventListener fumigacionesEventListener = new ValueEventListener() {
         @Override

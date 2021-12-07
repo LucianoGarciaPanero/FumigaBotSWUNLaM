@@ -14,6 +14,7 @@ public class Robot implements Serializable {
     private int nivelQuimico;
     private ArrayList<String> quimicosDisponibles = new ArrayList<>();
     private String ultimoQuimico;
+    private Map<String, Object> fumigacionActual = new HashMap<>();
 
     public Robot(){
         // Default constructor required for calls to DataSnapshot.getValue(Robot.class)
@@ -72,6 +73,10 @@ public class Robot implements Serializable {
     public void setUltimoQuimico(String ultimoQuimico) {
         this.ultimoQuimico = ultimoQuimico;
     }
+
+    public Map<String, Object> getFumigacionActual() { return fumigacionActual; }
+
+    public void setFumigacionActual(Map<String, Object> fumigacionActual) { this.fumigacionActual = fumigacionActual; }
 
 
     @Exclude
