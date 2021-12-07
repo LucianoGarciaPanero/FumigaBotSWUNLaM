@@ -17,7 +17,7 @@
     <color name="secondary_variant_defy">#018786</color> <!--este es el que ya esta como 2do variante-->
 
 
-    <color name="purple_200">#bb86fc</color> <!--Color primary (dark)-->
+    <color name="purple_200">#BB86FC</color> <!--Color primary (dark)-->
     <color name="purple_500">#6200ee</color> <!--Color primary (light)-->
     <color name="purple_600">#4b01d0</color> <!--Color primary variant (dark)-->
     <color name="purple_700">#3700b3</color> <!--Color primary variant (light)-->
