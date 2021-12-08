@@ -126,7 +126,7 @@ public class DetalleEntradaHistorialActivity extends AppCompatActivity {
         if(fumigacion.getTimestampFin().equals("0")){
             texto = "N/A";
         } else {
-            texto = (fumigacion.getNivelBateriaInicial() - fumigacion.getNivelBateriaFinal()) + "%";
+            texto = (fumigacion.getNivelBateriaFinal() - fumigacion.getNivelBateriaInicial()) + "%";
         }
         return texto;
     }
@@ -137,7 +137,7 @@ public class DetalleEntradaHistorialActivity extends AppCompatActivity {
         if(fumigacion.getTimestampFin().equals("0")){
             texto = "N/A";
         } else {
-            texto = (fumigacion.getNivelQuimicoInicial() - fumigacion.getNivelQuimicoFinal()) + "%";
+            texto = (fumigacion.getNivelQuimicoFinal() - fumigacion.getNivelQuimicoInicial()) + "%";
         }
         return texto;
     }
