@@ -69,7 +69,7 @@ public class EntradaHistorialAdapter extends BaseAdapter {
 
         String hora_quimico = horaInicio + " a " + horaFin + ", " + quimico;
 
-        if(item.getObservaciones().equals("ok")){
+        if(item.getObservaciones().toLowerCase().equals("ok")){
             //si es ok, está todo bien
             duracion.setText(item.calcularDuracion().trim());
             alerta.setVisibility(View.GONE);
