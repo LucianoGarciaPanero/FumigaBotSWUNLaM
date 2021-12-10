@@ -50,7 +50,6 @@ public class QuimicosFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //Log.i("FILTRO", "QUIMICOS FRAGMENT: onCreate " + SystemClock.elapsedRealtime());
         setEnterTransition(new MaterialFadeThrough());
         setReturnTransition(new MaterialFadeThrough());
 
@@ -60,7 +59,6 @@ public class QuimicosFragment extends Fragment {
         //Instancia y referencia de la BD en Firebase
         firebaseDatabase = MyFirebase.getDatabaseInstance();
         reference = firebaseDatabase.getReference("robots/" + robot.getRobotId());
-        //Para que se mantenga sincronizado offline
         reference.keepSynced(true);
     }
 

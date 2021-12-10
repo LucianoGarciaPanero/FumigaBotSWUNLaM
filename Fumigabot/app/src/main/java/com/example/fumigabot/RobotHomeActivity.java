@@ -38,18 +38,12 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
         setContentView(R.layout.activity_robot_home);
         super.onCreate(savedInstanceState);
 
-        //Log.i("FILTRO", "FRAGMENT ACTIVITY: onCreate " + SystemClock.elapsedRealtime());
-
         //Obtenemos el manager y creamos todos los fragments
         fragmentManager = getSupportFragmentManager();
 
         if (savedInstanceState == null) {
-            //Log.i("FILTRO", "FRAGMENT ACTIVITY: onCreate - savedInstanceState es NULO " + SystemClock.elapsedRealtime());
             robot = (Robot)getIntent().getSerializableExtra("RobotVinculado");
         }
-        //else
-            //Log.i("FILTRO", "FRAGMENT ACTIVITY: onCreate - savedInstanceState es NO NULO " + SystemClock.elapsedRealtime());
-
 
         bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setOnNavigationItemSelectedListener(this::onNavigationItemSelected);
@@ -58,7 +52,6 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
     @Override
     protected void onStart() {
         super.onStart();
-        //Log.i("FILTRO", "FRAGMENT ACTIVITY: onStart " + SystemClock.elapsedRealtime());
         if(fragmentManager.getFragments().size() == 0) {
             //Funciona como el intent entre activities, pero acá es entre fragments
             Bundle bundle = new Bundle();
@@ -85,7 +78,6 @@ public class RobotHomeActivity extends AppCompatActivity implements BottomNaviga
                 //Log.i("FILTRO", "CATCH: " + e.getMessage());
             }
         }
-
     }
 
     @Override

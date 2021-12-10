@@ -36,7 +36,6 @@ import java.util.Collections;
 public class HistorialFragment extends Fragment {
 
     private Robot robot;
-
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference reference;
     private int robotId;
@@ -49,12 +48,6 @@ public class HistorialFragment extends Fragment {
     private ConstraintLayout layoutListaHistorial;
 
 
-/*    private final int SEGUNDOS_MILIS = 1000;
-    private final int MINUTOS_MILIS = SEGUNDOS_MILIS * 60;
-    private final int HORAS_MILIS = MINUTOS_MILIS * 60;*/
-    //private final int DIAS_MILIS = HORAS_MILIS * 24;
-
-
     public HistorialFragment(){
         // Required empty public constructor
         super(R.layout.fragment_historial);
@@ -63,20 +56,17 @@ public class HistorialFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //Log.i("FILTRO", "HISTORIAL FRAGMENT: onCreate " + SystemClock.elapsedRealtime());
         //Transiciones al cambiar de pantallas en la navegación
         setEnterTransition(new MaterialFadeThrough());
         setReturnTransition(new MaterialFadeThrough());
 
         //Recibimos los datos pasados en el bundle
         robot = (Robot)getArguments().getSerializable("RobotVinculado");
-        //Obtiene el ID del robot, único dato necesario para conocer sus historiales
         robotId = robot.getRobotId();
 
         //Instancia y referencia de la BD en Firebase
         firebaseDatabase = MyFirebase.getDatabaseInstance();
         reference = firebaseDatabase.getReference("fumigaciones_historial/" + robotId);
-        //Para que se mantenga sincronizado offline
         reference.keepSynced(true);
     }
 
@@ -107,7 +97,6 @@ public class HistorialFragment extends Fragment {
         Collections.sort(listaFumigaciones);
         adapter = new EntradaHistorialAdapter(getContext(), listaFumigaciones);
         listadoHistorial.setAdapter(adapter);
-        //acá podemos agregar un listener para on item click
         listadoHistorial.setOnItemClickListener(entradaListener);
     }
 
@@ -123,8 +112,6 @@ public class HistorialFragment extends Fragment {
     private ValueEventListener fumigacionesEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
-            // Limpiamos todas las fumigaciones anteriores
-            // ya que si se agrega o modifica una, va a cargar repetidas
             listaFumigaciones.clear();
 
             // Buscamos las fumigaciones en Firebase
@@ -140,8 +127,6 @@ public class HistorialFragment extends Fragment {
                 layoutListaHistorial.setVisibility(View.VISIBLE);
             }
             else {
-                //listadoHistorial.setVisibility(View.INVISIBLE);
-                //textSinFumigaciones.setVisibility(View.VISIBLE);
                 layoutSinHistorial.setVisibility(View.VISIBLE);
                 layoutListaHistorial.setVisibility(View.GONE);
             }

@@ -15,9 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
-import com.example.fumigabot.DetalleEntradaHistorialActivity;
 import com.example.fumigabot.DetalleFumigacionProgramadaActivity;
-import com.example.fumigabot.EntradaHistorialAdapter;
 import com.example.fumigabot.EntradaProgramadaAdapter;
 import com.example.fumigabot.R;
 import com.example.fumigabot.firebase.Fumigacion;
@@ -46,7 +44,6 @@ public class ProgramadasFragment extends Fragment {
     private int robotId;
     private ArrayList<Fumigacion> listaProgramadas = new ArrayList<>();
     private Fumigacion fumigacionProgramada;
-    private TextView textSinFumigaciones;
     private ListView listadoProgramadas;
     private EntradaProgramadaAdapter adapter;
     private ConstraintLayout layoutSinProgramadas;
@@ -73,7 +70,6 @@ public class ProgramadasFragment extends Fragment {
         //Instancia y referencia de la BD en Firebase
         firebaseDatabase = MyFirebase.getDatabaseInstance();
         reference = firebaseDatabase.getReference("fumigaciones_programadas/" + robotId);
-        //Para que se mantenga sincronizado offline
         reference.keepSynced(true);
     }
 
@@ -92,7 +88,6 @@ public class ProgramadasFragment extends Fragment {
 
         View vista = getView();
 
-        textSinFumigaciones = vista.findViewById(R.id.textSinFumigaciones); // View.INVISIBLE x default
         listadoProgramadas = vista.findViewById(R.id.listaFumigacionesProgramadas);
         layoutSinProgramadas = vista.findViewById(R.id.layoutSinProgramadas);
         layoutListaProgramadas = vista.findViewById(R.id.layoutListaProgramadas);
@@ -138,8 +133,6 @@ public class ProgramadasFragment extends Fragment {
                 layoutListaProgramadas.setVisibility(View.VISIBLE);
             }
             else {
-                //listadoProgramadas.setVisibility(View.INVISIBLE);
-                //.setVisibility(View.VISIBLE);
                 layoutSinProgramadas.setVisibility(View.VISIBLE);
                 layoutListaProgramadas.setVisibility(View.GONE);
             }
