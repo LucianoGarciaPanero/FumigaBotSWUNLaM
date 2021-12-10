@@ -196,9 +196,7 @@ exports.borrarQuimico = functions.https.onCall((data, context) => {
               const eliminada = fp.val().eliminada;
               const cmpQuimico = fp.val().quimicoUtilizado == quimico;
               if (eliminada == false && cmpQuimico == true) {
-                return borrarProgramada(robotId, fp.key).then((res)=>{
-                  return Promise.resolve(res);
-                });
+                borrarProgramada(robotId, fp.key);
               }
             });
             return Promise.resolve("ok");
