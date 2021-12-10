@@ -3,6 +3,8 @@ package com.example.fumigabot;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.solver.state.State;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -34,6 +36,7 @@ public class ConfigurarRobotActivity extends AppCompatActivity {
     private MaterialAlertDialogBuilder builder;
     private AlertDialog alertDialog;
     private String quimicoNuevo = "";
+    private ConstraintLayout panelMensajeConfigQuimico;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +71,7 @@ public class ConfigurarRobotActivity extends AppCompatActivity {
     }
 
     private void inicializarComponentes(){
+        panelMensajeConfigQuimico = findViewById(R.id.panelMensajeConfigQuimico);
         porcBateria = findViewById(R.id.porcBateria);
         porcQuimico = findViewById(R.id.porcQuimico);
         txtInfoQuimico = findViewById(R.id.txtInfoQuimicoConfig);
@@ -79,6 +83,10 @@ public class ConfigurarRobotActivity extends AppCompatActivity {
             }
         });
         btnCambiarQuimico.setEnabled(!robot.isFumigando());
+        if(robot.isFumigando())
+            panelMensajeConfigQuimico.setVisibility(View.VISIBLE);
+        else
+            panelMensajeConfigQuimico.setVisibility(View.GONE);
     }
 
     private void cambiarQuimicoAlertDialog(){
