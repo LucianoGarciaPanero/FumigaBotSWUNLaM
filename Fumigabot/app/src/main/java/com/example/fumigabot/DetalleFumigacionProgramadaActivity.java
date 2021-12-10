@@ -31,6 +31,7 @@ public class DetalleFumigacionProgramadaActivity extends AppCompatActivity {
     private TextView fechaProgramada;
     private TextView quimicoProgramada;
     private TextView cantidadProgramada;
+    private TextView esRecurrente;
     private CalendarView calendarioProgramada;
     private TimePicker horaProgramada;
     private Button btnCancelar;
@@ -59,6 +60,7 @@ public class DetalleFumigacionProgramadaActivity extends AppCompatActivity {
     private void inicializarControles(){
         fechaProgramada = findViewById(R.id.fechaProgramada);
         quimicoProgramada = findViewById(R.id.quimicoProgramada);
+        esRecurrente = findViewById(R.id.txtEsRecurrente);
         cantidadProgramada = findViewById(R.id.cantidadProgramada);
         calendarioProgramada = findViewById(R.id.calendarioProgramada);
         calendarioProgramada.setOnDateChangeListener(calendarioListener);
@@ -112,6 +114,12 @@ public class DetalleFumigacionProgramadaActivity extends AppCompatActivity {
         Date horaInicio = new Date(Long.parseLong(programada.getTimestampInicio()));
         horaProgramada.setHour(horaInicio.getHours());
         horaProgramada.setMinute(horaInicio.getMinutes());
+
+        if(programada.isRecurrente()){
+            esRecurrente.setVisibility(View.VISIBLE);
+        } else {
+            esRecurrente.setVisibility(View.GONE);
+        }
     }
 
     private void modificarFumigacionProgramada(){
