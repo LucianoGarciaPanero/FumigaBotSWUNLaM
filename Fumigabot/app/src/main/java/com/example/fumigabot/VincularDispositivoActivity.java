@@ -81,7 +81,7 @@ public class VincularDispositivoActivity extends AppCompatActivity {
                                 guardarDatosDeSesion(userEmail, userName, pin);
                                 insertarUsuarioFirebase(userEmail, pin);
 
-                                mensajeVinculacion = "¡Robot vinculado!";
+                                mensajeVinculacion = "Robot vinculado";
 
                                 //Vamos al Home
                                 robot = snapshot.child(pin).getValue(Robot.class);

@@ -1,6 +1,7 @@
 package com.example.fumigabot;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
@@ -29,6 +30,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.functions.FirebaseFunctions;
@@ -93,7 +95,6 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
         referenceProgramadas.keepSynced(true);
 
         inicializarFragmentos();
-
 
         fumigacion = new Fumigacion();
         stepper = findViewById(R.id.stepper);
@@ -245,32 +246,18 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
             public void onComplete(@NonNull Task<String> task) {
                 String resultado = "";
 
-                if(task.isComplete()) {
-
-                    if (task.isSuccessful()) {
-                        resultado = task.getResult();
-                        //Si todo sale bien, tomamos el resultado de si podemos o no iniciar la fumigación ahora
-                        if (resultado.equalsIgnoreCase("Ok")) {
-                            resultado = "Se inició la fumigación";
-                            //tenemos que pasarle la fumigacion al home/main host:
-                            setResult(RESULT_OK, new Intent().putExtra("fumigacion_nueva", fumigacion));
-                            finish();
-                        }
-                    } else {
-                        Exception e = task.getException();
-                        if (e instanceof FirebaseFunctionsException) {
-                            FirebaseFunctionsException ffe = (FirebaseFunctionsException) e;
-                            FirebaseFunctionsException.Code code = ffe.getCode();
-                            Object details = ffe.getDetails();
-                            Log.i("test", "Firebase Functions Exception: Code " + code);
-
-                        }
-                        resultado = e.getMessage();
-                        Log.i("test", "task no es successful, resultado: " + resultado);
+                if (task.isSuccessful()) {
+                    resultado = task.getResult();
+                    //Si todo sale bien, tomamos el resultado de si podemos o no iniciar la fumigación ahora
+                    if (resultado.equalsIgnoreCase("ok")) {
+                        resultado = "Se inició la fumigación";
+                        //tenemos que pasarle la fumigacion al home/main host:
+                        setResult(RESULT_OK, new Intent().putExtra("fumigacion_nueva", fumigacion));
+                        finish();
                     }
-                    //cambiar la forma en que informa al user que no lo hizo
-                    runOnUiThread(Toast.makeText(getApplicationContext(), resultado, Toast.LENGTH_SHORT)::show);
                 }
+                //cambiar la forma en que informa al user que no lo hizo
+                runOnUiThread(Toast.makeText(getApplicationContext(), resultado, Toast.LENGTH_LONG)::show);
             }
         });
     }
@@ -285,7 +272,7 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
                         //esta continuacion se ejecuta en caso de éxito o falla, pero si la Task
                         //falla, entonces gtResult() va a arrojar una excepción la cual se va a propagar
                         String resultado = (String) task.getResult().getData();
-                        Log.i("test", "Task retorna resultado: " + resultado);
+                        //Log.i("test", "Task retorna resultado: " + resultado);
                         return resultado;
                     }
                 });
@@ -293,22 +280,42 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
 
     public void crearProgramada(){
         fumigacion.setProgramada(true);
+
+        if(Long.parseLong(fumigacion.getTimestampInicio()) < (new Date().getTime())){
+            Toast.makeText(getApplicationContext(), "La fecha programada es anterior a la actual", Toast.LENGTH_LONG).show();
+            return;
+        }
         //Necesita hacer una task porque primero consulta la cantidad y necesita esperar a que termine
         Task<DataSnapshot> task = referenceProgramadas.get();
 
+
         task.addOnCompleteListener(task1 -> {
             int cant;
+            //String resultado = "";
 
             if (task1.isSuccessful()) {
                 DataSnapshot snapshot = task1.getResult();
                 cant = (int) snapshot.getChildrenCount();
 
                 fumigacion.setFumigacionId("fp" + (cant + 1));
-                referenceProgramadas.child(fumigacion.getFumigacionId()).setValue(fumigacion.toMapProgramada());
+                fumigacion.setActiva(true);
+                referenceProgramadas.child(fumigacion.getFumigacionId())
+                    .setValue(fumigacion.toMapProgramada(), new DatabaseReference.CompletionListener() {
+                        @Override
+                        public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref) {
+                            String resultado = "";
+                            if(error != null){
+                                resultado = error.getMessage();
+                            }
+                            else {
+                                resultado = "Se creó programada";
+                            }
+                            runOnUiThread(Toast.makeText(getApplicationContext(), resultado, Toast.LENGTH_LONG)::show);
+                        }
+                    });
             }
         });
 
-        Toast.makeText(this, "Se guardó programada", Toast.LENGTH_LONG).show();
         setResult(RESULT_CANCELED);
         finish();
     }

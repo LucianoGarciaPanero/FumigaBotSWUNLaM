@@ -106,7 +106,7 @@ public class QuimicosFragment extends Fragment {
             robot.getQuimicosDisponibles().add(nuevoQuimico);
             updateRobot(robot);
             txtNuevoQuimico.setText("");
-            Toast.makeText(getContext(), "¡Químico agregado!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Químico agregado", Toast.LENGTH_SHORT).show();
         }
     };
 

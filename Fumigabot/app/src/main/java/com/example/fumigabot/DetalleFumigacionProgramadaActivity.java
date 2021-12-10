@@ -87,7 +87,7 @@ public class DetalleFumigacionProgramadaActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             modificarFumigacionProgramada();
-            Toast.makeText(getApplicationContext(), "Fumigación modificada!", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Fumigación modificada", Toast.LENGTH_LONG).show();
             finish();
         }
     };
