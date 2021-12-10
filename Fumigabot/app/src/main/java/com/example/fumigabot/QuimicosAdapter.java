@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -69,35 +70,25 @@ public class QuimicosAdapter extends BaseAdapter {
 
         TextView nombreQuimico = convertView.findViewById(R.id.nombreQuimico);
         ImageButton btnBorrarQuimico = convertView.findViewById(R.id.btnBorrarQuimico);
+        ImageView imgQuimicoSeleccionado = convertView.findViewById(R.id.imgQuimicoSeleccionado);
 
         //Agregamos toda la data
         final String item = (String)getItem(position);
         nombreQuimico.setText(item);
 
+        if(robot.getUltimoQuimico().equals(item)){
+            imgQuimicoSeleccionado.setVisibility(View.VISIBLE);
+            btnBorrarQuimico.setVisibility(View.GONE);
+        } else{
+            imgQuimicoSeleccionado.setVisibility(View.GONE);
+            btnBorrarQuimico.setVisibility(View.VISIBLE);
+        }
+
         btnBorrarQuimico.setOnClickListener(v -> {
-            if(robot.getUltimoQuimico().equals(item)){
-                //no permitir borrar
-                alertaNoBorrar();
-            }else {
-                borrarQuimicoAlertDialog(robot, item);
-            }
+            borrarQuimicoAlertDialog(robot, item);
         });
 
         return convertView;
-    }
-
-    private void alertaNoBorrar(){
-        builder = new MaterialAlertDialogBuilder(context);
-
-        builder.setMessage("No se pudo borrar el químico debido a que está siendo usado por el robot");
-
-        builder.setPositiveButton("aceptar", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-            }
-        });
-
-        alertDialog = builder.create();
-        alertDialog.show();
     }
 
     private void borrarQuimicoAlertDialog(Robot robot, String quimico) {
