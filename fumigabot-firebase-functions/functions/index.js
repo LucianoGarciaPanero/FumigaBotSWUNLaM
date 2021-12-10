@@ -107,21 +107,22 @@ exports.notificarRobot = functions.database
         return null;
       }
 
-      admin.database().ref("robots/" + robotId).once("value").then((robot) => {
-        const fumigando = robot.val().fumigando; // ""podría"" no ir
-        // lo hacemos xq somo re kpos ;);)
-        const razon = robot.val().razonFinalizacion;
+      return admin.database().ref("robots/" + robotId).once("value")
+          .then((robot) => {
+            const fumigando = robot.val().fumigando; // ""podría"" no ir
+            // lo hacemos xq somo re kpos ;);)
+            const razon = robot.val().razonFinalizacion;
 
-        if (fumigando == false) {
-          console.log("Razon de detención: " + razon);
-          const mensajeFinalizacion = evaluarRazonFinalizacion(razon);
+            if (fumigando == false) {
+              console.log("Razon de detención: " + razon);
+              const mensajeFinalizacion = evaluarRazonFinalizacion(razon);
 
-          detenerFumigacion(robotId, razon).then(()=>{
-            return enviarNotificacion("Fumigación finalizada",
-                mensajeFinalizacion);
+              return detenerFumigacion(robotId, razon).then(()=>{
+                return enviarNotificacion(robotId, "Fumigación finalizada",
+                    mensajeFinalizacion);
+              });
+            }
           });
-        }
-      });
       /* const stopFumigando = antes.fumigando == true &&
         despues.fumigando == false;
       const notificar = stopFumigando && detAuto;*/
@@ -180,38 +181,29 @@ exports.programadaDelete = functions.https.onCall((data, context) => {
 exports.borrarQuimico = functions.https.onCall((data, context) => {
   const robotId = data.robotId;
   const quimico = data.quimico;
-  // además de quitar el químico de la lista,
-  // hay que revisar todas las programadas que lo contengan
-  // y si este quimico que se está borrando es el que tiene el robot,
-  // hay que volver a setearle al robot un último químico utilizado
 
   const refRobot = admin.database().ref("robots/" + robotId);
   const refProgramadas = admin.database()
       .ref("fumigaciones_programadas/" + robotId);
 
-  return refRobot.child("quimicosDisponibles").once("value").then((nodo)=>{
-    nodo.forEach((q) => {
-      console.log(q.val() + " | " + q.key);
-      const cmp = q.val() == quimico;
-      console.log("Comparacion de químicos: " + cmp);
-      if (cmp) {
-        // borrar
-        refRobot.child("quimicosDisponibles").child(q.key).remove();
-      }
-    });
+  return refRobot.child("quimicosDisponibles").once("value").then((nodo)=> {
+    const nuevosQuimicosDisponibles = nodo.val().filter((e) => e != quimico);
 
-    return refProgramadas.once("value").then((snap) => {
-      snap.forEach((fp) => {
-        const eliminada = fp.val().eliminada;
-        const cmpQuimico = fp.val().quimicoUtilizado == quimico;
-        if (eliminada == false && cmpQuimico == true) {
-          borrarProgramada(robotId, fp.key).then((res)=>{
-            return Promise.resolve(res);
+    return refRobot.update({quimicosDisponibles: nuevosQuimicosDisponibles})
+        .then(()=>{
+          return refProgramadas.once("value").then((snap) => {
+            snap.forEach((fp) => {
+              const eliminada = fp.val().eliminada;
+              const cmpQuimico = fp.val().quimicoUtilizado == quimico;
+              if (eliminada == false && cmpQuimico == true) {
+                return borrarProgramada(robotId, fp.key).then((res)=>{
+                  return Promise.resolve(res);
+                });
+              }
+            });
+            return Promise.resolve("ok");
           });
-        }
-      });
-      return Promise.resolve("ok");
-    });
+        });
   });
 });
 
@@ -284,7 +276,7 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
 
         crearEntradaHistorial(robotId, dataHistorial).then(()=>{
           const titulo = "Fumigación programada cancelada";
-          enviarNotificacion(titulo, mensaje).then(() => {
+          enviarNotificacion(robotId, titulo, mensaje).then(() => {
             res.status(500).send(err);
           });
         });
@@ -675,32 +667,35 @@ function verificarRecursos(robotId, quimicoUtilizado) {
 // _____ Notificaciones ______
 
 /** Envía notificaciones con el título y mensaje correspondiente.
+ * @param {String} robotId ID del robot que quiere notificar.
  * @param {String} titulo Título de la notificación.
  * @param {String} mensaje Mensaje a mostrar.
  * @return {Promise} retorna promesa.
  */
-function enviarNotificacion(titulo, mensaje) {
+function enviarNotificacion(robotId, titulo, mensaje) {
   let token;
-  return admin.database().ref("robots/0/").once("value").then((robot) => {
-    token = robot.val().token;
-    console.log("Token: " + token);
+  return admin.database().ref("users/" + robotId).once("value")
+      .then((robot) => {
+        robot.forEach((user) => {
+          token = user.val();
+          // console.log("Token: " + token);
+          const payload = {
+            token: token,
+            notification: {
+              title: titulo,
+              body: mensaje,
+            },
+            data: {body: mensaje},
+          };
 
-    const payload = {
-      token: token,
-      notification: {
-        title: titulo,
-        body: mensaje,
-      },
-      data: {body: mensaje},
-    };
-
-    return admin.messaging().send(payload).then((res) => {
-      console.log("MENSAJE OK, ID MENSAJE: " + res);
-    }).catch((err) => {
-      console.log("ERROR MENSAJE");
-      console.log(err);
-    });
-  });
+          return admin.messaging().send(payload).then((res) => {
+            console.log("MENSAJE OK, ID MENSAJE: " + res);
+          });
+        });
+      }).catch((err) => {
+        console.log("ERROR MENSAJE");
+        console.log(err);
+      });
 }
 
 
