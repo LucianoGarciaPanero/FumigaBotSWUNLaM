@@ -19,24 +19,6 @@ public class MyFirebase {
         firebaseDatabase = FirebaseDatabase.getInstance();
         firebaseDatabase.setPersistenceEnabled(true);
         firebaseFunctions = FirebaseFunctions.getInstance();
-
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(new OnCompleteListener<String>() {
-                    @Override
-                    public void onComplete(@NonNull Task<String> task) {
-                        if (!task.isSuccessful()) {
-                            Log.i("FCM", "Fetching FCM registration token failed", task.getException());
-                            return;
-                        }
-
-                        // Get new FCM registration token
-                        token = task.getResult();
-                        // Log and toast
-                        Log.i("FCM", token);
-                        firebaseDatabase.getReference("robots/0")
-                                .child("token").setValue(token);
-                    }
-                });
     }
 
     public static FirebaseDatabase getDatabaseInstance(){

@@ -14,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.fumigabot.firebase.MyFirebase;
+import com.example.fumigabot.firebase.Robot;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -25,15 +27,19 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class SignInActivity extends AppCompatActivity {
 
     private FirebaseAuth firebaseAuth;
     private GoogleSignInClient googleSignInClient;
     private static final int GOOGLE_SIGN_IN_ID = 1001;
+    private FirebaseDatabase firebaseDatabase;
+    private DatabaseReference referenceUsers;
+    private DatabaseReference referenceRobots;
     private Button btnGoogleSignIn;
 
     @Override
@@ -46,20 +52,10 @@ public class SignInActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         btnGoogleSignIn = findViewById(R.id.btnGoogleSignIn);
         btnGoogleSignIn.setOnClickListener(googleSignInListener);
-    }
 
-    private Map<String, String> getDatosDeSesion() {
-        Map<String, String> datosDeSesion = new HashMap<>();
-
-        SharedPreferences sp =
-            getSharedPreferences(String.valueOf(R.string.sp_datos_de_sesion), Context.MODE_PRIVATE);
-
-        String userEmail = sp.getString("userEmail", null);
-        String userName = sp.getString("userName", null);
-        datosDeSesion.put("userEmail", userEmail);
-        datosDeSesion.put("userName", userName);
-
-        return datosDeSesion;
+        firebaseDatabase = MyFirebase.getDatabaseInstance();
+        referenceUsers = firebaseDatabase.getReference("users");
+        referenceRobots = firebaseDatabase.getReference("robots");
     }
 
     private View.OnClickListener googleSignInListener = new View.OnClickListener() {
@@ -116,8 +112,8 @@ public class SignInActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()) {
-                        guardarDatosDeSesion(account.getEmail(), account.getDisplayName());
-                        goToVincularDispositivoActivity();
+                        //guardarDatosDeSesion(account.getEmail(), account.getDisplayName());
+                        verificarVinculacionUsuario(account.getEmail(), account.getDisplayName());
                     }
                     else {
                         runOnUiThread(Toast.makeText(
@@ -132,19 +128,93 @@ public class SignInActivity extends AppCompatActivity {
             });
     }
 
-    private void guardarDatosDeSesion(String userEmail, String userName) {
+    private void goToVincularDispositivoActivity(String userEmail, String userName) {
+        Intent i = new Intent(getApplicationContext(), VincularDispositivoActivity.class);
+        i.putExtra("userEmail", userEmail);
+        i.putExtra("userName", userName);
+        startActivity(i);
+        finish();
+    }
+
+    private void verificarVinculacionUsuario(String userEmail, String userName) {
+        //Opcion 1: estructura simple
+        String emailKey = userEmail.substring(0, userEmail.indexOf('@'));
+
+        Task<DataSnapshot> task = referenceUsers.get();
+
+        task.addOnCompleteListener(task1-> {
+            String robotId = "";
+
+            if(task1.isSuccessful()){
+                for(DataSnapshot robot: task1.getResult().getChildren()){
+                    for(DataSnapshot user : robot.getChildren()){
+                        if(user.getKey().equals(emailKey)){
+                            //es porque tiene un robot en Firebase: tomamos el ID del robot
+                            robotId = robot.getKey(); // --> ID del robot
+                            break;
+                        }
+                    }
+                }
+
+                if(robotId.isEmpty()){
+                    //Nos vamos a Vincular
+                    goToVincularDispositivoActivity(userEmail, userName);
+                } else {
+                    //Guardar SP
+                    //Token
+                    guardarDatosDeSesion(userEmail, userName, robotId);
+                    getToken(emailKey, robotId);
+
+                    goToRobotHomeActivity(robotId);
+                }
+            }
+        });
+    }
+
+    private void getToken(String userEmail, String robotId){
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
+            @Override
+            public void onComplete(@NonNull Task<String> task) {
+                if (!task.isSuccessful()) {
+                    Log.i("FCM", "Fetching FCM registration token failed", task.getException());
+                    return;
+                }
+                // Get new FCM registration token
+                String token = task.getResult();
+                /*Map<String, String> newUser = new HashMap<>();
+                newUser.put("userEmail", userEmail);
+                newUser.put("token", token);
+                referenceUsers.child(pin).push().setValue(newUser);*/
+                referenceUsers.child(robotId).child(userEmail).setValue(token);
+                // Log and toast
+                Log.i("FCM", token);
+                //return token;
+            }
+        });
+    }
+
+    private void guardarDatosDeSesion(String userEmail, String userName, String robotId) {
         SharedPreferences sp =
                 getSharedPreferences(String.valueOf(R.string.sp_datos_de_sesion), Context.MODE_PRIVATE);
         SharedPreferences.Editor spEditor = sp.edit();
 
         spEditor.putString("userEmail", userEmail);
         spEditor.putString("userName", userName);
+        spEditor.putString("robotId", robotId);
         spEditor.apply();
     }
 
-    private void goToVincularDispositivoActivity() {
-        Intent i = new Intent(getApplicationContext(), SplashActivity.class);
-        startActivity(i);
-        finish();
+    private void goToRobotHomeActivity(String robotId){
+        Task<DataSnapshot> task = referenceRobots.child(robotId).get();
+
+        task.addOnCompleteListener(task1-> {
+            if(task1.isSuccessful()){
+                Robot robot = task1.getResult().getValue(Robot.class);
+                Intent i = new Intent(getApplicationContext(), RobotHomeActivity.class);
+                i.putExtra("RobotVinculado", robot);
+                startActivity(i);
+                finish();
+            }
+        });
     }
 }

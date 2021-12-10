@@ -13,16 +13,14 @@ import android.content.pm.ActivityInfo;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ImageView;
 
 import com.example.fumigabot.firebase.MyFirebase;
 import com.example.fumigabot.firebase.Robot;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +46,7 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
 
         crearCanalNotificaciones();
+        //borrarDatosDeSesion();
 
         anim_robot = findViewById(R.id.logoCompleto);
 
@@ -58,15 +57,12 @@ public class SplashActivity extends AppCompatActivity {
             goToSignInActivity();
         } else {
             // Hay una sesión iniciada. Vemos si hay un robot vinculado.
-            robotId = getIdRobotSP();
+            robotId = getDatosDeSesion().get("robotId");
 
             //Instancia y referencia de la BD en Firebase
             firebaseDatabase = MyFirebase.getDatabaseInstance();
-            reference = firebaseDatabase.getReference("robots");
-            reference.addValueEventListener(robotValueEventListener);
-
-            if(robotId.isEmpty())
-                obtenerRobot();
+            reference = firebaseDatabase.getReference("robots/" + robotId);
+            getRobotVinculado();
         }
     }
 
@@ -78,8 +74,10 @@ public class SplashActivity extends AppCompatActivity {
 
         String userEmail = sp.getString("userEmail", null);
         String userName = sp.getString("userName", null);
+        String robotId = sp.getString("robotId", null);
         datosDeSesion.put("userEmail", userEmail);
         datosDeSesion.put("userName", userName);
+        datosDeSesion.put("robotId", robotId);
 
         return datosDeSesion;
     }
@@ -102,45 +100,22 @@ public class SplashActivity extends AppCompatActivity {
         spEditor.apply();
     }
 
-    private String getIdRobotSP() {
-        SharedPreferences sp =
-            getSharedPreferences(String.valueOf(R.string.sp_robot_vinculado), Context.MODE_PRIVATE);
-        String datos = sp.getString("robotId", "");
+    private void getRobotVinculado(){
+        Task<DataSnapshot> task = reference.get();
 
-        return datos;
+        task.addOnCompleteListener(task1 -> {
+           if(task1.isSuccessful()){
+               robot = task1.getResult().getValue(Robot.class);
+               goToRobotHomeActivity();
+           }
+        });
     }
 
-    private ValueEventListener robotValueEventListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-            //Si detecta algo, lo trae
-            if (robotId.isEmpty()) {
-                return;
-            }
-            robot = dataSnapshot.child(robotId).getValue(Robot.class);
-            obtenerRobot();
-            robotId = "";
-            return;
-        }
-
-        @Override
-        public void onCancelled(DatabaseError error) {
-            // Failed to read value
-            Log.w("WTF", "Failed to read value.", error.toException());
-        }
-    };
-
-    private void obtenerRobot() {
-        if(robotId != "") { //quiere decir que tiene algo, puedo ir a buscar a la base de datos
-            //Pasamos al Home y vemos toda la data del robot vinculado
-            Intent i = new Intent(getApplicationContext(), RobotHomeActivity.class);
-            i.putExtra("RobotVinculado", robot);
-            startActivity(i);
-        }
-        else {
-            //Quiere decir que tiene que vincular un nuevo dispositivo
-            startActivity(new Intent(getApplicationContext(), VincularDispositivoActivity.class));
-        }
+    private void goToRobotHomeActivity() {
+        //Pasamos al Home y vemos toda la data del robot vinculado
+        Intent i = new Intent(getApplicationContext(), RobotHomeActivity.class);
+        i.putExtra("RobotVinculado", robot);
+        startActivity(i);
         finish();
     }
 
@@ -154,6 +129,4 @@ public class SplashActivity extends AppCompatActivity {
             notificationManager.createNotificationChannel(channel);
         }
     }
-
-
 }

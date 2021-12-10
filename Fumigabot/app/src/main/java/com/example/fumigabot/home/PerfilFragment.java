@@ -18,10 +18,12 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.fumigabot.R;
+import com.example.fumigabot.firebase.MyFirebase;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.transition.MaterialFadeThrough;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
 import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
@@ -37,8 +39,13 @@ public class PerfilFragment extends Fragment {
     private TextView textUserName;
     private ImageView userPhoto;
     private Button btnCerrarSesion;
+    private Button btnDesvincularRobot;
+    private TextView txtIDRobot;
     private MaterialAlertDialogBuilder alertDialogBuilder;
     private AlertDialog alertDialog;
+    private DatabaseReference referenceUsers;
+
+    private String userEmail;
 
     public PerfilFragment(){
         // Required empty public constructor
@@ -48,7 +55,6 @@ public class PerfilFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //Log.i("FILTRO", "QUIMICOS FRAGMENT: onCreate " + SystemClock.elapsedRealtime());
         setEnterTransition(new MaterialFadeThrough());
         setReturnTransition(new MaterialFadeThrough());
     }
@@ -66,17 +72,24 @@ public class PerfilFragment extends Fragment {
 
         firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser user = firebaseAuth.getCurrentUser();
-        Log.i("test", "url de la foto: " + user.getPhotoUrl().toString());
+        //Log.i("test", "url de la foto: " + user.getPhotoUrl().toString());
 
         View vista = getView();
         userPhoto = vista.findViewById(R.id.userPhoto);
         Picasso.get().load(user.getPhotoUrl()).into(userPhoto);
         textUserEmail = vista.findViewById(R.id.textUserEmail);
         textUserName = vista.findViewById(R.id.textUserName);
-        textUserEmail.setText(getDatosDeSesion().get("userEmail"));
+        userEmail = getDatosDeSesion().get("userEmail");
+        textUserEmail.setText(userEmail);
         textUserName.setText(getDatosDeSesion().get("userName"));
         btnCerrarSesion = vista.findViewById(R.id.btnCerrarSesion);
         btnCerrarSesion.setOnClickListener(btnCerrarSesionListener);
+        txtIDRobot = vista.findViewById(R.id.txtIDRobot);
+        txtIDRobot.setText("ID de Robot: " + getDatosDeSesion().get("robotId"));
+        btnDesvincularRobot = vista.findViewById(R.id.btnDesvincularRobot);
+        btnDesvincularRobot.setOnClickListener(desvincularRobotListener);
+
+        referenceUsers = MyFirebase.getDatabaseInstance().getReference("users/" + getDatosDeSesion().get("robotId"));
     }
 
     private Map<String, String> getDatosDeSesion() {
@@ -87,10 +100,46 @@ public class PerfilFragment extends Fragment {
 
         String userEmail = sp.getString("userEmail", null);
         String userName = sp.getString("userName", null);
+        String robotId = sp.getString("robotId", null);
         datosDeSesion.put("userEmail", userEmail);
         datosDeSesion.put("userName", userName);
+        datosDeSesion.put("robotId", robotId);
 
         return datosDeSesion;
+    }
+
+    private View.OnClickListener desvincularRobotListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            alertDialogBuilder = new MaterialAlertDialogBuilder(getActivity());
+            alertDialogBuilder.setMessage("¿Seguro querés desvincular el robot?");
+
+            alertDialogBuilder.setPositiveButton(
+                    "desvincular", new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface dialog, int id) {
+                            desvincularRobot();
+                        }
+                    });
+
+            alertDialogBuilder.setNegativeButton(
+                    "cancelar", new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog
+                        }
+                    });
+
+            alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+        }
+    };
+
+    private void desvincularRobot(){
+        //set value en null en users/id robot/mail
+        String emailKey = userEmail.substring(0, userEmail.indexOf('@'));
+        referenceUsers.child(emailKey).setValue(null);
+        cerrarSesion();
     }
 
     private View.OnClickListener btnCerrarSesionListener = new View.OnClickListener() {
@@ -128,6 +177,8 @@ public class PerfilFragment extends Fragment {
     private void cerrarSesion() {
         firebaseAuth.signOut();
         borrarDatosDeSesion();
+        /*Intent i = new Intent(getContext(), SplashActivity.class);
+        startActivity(i);*/
         getActivity().finish();
     }
 
