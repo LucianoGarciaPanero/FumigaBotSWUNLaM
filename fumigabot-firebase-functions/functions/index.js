@@ -526,28 +526,6 @@ function detenerFumigacion(robotId, observaciones) {
               };
 
               crearEntradaHistorial(robotId, dataHistorial);
-
-              /* ref.once("value").then((snap) => {
-                snap.forEach((fh) => {
-                  idHistorial++;
-                });
-
-                console.log("ID HISTORIAL");
-                console.log(idHistorial);
-                const timestampFin = Date.now().toString();
-                ref.child("fh" + idHistorial).set({
-                  timestampInicio: fumigacionActual.timestampInicio,
-                  timestampFin: timestampFin,
-                  quimicoUtilizado: fumigacionActual.quimicoUtilizado,
-                  cantidadQuimicoPorArea:
-                    obtenerStringCantidadPorArea(
-                        fumigacionActual.cantidadQuimicoPorArea),
-                  nivelQuimicoInicial: fumigacionActual.nivelQuimicoInicial,
-                  nivelQuimicoFinal: nivelQuimico,
-                  nivelBateriaInicial: fumigacionActual.nivelBateriaInicial,
-                  nivelBateriaFinal: bateria,
-                });
-              });*/
             });
       });
 }
@@ -595,8 +573,6 @@ function verificarFumigacion(robotId, fumigacionId, tsInicio) {
                   "Timestamp repetido");
             } else if (difFumi) {
             // si no son iguales, podemos verificar la brecha temporal
-            // console.log("Analizando nueva (" + fumigacionId +
-            // ") contra " + fumigacion.key + "...");
               evaluarBrechaTemporal(tsInicio, tsFumigacion);
               /* const evaluacionBrecha =
               evaluarBrechaTemporal(tsInicio, tsFumigacion);
@@ -643,23 +619,25 @@ function verificarRecursos(robotId, quimicoUtilizado) {
         const encendido = robot.val().encendido;
         const ultimoQuimico = robot.val().ultimoQuimico;
 
+        let mensaje = "ok";
+
         if (bateria <= MINIMO_BATERIA) {
-          throw new functions.https.HttpsError("out-of-range",
-              "bnd");
+          mensaje = "bnd";
         } else if (quimico <= MINIMO_QUIMICO) {
-          throw new functions.https.HttpsError("out-of-range",
-              "qnd");
+          mensaje = "qnd";
         } else if (fumigando == true) {
-          throw new functions.https.HttpsError("unavailable",
-              "rf");
+          mensaje = "rf";
         } else if (encendido == false) {
-          throw new functions.https.HttpsError("unavailable",
-              "ra");
+          mensaje = "ra";
         } else if (ultimoQuimico != quimicoUtilizado) {
-          throw new functions.https.HttpsError("invalid-argument",
-              "qnc");
+          mensaje = "qnc";
         }
-        return Promise.resolve("ok");
+
+        if (mensaje != "ok") {
+          mensaje = evaluarRazonFinalizacion(mensaje);
+        }
+
+        return Promise.resolve(mensaje);
       });
 }
 
