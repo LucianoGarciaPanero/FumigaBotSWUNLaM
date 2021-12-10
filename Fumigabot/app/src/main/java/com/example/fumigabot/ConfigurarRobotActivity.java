@@ -29,7 +29,6 @@ public class ConfigurarRobotActivity extends AppCompatActivity {
     private Robot robot;
     private TextView porcBateria;
     private TextView porcQuimico;
-    private TextView txtInfoBateria;
     private TextView txtInfoQuimico;
     private Button btnCambiarQuimico;
     private MaterialAlertDialogBuilder builder;
@@ -44,7 +43,7 @@ public class ConfigurarRobotActivity extends AppCompatActivity {
         robot = (Robot)getIntent().getSerializableExtra("robot");
 
         firebaseDatabase = MyFirebase.getDatabaseInstance();
-        referenceRobot = firebaseDatabase.getReference("robots");
+        referenceRobot = firebaseDatabase.getReference("robots/" + robot.getRobotId());
         referenceRobot.keepSynced(true);
 
         inicializarComponentes();
@@ -53,7 +52,7 @@ public class ConfigurarRobotActivity extends AppCompatActivity {
         referenceRobot.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                robot = dataSnapshot.child(String.valueOf(robot.getRobotId())).getValue(Robot.class);
+                robot = dataSnapshot.getValue(Robot.class);
                 cargarDatos();
 
                 return;
@@ -71,7 +70,6 @@ public class ConfigurarRobotActivity extends AppCompatActivity {
     private void inicializarComponentes(){
         porcBateria = findViewById(R.id.porcBateria);
         porcQuimico = findViewById(R.id.porcQuimico);
-        txtInfoBateria = findViewById(R.id.txtInfoBateriaConfig);
         txtInfoQuimico = findViewById(R.id.txtInfoQuimicoConfig);
         btnCambiarQuimico = findViewById(R.id.btnCambiarQuimico);
         btnCambiarQuimico.setOnClickListener(new View.OnClickListener() {
@@ -80,6 +78,7 @@ public class ConfigurarRobotActivity extends AppCompatActivity {
                 cambiarQuimicoAlertDialog();
             }
         });
+        btnCambiarQuimico.setEnabled(!robot.isFumigando());
     }
 
     private void cambiarQuimicoAlertDialog(){
@@ -111,11 +110,8 @@ public class ConfigurarRobotActivity extends AppCompatActivity {
     }
 
     private void cambiarQuimico(){
-        //Toast.makeText(this, "sel: " + quimicoNuevo, Toast.LENGTH_LONG).show();
-        referenceRobot.child(String.valueOf(robot.getRobotId())).child("ultimoQuimico").setValue(quimicoNuevo);
+        referenceRobot.child("ultimoQuimico").setValue(quimicoNuevo);
     }
-
-
 
     private void cargarDatos(){
         if(robot == null)
