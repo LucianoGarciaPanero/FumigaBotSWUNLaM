@@ -23,7 +23,6 @@ function configurarTasks() {
   queuePath = tasksClient.queuePath(project, location, queue);
 
   url = `https://${location}-${project}.cloudfunctions.net/ejecutarProgramada`;
-  // url = "https://localhost:5001/fumigabot/us-central1/ejecutarProgramada";
 }
 
 
@@ -36,7 +35,6 @@ exports.programadaNueva = functions.database
       const fumigacionId = context.params.fumigacionId;
       const timestamp = snapshot.val().timestampInicio;
 
-      // verificarFumigacion retorna promesa:
       return verificarFumigacion(robotId, fumigacionId, timestamp)
           .then(() => {
           // programar la ejecución de la fumigación
@@ -70,7 +68,6 @@ exports.programadaUpdate = functions.database
         // retornamos nulo porque no tenemos más trabajo que hacer
         return null;
       }
-      // verificar la fumigacion
       return verificarFumigacion(robotId, fumigacionId, despues.timestampInicio)
           .then(() => {
             // ver si la fumigación de ANTES ya tenía creada una tarea:
@@ -150,11 +147,8 @@ exports.notificarRobot = functions.database
 
 // ---------------- On call ----------------
 
-
 exports.detenerFumigacion = functions.https.onCall((data, context) => {
   const robotId = data.robotId;
-  console.log("ROBOT ID: " + robotId);
-
   return detenerFumigacion(robotId, "ok");
 });
 
@@ -173,7 +167,6 @@ exports.evaluarInstantanea = functions.https.onCall((data, context) => {
 exports.programadaDelete = functions.https.onCall((data, context) => {
   const fumigacionId = data.fumigacionId;
   const robotId = data.robotId;
-
   return borrarProgramada(robotId, fumigacionId);
 });
 
@@ -222,8 +215,6 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
   let recurrente;
 
   refFumigacion.once("value").then((fp) => {
-    // console.log("DAME TODO");
-    // console.log(fp.val());
     activa = fp.val().activa;
     // son usados para la creación de la entrada al historial
     timestampInicio = fp.val().timestampInicio;
@@ -236,7 +227,6 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
 
     if (activa == false) {
       // si no está activa, no se tiene que ejecutar
-      console.log("Ejecutar programada: fumigación desactivada");
       res.status(200).send("OK!");
     } else {
       verificarRecursos(robotId, quimicoUtilizado).then(() => {
@@ -253,7 +243,6 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
                 });
               });
         }).catch((err) => {
-          console.log("CATCH: poner el robot a fumigar");
           res.status(500).send(err);
         });
       }).catch((err) => {
@@ -284,10 +273,7 @@ exports.ejecutarProgramada = functions.https.onRequest((req, res) => {
     // este es el de la verificacion de los recursos
     console.log("ERROR ejecutar programada:");
     console.log(err.message);
-
     res.status(500).send(err);
-    // 1. eliminar la tarea de la cola
-    // 2. hacer la entrada en el historial diciendo el por qué?
   });
 });
 
@@ -313,11 +299,11 @@ function crearProximaFumigacionRecurrente(robotId, data, activa) {
 
   admin.database().ref("fumigaciones_programadas/" + robotId)
       .once("value").then((snap) => {
-        snap.forEach((fp) => {
+        snap.forEach(() => {
           idProgramada++;
         });
-        console.log("Id programada");
-        console.log(idProgramada);
+        // console.log("Id programada");
+        // console.log(idProgramada);
         // crear el nodo de la programada
         admin.database().ref("fumigaciones_programadas/" + robotId)
             .child("fp" + idProgramada).set({
@@ -364,6 +350,8 @@ function iniciarFumigacion(robotId, robot, fumigacion) {
 function crearEntradaHistorial(robotId, fumigacion) {
   const ref = admin.database().ref("fumigaciones_historial/" + robotId);
 
+  console.log("-- CREAR ENTRADA HISTORIAL ---");
+
   let idHistorial = 1;
 
   let timestampFin = fumigacion.timestampFin;
@@ -392,10 +380,11 @@ function crearEntradaHistorial(robotId, fumigacion) {
   }
 
   return ref.once("value").then((snap) => {
-    snap.forEach((fh) => {
+    snap.forEach(() => {
       idHistorial++;
     });
 
+    console.log("Robot: " + robotId + " | Historial: " + idHistorial);
     ref.child("fh" + idHistorial).set({
       timestampInicio: fumigacion.timestampInicio,
       timestampFin: timestampFin,
@@ -493,9 +482,6 @@ function detenerFumigacion(robotId, observaciones) {
   let bateria;
   let nivelQuimico;
   let recurrente;
-  // let idHistorial = 1;
-
-  // const ref = admin.database().ref("fumigaciones_historial/" + robotId);
 
   return admin.database().ref("robots/" + robotId)
       .update({fumigando: false}).then(() => {
@@ -617,25 +603,23 @@ function verificarRecursos(robotId, quimicoUtilizado) {
         const encendido = robot.val().encendido;
         const ultimoQuimico = robot.val().ultimoQuimico;
 
-        let mensaje = "ok";
-
         if (bateria <= MINIMO_BATERIA) {
-          mensaje = "bnd";
+          throw new functions.https.HttpsError("out-of-range",
+              "bnd");
         } else if (quimico <= MINIMO_QUIMICO) {
-          mensaje = "qnd";
+          throw new functions.https.HttpsError("out-of-range",
+              "qnd");
         } else if (fumigando == true) {
-          mensaje = "rf";
+          throw new functions.https.HttpsError("unavailable",
+              "rf");
         } else if (encendido == false) {
-          mensaje = "ra";
+          throw new functions.https.HttpsError("unavailable",
+              "ra");
         } else if (ultimoQuimico != quimicoUtilizado) {
-          mensaje = "qnc";
+          throw new functions.https.HttpsError("invalid-argument",
+              "qnc");
         }
-
-        if (mensaje != "ok") {
-          mensaje = evaluarRazonFinalizacion(mensaje);
-        }
-
-        return Promise.resolve(mensaje);
+        return Promise.resolve("ok");
       });
 }
 
@@ -652,8 +636,11 @@ function enviarNotificacion(robotId, titulo, mensaje) {
   let token;
   return admin.database().ref("users/" + robotId).once("value")
       .then((robot) => {
+        const payloads = [];
+
         robot.forEach((user) => {
           token = user.val();
+          console.log("User: " + user.key);
           // console.log("Token: " + token);
           const payload = {
             token: token,
@@ -663,11 +650,11 @@ function enviarNotificacion(robotId, titulo, mensaje) {
             },
             data: {body: mensaje},
           };
-
-          return admin.messaging().send(payload).then((res) => {
-            console.log("MENSAJE OK, ID MENSAJE: " + res);
-          });
+          // admin.messaging().send(payload);
+          payloads.push(payload);
         });
+        // return Promise.resolve("ok");
+        return admin.messaging().sendAll(payloads);
       }).catch((err) => {
         console.log("ERROR MENSAJE");
         console.log(err);
