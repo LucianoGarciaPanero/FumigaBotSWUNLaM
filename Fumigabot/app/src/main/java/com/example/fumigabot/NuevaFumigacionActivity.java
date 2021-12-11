@@ -305,7 +305,7 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
                         public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref) {
                             String resultado = "";
                             if(error != null){
-                                resultado = error.getMessage();
+                                resultado = getRazonFalla(error.getMessage());
                             }
                             else {
                                 resultado = "Se creó programada";
@@ -318,6 +318,30 @@ public class NuevaFumigacionActivity extends AppCompatActivity implements Steppe
 
         setResult(RESULT_CANCELED);
         finish();
+    }
+
+    private String getRazonFalla(String codigo){
+        String mensaje = "";
+        switch(codigo){
+            case "bnd":
+                mensaje = "No hay batería suficiente";
+                break;
+            case "qnd":
+                mensaje = "No hay químico disponible";
+                break;
+            case "qnc":
+                mensaje = "El químico no coincide";
+                break;
+            case "rf":
+                mensaje = "El robot ya está fumigando";
+                break;
+            case "ra":
+                mensaje = "El robot está apagado";
+                break;
+            default:
+                break;
+        }
+        return mensaje;
     }
 
     @Override
