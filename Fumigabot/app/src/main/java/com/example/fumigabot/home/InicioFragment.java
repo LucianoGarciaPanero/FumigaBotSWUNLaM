@@ -390,6 +390,7 @@ public class InicioFragment extends Fragment {
 
             robot = dataSnapshot.getValue(Robot.class);
             String tsInicio = (String)robot.getFumigacionActual().get("timestampInicio");
+            determinarEstadoRobot(robot);
 
             if(estadoFumigandoAnterior && robot.isFumigando()){
                 //toma el timestamp correcto
@@ -409,7 +410,7 @@ public class InicioFragment extends Fragment {
             estadoFumigandoAnterior = robot.isFumigando();
 
             //Log.i("test", "estado fumigando fin: " + estadoFumigandoAnterior);
-            determinarEstadoRobot(robot);
+
             return;
         }
 
