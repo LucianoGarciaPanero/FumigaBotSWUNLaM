@@ -11,6 +11,6 @@
         android:title="Cantidad" />
 
     <item android:id="@+id/step_4"
-        android:title="Confirmación" />
+        android:title="Confirmar" />
 
 </menu>
