@@ -2,6 +2,7 @@ package com.example.fumigabot;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,13 +18,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.example.fumigabot.firebase.Fumigacion;
 import com.example.fumigabot.firebase.MyFirebase;
+import com.example.fumigabot.firebase.Robot;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.functions.FirebaseFunctions;
@@ -43,6 +47,8 @@ public class EntradaProgramadaAdapter extends BaseAdapter {
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference reference;
     private FirebaseFunctions functions;
+    private MaterialAlertDialogBuilder builder;
+    private AlertDialog alertDialog;
 
     public EntradaProgramadaAdapter(Context context, int idRobot, List<Fumigacion> fumigacionesProgramadas) {
         this.context = context;
@@ -168,7 +174,7 @@ public class EntradaProgramadaAdapter extends BaseAdapter {
             });
 
             borrar.setOnClickListener(v -> {
-                borrarProgramada(item);
+                borrarProgramadaAlertDialog(item);
             });
 
             return convertView;
@@ -182,6 +188,27 @@ public class EntradaProgramadaAdapter extends BaseAdapter {
     private void activar(Fumigacion fumigacion, boolean valor){
         fumigacion.setActiva(valor);
         reference.child(fumigacion.getFumigacionId()).setValue(fumigacion.toMapProgramada());
+    }
+
+    private void borrarProgramadaAlertDialog(Fumigacion fumigacion) {
+        builder = new MaterialAlertDialogBuilder(context);
+
+        builder.setMessage("¿Borrar fumigación programada?");
+
+        builder.setPositiveButton("borrar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                borrarProgramada(fumigacion);
+            }
+        });
+
+        builder.setNegativeButton("cancelar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+            }
+        });
+
+        alertDialog = builder.create();
+        alertDialog.show();
     }
 
     private void borrarProgramada(Fumigacion fumigacion){
