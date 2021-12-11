@@ -54,10 +54,11 @@ public class MessagingService extends FirebaseMessagingService {
                         .setPriority(NotificationCompat.PRIORITY_MAX)
                         .setContentIntent(pendingIntent);
 
+        if (Build.VERSION.SDK_INT >= 16)   // Jelly Bean
+            notificationBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(messageBody));
+
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
     }
